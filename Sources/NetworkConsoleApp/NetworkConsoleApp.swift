@@ -3,11 +3,13 @@ import SwiftUI
 
 @main
 struct NetworkConsoleLiteApp: App {
+    @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @StateObject private var model: AppModel
 
     init() {
         let model = AppModel()
         _model = StateObject(wrappedValue: model)
+        appDelegate.model = model
     }
 
     var body: some Scene {
@@ -17,12 +19,6 @@ struct NetworkConsoleLiteApp: App {
             Image(systemName: model.statusSymbolName)
         }
         .menuBarExtraStyle(.window)
-
-        Window("网络体检", id: "detail") {
-            DetailView(model: model)
-                .frame(minWidth: 840, minHeight: 560)
-        }
-        .defaultSize(width: 980, height: 700)
 
         Settings {
             SettingsView(model: model)

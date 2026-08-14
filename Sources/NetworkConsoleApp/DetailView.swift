@@ -8,32 +8,32 @@ struct DetailView: View {
         TabView {
             OverviewView(model: model)
                 .tabItem {
-                    Label("概览", systemImage: "gauge.with.dots.needle.50percent")
+                    Label(model.text("detail.tab.overview"), systemImage: "gauge.with.dots.needle.50percent")
                 }
 
             InterfacesView(model: model)
                 .tabItem {
-                    Label("网络接口", systemImage: "network")
+                    Label(model.text("detail.tab.interfaces"), systemImage: "network")
                 }
 
             DNSRouteView(model: model)
                 .tabItem {
-                    Label("DNS 与路由", systemImage: "point.3.filled.connected.trianglepath.dotted")
+                    Label(model.text("detail.tab.dnsRoute"), systemImage: "point.3.filled.connected.trianglepath.dotted")
                 }
 
             ReachabilityView(model: model)
                 .tabItem {
-                    Label("外网探测", systemImage: "globe")
+                    Label(model.text("detail.tab.reachability"), systemImage: "globe")
                 }
 
             TimelineView(model: model)
                 .tabItem {
-                    Label("时间线", systemImage: "clock")
+                    Label(model.text("detail.tab.timeline"), systemImage: "clock")
                 }
 
             SettingsView(model: model)
                 .tabItem {
-                    Label("设置", systemImage: "gearshape")
+                    Label(model.text("detail.tab.settings"), systemImage: "gearshape")
                 }
         }
         .toolbar {
@@ -42,14 +42,14 @@ struct DetailView: View {
                     ProgressView()
                         .controlSize(.small)
                 }
-                Button("立即检查") {
+                Button(model.text("detail.checkNow")) {
                     Task {
                         await model.runCheck()
                     }
                 }
                 .disabled(model.isChecking)
 
-                Button("导出支持包") {
+                Button(model.text("detail.export")) {
                     model.exportSupportPackage()
                 }
             }
@@ -65,7 +65,7 @@ private struct OverviewView: View {
             VStack(alignment: .leading, spacing: 18) {
                 HStack {
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("网络体检")
+                        Text(model.text("overview.title"))
                             .font(.largeTitle.bold())
                         Text(model.summaryText)
                             .font(.title3)
@@ -73,9 +73,9 @@ private struct OverviewView: View {
                     }
                     Spacer()
                     if let report = model.report {
-                        HealthBadge(grade: report.health)
+                        HealthBadge(grade: report.health, title: model.text(for: report.health))
                     } else {
-                        HealthBadge(grade: .checking)
+                        HealthBadge(grade: .checking, title: model.text("status.checking"))
                     }
                 }
 
@@ -85,27 +85,27 @@ private struct OverviewView: View {
                         spacing: 12
                     ) {
                         MetricCard(
-                            title: "网络路径",
-                            value: report.path.status.displayName,
-                            detail: report.path.isConstrained ? "网络受限" : "Network.framework 路径",
+                            title: model.text("overview.path"),
+                            value: model.text(for: report.path.status),
+                            detail: report.path.isConstrained ? model.text("overview.path.detailConstrained") : model.text("overview.path.detailNormal"),
                             systemImage: "point.3.connected.trianglepath.dotted"
                         )
                         MetricCard(
-                            title: "活动接口",
+                            title: model.text("overview.activeInterfaces"),
                             value: "\(report.interfaces.filter { $0.isActive }.count)",
                             detail: report.interfaces.map(\.name).joined(separator: ", "),
                             systemImage: "network"
                         )
                         MetricCard(
-                            title: "DNS 服务器",
-                            value: report.dns.servers.first ?? "未获取",
+                            title: model.text("overview.dnsServers"),
+                            value: report.dns.servers.first ?? model.text("overview.notAvailable"),
                             detail: report.dns.servers.joined(separator: ", "),
                             systemImage: "server.rack"
                         )
                         MetricCard(
-                            title: "外网探测",
+                            title: model.text("overview.internet"),
                             value: "\(report.reachability.filter { $0.status == .success }.count)/\(report.reachability.count)",
-                            detail: "延迟和丢包为应用层近似",
+                            detail: model.text("overview.internet.detail"),
                             systemImage: "globe"
                         )
                     }
@@ -113,7 +113,7 @@ private struct OverviewView: View {
                     Divider()
 
                     VStack(alignment: .leading, spacing: 10) {
-                        Text("当前说明")
+                        Text(model.text("overview.summary"))
                             .font(.headline)
                         Text(report.summary)
                             .textSelection(.enabled)
@@ -122,7 +122,7 @@ private struct OverviewView: View {
                     if !report.advice.isEmpty {
                         Divider()
                         VStack(alignment: .leading, spacing: 10) {
-                            Text("排查建议")
+                            Text(model.text("overview.advice"))
                                 .font(.headline)
                             ForEach(report.advice) { advice in
                                 HStack(alignment: .top, spacing: 10) {
@@ -146,9 +146,9 @@ private struct OverviewView: View {
                     }
                 } else {
                     ContentUnavailableView(
-                        "尚未完成检查",
+                        model.text("overview.empty.title"),
                         systemImage: "arrow.triangle.2.circlepath",
-                        description: Text("点击“立即检查”开始只读网络体检。")
+                        description: Text(model.text("overview.empty.message"))
                     )
                 }
             }
@@ -177,22 +177,23 @@ private struct InterfacesView: View {
         Group {
             if let report = model.report, !report.interfaces.isEmpty {
                 List(report.interfaces) { interface in
-                    InterfaceRow(interface: interface)
+                    InterfaceRow(interface: interface, model: model)
                 }
             } else {
                 ContentUnavailableView(
-                    "暂无接口数据",
+                    model.text("interfaces.empty.title"),
                     systemImage: "network.slash",
-                    description: Text("无网络时接口列表仍会显示本机只读状态。")
+                    description: Text(model.text("interfaces.empty.message"))
                 )
             }
         }
-        .navigationTitle("网络接口")
+        .navigationTitle(model.text("detail.tab.interfaces"))
     }
 }
 
 private struct InterfaceRow: View {
     let interface: InterfaceInfo
+    @ObservedObject var model: AppModel
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -200,18 +201,18 @@ private struct InterfaceRow: View {
                 Label(interface.name, systemImage: interface.kind == .wifi ? "wifi" : "cable.connector")
                     .font(.headline)
                 Spacer()
-                Text(interface.kind.displayName)
+                Text(model.text(for: interface.kind))
                     .font(.caption)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 3)
                     .background(.quaternary.opacity(0.6), in: Capsule())
-                Text(interface.linkState.displayName)
+                Text(model.text(for: interface.linkState))
                     .font(.caption)
                     .foregroundStyle(interface.linkState == .up ? Color.green : Color.secondary)
             }
 
             if interface.isDefaultRouteInterface {
-                Label("默认路由接口", systemImage: "arrow.up.forward.circle")
+                Label(model.text("interfaces.defaultRoute"), systemImage: "arrow.up.forward.circle")
                     .font(.caption)
                     .foregroundStyle(.blue)
             }
@@ -222,7 +223,7 @@ private struct InterfaceRow: View {
             }
 
             if interface.addresses.isEmpty {
-                Text("无 IPv4/IPv6 地址")
+                Text(model.text("interfaces.noAddress"))
                     .font(.caption)
                     .foregroundStyle(.secondary)
             } else {
@@ -247,10 +248,10 @@ private struct DNSRouteView: View {
     var body: some View {
         List {
             if let report = model.report {
-                Section("DNS 解析器") {
-                    LabeledContent("来源", value: report.dns.resolverSource)
+                Section(model.text("dnsRoute.section.dns")) {
+                    LabeledContent(model.text("dnsRoute.source"), value: report.dns.resolverSource)
                     if report.dns.servers.isEmpty {
-                        Text("未获取到 DNS 服务器")
+                        Text(model.text("dnsRoute.noServers"))
                             .foregroundStyle(.secondary)
                     } else {
                         ForEach(report.dns.servers, id: \.self) { server in
@@ -259,25 +260,25 @@ private struct DNSRouteView: View {
                         }
                     }
                     if !report.dns.searchDomains.isEmpty {
-                        LabeledContent("搜索域", value: report.dns.searchDomains.joined(separator: ", "))
+                        LabeledContent(model.text("dnsRoute.searchDomains"), value: report.dns.searchDomains.joined(separator: ", "))
                     }
                 }
 
-                Section("默认路由") {
+                Section(model.text("dnsRoute.section.routes")) {
                     if report.routes.routes.isEmpty {
-                        Text("未获取到默认路由")
+                        Text(model.text("dnsRoute.noRoutes"))
                             .foregroundStyle(.secondary)
                     } else {
                         ForEach(report.routes.routes) { route in
                             VStack(alignment: .leading, spacing: 4) {
                                 Label(route.family, systemImage: "arrow.up.forward.circle")
                                     .font(.headline)
-                                LabeledContent("目标", value: route.destination)
+                                LabeledContent(model.text("dnsRoute.destination"), value: route.destination)
                                 if let gateway = route.gateway {
-                                    LabeledContent("网关", value: gateway)
+                                    LabeledContent(model.text("dnsRoute.gateway"), value: gateway)
                                 }
                                 if let interfaceName = route.interfaceName {
-                                    LabeledContent("接口", value: interfaceName)
+                                    LabeledContent(model.text("dnsRoute.interface"), value: interfaceName)
                                 }
                             }
                             .padding(.vertical, 2)
@@ -285,11 +286,11 @@ private struct DNSRouteView: View {
                     }
                 }
             } else {
-                Text("尚未完成检查")
+                Text(model.text("dnsRoute.notChecked"))
                     .foregroundStyle(.secondary)
             }
         }
-        .navigationTitle("DNS 与路由")
+        .navigationTitle(model.text("detail.tab.dnsRoute"))
     }
 }
 
@@ -305,13 +306,13 @@ private struct ReachabilityView: View {
                             Text(summary.endpointName)
                                 .font(.headline)
                             Spacer()
-                            Text("\(summary.successCount)/\(summary.attempts) 成功")
+                            Text(model.text("reachability.successCount", summary.successCount, summary.attempts))
                                 .font(.callout)
                                 .foregroundStyle(summary.failureCount == 0 ? Color.green : Color.orange)
                         }
 
                         HStack(spacing: 12) {
-                            MetricLine(title: "丢包近似", value: summary.lossRate.formatted(.percent.precision(.fractionLength(0))))
+                            MetricLine(title: model.text("reachability.loss"), value: summary.lossRate.formatted(.percent.precision(.fractionLength(0))))
                             MetricLine(title: "P50", value: Self.format(summary.percentiles.p50))
                             MetricLine(title: "P90", value: Self.format(summary.percentiles.p90))
                             MetricLine(title: "P95", value: Self.format(summary.percentiles.p95))
@@ -321,13 +322,13 @@ private struct ReachabilityView: View {
                 }
             } else {
                 ContentUnavailableView(
-                    "暂无外网探测结果",
+                    model.text("reachability.empty.title"),
                     systemImage: "globe",
-                    description: Text("完整检查会并发探测公开 HTTPS/TCP 端点。")
+                    description: Text(model.text("reachability.empty.message"))
                 )
             }
         }
-        .navigationTitle("外网探测")
+        .navigationTitle(model.text("detail.tab.reachability"))
     }
 
     private static func format(_ value: Double?) -> String {
@@ -359,15 +360,15 @@ private struct TimelineView: View {
         Group {
             if model.timelineEvents.isEmpty {
                 ContentUnavailableView(
-                    "暂无本地事件",
+                    model.text("timeline.empty.title"),
                     systemImage: "clock",
-                    description: Text("诊断记录只保存在本机。")
+                    description: Text(model.text("timeline.empty.message"))
                 )
             } else {
                 List(model.timelineEvents.reversed()) { event in
                     VStack(alignment: .leading, spacing: 4) {
                         HStack {
-                            Text(event.kind.displayName)
+                            Text(model.text(for: event.kind))
                                 .font(.callout.weight(.semibold))
                             Spacer()
                             Text(event.timestamp, style: .time)
@@ -382,6 +383,6 @@ private struct TimelineView: View {
                 }
             }
         }
-        .navigationTitle("本地时间线")
+        .navigationTitle(model.text("detail.tab.timeline"))
     }
 }

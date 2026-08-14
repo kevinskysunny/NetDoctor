@@ -54,9 +54,10 @@ struct MetricCard: View {
 
 struct HealthBadge: View {
     let grade: HealthGrade
+    let title: String
 
     var body: some View {
-        Label(grade.displayName, systemImage: grade.symbolName)
+        Label(title, systemImage: grade.symbolName)
             .font(.callout.weight(.semibold))
             .foregroundStyle(color)
             .padding(.horizontal, 10)

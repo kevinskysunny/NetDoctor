@@ -3,7 +3,6 @@ import SwiftUI
 
 struct QuickCheckView: View {
     @ObservedObject var model: AppModel
-    @Environment(\.openWindow) private var openWindow
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -12,7 +11,7 @@ struct QuickCheckView: View {
                     .font(.title2)
                     .foregroundStyle(statusColor)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("NetworkConsole Lite")
+                    Text(model.text("app.name"))
                         .font(.headline)
                     Text(model.statusTitle)
                         .font(.subheadline)
@@ -27,10 +26,10 @@ struct QuickCheckView: View {
 
             if let report = model.report {
                 Divider()
-                InfoRow(title: "路径", value: report.path.status.displayName, systemImage: "point.3.connected.trianglepath.dotted")
-                InfoRow(title: "活动接口", value: "\(report.interfaces.filter { $0.isActive }.count)", systemImage: "network")
-                InfoRow(title: "DNS", value: report.dns.servers.first ?? "未获取", systemImage: "server.rack")
-                InfoRow(title: "外网", value: reachabilityText(report), systemImage: "globe")
+                InfoRow(title: model.text("quick.path"), value: model.text(for: report.path.status), systemImage: "point.3.connected.trianglepath.dotted")
+                InfoRow(title: model.text("quick.activeInterfaces"), value: "\(report.interfaces.filter { $0.isActive }.count)", systemImage: "network")
+                InfoRow(title: model.text("quick.dns"), value: report.dns.servers.first ?? model.text("quick.notProbed"), systemImage: "server.rack")
+                InfoRow(title: model.text("quick.internet"), value: reachabilityText(report), systemImage: "globe")
 
                 if let advice = report.advice.first {
                     Divider()
@@ -56,7 +55,7 @@ struct QuickCheckView: View {
             }
 
             HStack {
-                Button("立即检查") {
+                Button(model.text("quick.checkNow")) {
                     Task {
                         await model.runCheck()
                     }
@@ -64,16 +63,20 @@ struct QuickCheckView: View {
                 .buttonStyle(.borderedProminent)
                 .disabled(model.isChecking)
 
-                Button("打开详情") {
-                    openWindow(id: "detail")
+                Button(model.text("quick.openDetail")) {
+                    (NSApp.delegate as? AppDelegate)?.showDetailWindow()
                 }
 
                 Spacer()
 
-                Button("导出支持包") {
+                Button(model.text("quick.export")) {
                     model.exportSupportPackage()
                 }
             }
+
+            Text(model.versionText)
+                .font(.caption2)
+                .foregroundStyle(.tertiary)
         }
         .padding(16)
         .frame(width: 380)
@@ -96,9 +99,9 @@ struct QuickCheckView: View {
     }
 
     private func reachabilityText(_ report: DiagnosisReport) -> String {
-        guard !report.reachability.isEmpty else { return "未探测" }
+        guard !report.reachability.isEmpty else { return model.text("quick.notProbed") }
         let success = report.reachability.filter { $0.status == .success }.count
-        return "\(success)/\(report.reachability.count) 成功"
+        return model.text("quick.successCount", success, report.reachability.count)
     }
 
     private func adviceColor(_ grade: HealthGrade) -> Color {

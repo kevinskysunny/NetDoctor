@@ -17,6 +17,7 @@
 		305B9D6F7C05A96540BF3E5A /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8142F83799D0BD5664A1EC1A /* SystemConfiguration.framework */; };
 		3B64BEC5235AD4ADFB1AF794 /* HealthGrader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5BFC8A9ABD338A057A2FFDB /* HealthGrader.swift */; };
 		50B9E4131B19FB9ED6615A87 /* CoreWLAN.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 41BF1CEDDDBADF90F2D9F7F1 /* CoreWLAN.framework */; };
+		55B749C5B1B0E18AD26B8BEB /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD4021DC6A77C6D695734088 /* AppDelegate.swift */; };
 		6234E45831A63F7C66C69829 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8B39F9CDEB40DB0E0A8E6EC /* Models.swift */; };
 		6C062F2821F7D091366AAAD6 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B4F1F58164AEC1840C20B15 /* AppModel.swift */; };
 		72B975DE07DCFA8320DEE3CF /* Network.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 49F06FAAB3A5804138BCEC62 /* Network.framework */; };
@@ -28,6 +29,7 @@
 		A72E121D208850C829050F36 /* NetworkPathProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31D70E4D277AEF9FB800E065 /* NetworkPathProvider.swift */; };
 		B3427A74FEEEE30A3291D781 /* SupportPackageExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4963FD0CBA6E74091F331AE8 /* SupportPackageExporter.swift */; };
 		D36FC913BAE6AD72A4C954B2 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58607FA4252757A216574B0D /* AppSettings.swift */; };
+		D4922F42605FD637A4EB127B /* Localization.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9373D6F3FA75676DF9A8ECF /* Localization.swift */; };
 		D8A1CE53C5D2B9BDA24CD423 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06498046A6A442401587542F /* SettingsView.swift */; };
 		F1B24F7F62DE043F1D5E97FF /* SystemCollectors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A01F30C6EB3103CD205F0C6 /* SystemCollectors.swift */; };
 /* End PBXBuildFile section */
@@ -78,8 +80,10 @@
 		91D8F07CE625CD365136A0F3 /* DiagnosticEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticEngine.swift; sourceTree = "<group>"; };
 		A5BFC8A9ABD338A057A2FFDB /* HealthGrader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthGrader.swift; sourceTree = "<group>"; };
 		C01FE1E7E816D6E6F99DD714 /* NetworkCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = NetworkCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		CD4021DC6A77C6D695734088 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		D022C5650EABC3C9B534BC33 /* DetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailView.swift; sourceTree = "<group>"; };
 		F8B39F9CDEB40DB0E0A8E6EC /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		F9373D6F3FA75676DF9A8ECF /* Localization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Localization.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -169,10 +173,12 @@
 		E2E1E2C59AEE7395A8EBEB3D /* NetworkConsoleApp */ = {
 			isa = PBXGroup;
 			children = (
+				CD4021DC6A77C6D695734088 /* AppDelegate.swift */,
 				8B4F1F58164AEC1840C20B15 /* AppModel.swift */,
 				58607FA4252757A216574B0D /* AppSettings.swift */,
 				738C230CB0651C5C48199C5B /* Components.swift */,
 				D022C5650EABC3C9B534BC33 /* DetailView.swift */,
+				F9373D6F3FA75676DF9A8ECF /* Localization.swift */,
 				65360E06E233D41D3252C22C /* NetworkConsoleApp.swift */,
 				1573ADB4DC5A3D9A12952659 /* QuickCheckView.swift */,
 				06498046A6A442401587542F /* SettingsView.swift */,
@@ -274,10 +280,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				55B749C5B1B0E18AD26B8BEB /* AppDelegate.swift in Sources */,
 				6C062F2821F7D091366AAAD6 /* AppModel.swift in Sources */,
 				D36FC913BAE6AD72A4C954B2 /* AppSettings.swift in Sources */,
 				7BE29536CF7565AE3A35681D /* Components.swift in Sources */,
 				0AB43839446A8C0C7B9E47AE /* DetailView.swift in Sources */,
+				D4922F42605FD637A4EB127B /* Localization.swift in Sources */,
 				1CCAF28762B657B136C49C62 /* NetworkConsoleApp.swift in Sources */,
 				303DA2D98FEC6856E5E6AAC1 /* QuickCheckView.swift in Sources */,
 				D8A1CE53C5D2B9BDA24CD423 /* SettingsView.swift in Sources */,

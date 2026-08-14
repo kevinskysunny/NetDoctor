@@ -10,6 +10,7 @@ final class AppModel: ObservableObject {
     @Published private(set) var lastError: String?
     @Published private(set) var timelineEvents: [TimelineEvent] = []
     @Published var settings: AppSettings
+    @Published var language: AppLanguage
 
     private let engine: DiagnosticEngine
     private let timelineStore: TimelineStore
@@ -38,6 +39,7 @@ final class AppModel: ObservableObject {
         )
 
         self.settings = loadedSettings
+        self.language = Self.loadLanguage()
         self.engine = resolvedEngine
         self.timelineStore = store
 
@@ -59,16 +61,35 @@ final class AppModel: ObservableObject {
 
     var statusTitle: String {
         if isChecking {
-            return HealthGrade.checking.displayName
+            return text("status.checking")
         }
-        return report?.health.displayName ?? "尚未检查"
+        guard let report else {
+            return text("status.notChecked")
+        }
+        return text(for: report.health)
     }
 
     var summaryText: String {
         if isChecking {
-            return "正在执行本地网络体检。"
+            return text("summary.checking")
         }
-        return report?.summary ?? "点击“立即检查”开始。"
+        guard let report else {
+            return text("summary.notChecked")
+        }
+        switch report.health {
+        case .checking:
+            return text("summary.checking")
+        case .healthy:
+            return text("summary.healthy")
+        case .warning:
+            return text("summary.warning")
+        case .critical:
+            return text("summary.critical")
+        }
+    }
+
+    var versionText: String {
+        text("settings.version.text", Self.appVersion, Self.appBuild)
     }
 
     func start() {
@@ -94,10 +115,10 @@ final class AppModel: ObservableObject {
 
     func exportSupportPackage() {
         let panel = NSSavePanel()
-        panel.title = "导出网络体检支持包"
+        panel.title = text("export.title")
         panel.nameFieldStringValue = exporter.suggestedFilename()
         panel.canCreateDirectories = true
-        panel.prompt = "导出"
+        panel.prompt = text("export.prompt")
 
         panel.begin { [weak self] response in
             guard response == .OK, let url = panel.url else { return }
@@ -132,6 +153,84 @@ final class AppModel: ObservableObject {
     func resetEndpoints() {
         settings.endpoints = ReachabilityEndpoint.defaultPublicEndpoints
         saveSettings()
+    }
+
+    func updateLanguage(_ value: AppLanguage) {
+        language = value
+        UserDefaults.standard.set(value.rawValue, forKey: "networkConsoleLite.language")
+    }
+
+    func text(_ key: String, _ arguments: CVarArg...) -> String {
+        let template = L10n.string(key, language: language)
+        if arguments.isEmpty {
+            return template
+        }
+        return String(format: template, arguments: arguments)
+    }
+
+    func text(for grade: HealthGrade) -> String {
+        switch grade {
+        case .checking:
+            return text("grade.checking")
+        case .healthy:
+            return text("grade.healthy")
+        case .warning:
+            return text("grade.warning")
+        case .critical:
+            return text("grade.critical")
+        }
+    }
+
+    func text(for status: NetworkStatus) -> String {
+        switch status {
+        case .available:
+            return text("network.available")
+        case .unavailable:
+            return text("network.unavailable")
+        case .unknown:
+            return text("network.unknown")
+        }
+    }
+
+    func text(for kind: InterfaceKind) -> String {
+        switch kind {
+        case .wifi:
+            return text("interface.wifi")
+        case .wired:
+            return text("interface.wired")
+        case .cellular:
+            return text("interface.cellular")
+        case .loopback:
+            return text("interface.loopback")
+        case .other:
+            return text("interface.other")
+        }
+    }
+
+    func text(for link: LinkState) -> String {
+        switch link {
+        case .up:
+            return text("link.up")
+        case .down:
+            return text("link.down")
+        case .unknown:
+            return text("link.unknown")
+        }
+    }
+
+    func text(for kind: TimelineEventKind) -> String {
+        switch kind {
+        case .pathChanged:
+            return text("timeline.pathChanged")
+        case .checkStarted:
+            return text("timeline.checkStarted")
+        case .checkFinished:
+            return text("timeline.checkFinished")
+        case .exportCreated:
+            return text("timeline.exportCreated")
+        case .diagnostic:
+            return text("timeline.diagnostic")
+        }
     }
 
     private func configureEngine() {
@@ -186,13 +285,13 @@ final class AppModel: ObservableObject {
             timelineStore.append(
                 TimelineEvent(
                     kind: .exportCreated,
-                    message: "已导出脱敏支持包：\(url.lastPathComponent)"
+                    message: text("export.timeline.message", url.lastPathComponent)
                 )
             )
             refreshTimeline()
             lastError = nil
         } catch {
-            lastError = "导出失败：\(error.localizedDescription)"
+            lastError = text("export.error", error.localizedDescription)
         }
     }
 
@@ -202,6 +301,13 @@ final class AppModel: ObservableObject {
 
     private func saveSettings() {
         settings.save()
+    }
+
+    private static func loadLanguage() -> AppLanguage {
+        guard let rawValue = UserDefaults.standard.string(forKey: "networkConsoleLite.language") else {
+            return .chinese
+        }
+        return AppLanguage(rawValue: rawValue) ?? .chinese
     }
 
     private static var appVersion: String {
