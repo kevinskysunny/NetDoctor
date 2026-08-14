@@ -115,7 +115,7 @@ private struct OverviewView: View {
                     VStack(alignment: .leading, spacing: 10) {
                         Text(model.text("overview.summary"))
                             .font(.headline)
-                        Text(report.summary)
+                        Text(model.summaryText)
                             .textSelection(.enabled)
                     }
 

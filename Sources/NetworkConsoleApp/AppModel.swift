@@ -108,7 +108,7 @@ final class AppModel: ObservableObject {
             timeout: settings.timeoutSeconds
         )
 
-        report = result
+        report = localizedReport(result)
         isChecking = false
         refreshTimeline()
     }
@@ -158,6 +158,10 @@ final class AppModel: ObservableObject {
     func updateLanguage(_ value: AppLanguage) {
         language = value
         UserDefaults.standard.set(value.rawValue, forKey: "networkConsoleLite.language")
+        if let report {
+            self.report = localizedReport(report)
+        }
+        refreshTimeline()
     }
 
     func text(_ key: String, _ arguments: CVarArg...) -> String {
@@ -241,8 +245,9 @@ final class AppModel: ObservableObject {
         }
         engine.onReport = { [weak self] report in
             Task { @MainActor in
-                self?.report = report
-                self?.refreshTimeline()
+                guard let self else { return }
+                self.report = self.localizedReport(report)
+                self.refreshTimeline()
             }
         }
     }
@@ -296,7 +301,179 @@ final class AppModel: ObservableObject {
     }
 
     private func refreshTimeline() {
-        timelineEvents = timelineStore.allEvents(limit: 500)
+        timelineEvents = localizedTimelineEvents(timelineStore.allEvents(limit: 500))
+    }
+
+    private func localizedReport(_ report: DiagnosisReport) -> DiagnosisReport {
+        guard language == .english else { return report }
+
+        let dns = DNSSummary(
+            resolverSource: localizedResolverSource(report.dns.resolverSource),
+            servers: report.dns.servers,
+            searchDomains: report.dns.searchDomains,
+            timestamp: report.dns.timestamp
+        )
+        let advice = report.advice.map(localizedAdvice)
+        let reachability = report.reachability.map(localizedProbe)
+
+        return DiagnosisReport(
+            id: report.id,
+            timestamp: report.timestamp,
+            path: report.path,
+            interfaces: report.interfaces,
+            dns: dns,
+            routes: report.routes,
+            reachability: reachability,
+            latency: report.latency,
+            advice: advice,
+            health: report.health,
+            summary: localizedSummary(report.health)
+        )
+    }
+
+    private func localizedSummary(_ health: HealthGrade) -> String {
+        switch health {
+        case .checking:
+            return text("summary.checking")
+        case .healthy:
+            return text("summary.healthy")
+        case .warning:
+            return text("summary.warning")
+        case .critical:
+            return text("summary.critical")
+        }
+    }
+
+    private func localizedProbe(_ probe: ReachabilityProbe) -> ReachabilityProbe {
+        guard language == .english else { return probe }
+        let errorDescription: String?
+        switch probe.errorDescription {
+        case "无效 URL":
+            errorDescription = "Invalid URL"
+        case "无效端口":
+            errorDescription = "Invalid port"
+        default:
+            errorDescription = probe.errorDescription
+        }
+
+        return ReachabilityProbe(
+            id: probe.id,
+            endpointID: probe.endpointID,
+            endpointName: probe.endpointName,
+            target: probe.target,
+            kind: probe.kind,
+            startedAt: probe.startedAt,
+            durationMilliseconds: probe.durationMilliseconds,
+            status: probe.status,
+            httpStatusCode: probe.httpStatusCode,
+            errorDescription: errorDescription
+        )
+    }
+
+    private func localizedResolverSource(_ source: String) -> String {
+        guard language == .english else { return source }
+        if source == "未获取" {
+            return "Not available"
+        }
+        return source
+    }
+
+    private func localizedAdvice(_ advice: DiagnosticAdvice) -> DiagnosticAdvice {
+        guard language == .english else { return advice }
+        switch advice.title {
+        case "确认网络已连接":
+            return DiagnosticAdvice(
+                id: advice.id,
+                title: "Confirm your network connection",
+                message: "Check the Wi-Fi icon in the menu bar or the Ethernet cable. If it is already connected, try turning Wi-Fi off and on again, or switch to a phone hotspot to see whether the issue is local.",
+                severity: advice.severity
+            )
+        case "启用网络接口":
+            return DiagnosticAdvice(
+                id: advice.id,
+                title: "Enable a network interface",
+                message: "No active interface was detected. Open System Settings > Network and make sure Wi-Fi or Ethernet is enabled.",
+                severity: advice.severity
+            )
+        case "检查 DNS 设置":
+            return DiagnosticAdvice(
+                id: advice.id,
+                title: "Check DNS settings",
+                message: "No DNS server was found. Open System Settings > Network > Details > DNS, or ask your network administrator whether DHCP should provide one.",
+                severity: advice.severity
+            )
+        case "检查默认路由或 VPN":
+            return DiagnosticAdvice(
+                id: advice.id,
+                title: "Check the default route or VPN",
+                message: "No default route was found. If you are using a VPN, disconnect it and check again. Otherwise, confirm that the current service received an address and gateway.",
+                severity: advice.severity
+            )
+        case "网络处于受限状态":
+            return DiagnosticAdvice(
+                id: advice.id,
+                title: "The network is constrained",
+                message: "macOS reports that this network is constrained. This often happens with phone hotspots, Low Data Mode, or captive portals.",
+                severity: advice.severity
+            )
+        case "外网不可达":
+            return DiagnosticAdvice(
+                id: advice.id,
+                title: "The internet is unreachable",
+                message: "All public endpoints failed. Check the router, modem, and VPN first, then verify that a firewall is not blocking outbound connections.",
+                severity: advice.severity
+            )
+        case "部分外网站点不可达":
+            return DiagnosticAdvice(
+                id: advice.id,
+                title: "Some internet endpoints are unreachable",
+                message: "Some public endpoints failed. This may be a blocked site or a remote service issue. Check whether Apple and Cloudflare succeeded.",
+                severity: advice.severity
+            )
+        case "延迟偏高":
+            return DiagnosticAdvice(
+                id: advice.id,
+                title: "Latency is high",
+                message: "P90 latency is above 800 ms. Pause large downloads or backups and prefer 5 GHz Wi-Fi or a wired connection.",
+                severity: advice.severity
+            )
+        case "网络状态正常":
+            return DiagnosticAdvice(
+                id: advice.id,
+                title: "Your network looks healthy",
+                message: "No issue was found. If a specific website still fails, check whether that site is unavailable by itself.",
+                severity: advice.severity
+            )
+        default:
+            return advice
+        }
+    }
+
+    private func localizedTimelineEvents(_ events: [TimelineEvent]) -> [TimelineEvent] {
+        guard language == .english else { return events }
+        return events.map { event in
+            TimelineEvent(
+                id: event.id,
+                timestamp: event.timestamp,
+                kind: event.kind,
+                message: localizedTimelineMessage(event.kind)
+            )
+        }
+    }
+
+    private func localizedTimelineMessage(_ kind: TimelineEventKind) -> String {
+        switch kind {
+        case .pathChanged:
+            return "Network path changed"
+        case .checkStarted:
+            return "Network health check started"
+        case .checkFinished:
+            return "Network health check finished"
+        case .exportCreated:
+            return "Support package exported"
+        case .diagnostic:
+            return "Diagnostic event recorded"
+        }
     }
 
     private func saveSettings() {

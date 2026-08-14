@@ -18,6 +18,10 @@ enum AppLanguage: String, Codable, CaseIterable, Identifiable {
 
 enum L10n {
     static func string(_ key: String, language: AppLanguage) -> String {
+        precondition(
+            Set(zh.keys) == Set(en.keys),
+            "Chinese and English localization key sets must match"
+        )
         switch language {
         case .chinese:
             return zh[key] ?? en[key] ?? key
