@@ -9,6 +9,7 @@
 - 详情窗口：概览、网络接口、DNS 与路由、外网探测、本地时间线和设置。
 - 只读采集：`NWPathMonitor`、`Network.framework`、`SystemConfiguration`、`CoreWLAN`。
 - 外网探测：对公开 HTTPS/TCP 端点并发采样，输出 RTT 分位数和失败比例近似。
+- 排查建议：根据路径、DNS、路由和外网结果，为普通用户给出下一步检查建议。
 - 本地支持包：脱敏 JSON，主动选择保存位置，不自动上传。
 
 ## 技术架构

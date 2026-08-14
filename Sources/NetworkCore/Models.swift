@@ -451,6 +451,25 @@ public enum HealthGrade: String, Codable, Sendable {
     }
 }
 
+public struct DiagnosticAdvice: Identifiable, Codable, Equatable, Sendable {
+    public let id: UUID
+    public let title: String
+    public let message: String
+    public let severity: HealthGrade
+
+    public init(
+        id: UUID = UUID(),
+        title: String,
+        message: String,
+        severity: HealthGrade
+    ) {
+        self.id = id
+        self.title = title
+        self.message = message
+        self.severity = severity
+    }
+}
+
 public struct DiagnosisReport: Identifiable, Codable, Equatable, Sendable {
     public let id: UUID
     public let timestamp: Date
@@ -460,6 +479,7 @@ public struct DiagnosisReport: Identifiable, Codable, Equatable, Sendable {
     public let routes: RouteSummary
     public let reachability: [ReachabilityProbe]
     public let latency: [LatencySample]
+    public let advice: [DiagnosticAdvice]
     public let health: HealthGrade
     public let summary: String
 
@@ -472,6 +492,7 @@ public struct DiagnosisReport: Identifiable, Codable, Equatable, Sendable {
         routes: RouteSummary,
         reachability: [ReachabilityProbe],
         latency: [LatencySample],
+        advice: [DiagnosticAdvice],
         health: HealthGrade,
         summary: String
     ) {
@@ -483,6 +504,7 @@ public struct DiagnosisReport: Identifiable, Codable, Equatable, Sendable {
         self.routes = routes
         self.reachability = reachability
         self.latency = latency
+        self.advice = advice
         self.health = health
         self.summary = summary
     }

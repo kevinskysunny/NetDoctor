@@ -54,6 +54,7 @@ public struct SupportPackagePayload: Codable, Equatable, Sendable {
             routes: report.routes,
             reachability: report.reachability,
             latency: report.latency,
+            advice: report.advice,
             health: report.health,
             summary: report.summary
         )

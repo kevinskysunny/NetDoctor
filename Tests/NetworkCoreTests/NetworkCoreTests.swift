@@ -103,6 +103,34 @@ final class HealthGraderTests: XCTestCase {
         XCTAssertEqual(grade, .healthy)
     }
 
+    func testAdviceExplainsDNSAndExternalFailuresForNoviceUsers() {
+        let path = NetworkPathInfo(
+            status: .available,
+            isExpensive: false,
+            isConstrained: false,
+            supportsDNS: true,
+            supportsIPv4: true,
+            supportsIPv6: false,
+            interfaces: [InterfaceDescriptor(name: "en0", kind: .wifi)]
+        )
+        let interface = Self.activeInterface
+        let probes = [
+            Self.probe(endpointID: "a", status: .failed, duration: nil)
+        ]
+
+        let advice = HealthGrader().advice(
+            path: path,
+            interfaces: [interface],
+            dns: .empty,
+            routes: .empty,
+            reachability: probes
+        )
+
+        XCTAssertTrue(advice.contains { $0.title == "检查 DNS 设置" })
+        XCTAssertTrue(advice.contains { $0.title == "检查默认路由或 VPN" })
+        XCTAssertTrue(advice.contains { $0.title == "外网不可达" })
+    }
+
     private static var availablePath: NetworkPathInfo {
         NetworkPathInfo(
             status: .available,
@@ -273,6 +301,7 @@ final class SupportPackageExporterTests: XCTestCase {
             routes: .empty,
             reachability: [],
             latency: [],
+            advice: [],
             health: .healthy,
             summary: "ok"
         )

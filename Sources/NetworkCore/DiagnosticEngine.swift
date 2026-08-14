@@ -102,6 +102,13 @@ public final class DiagnosticEngine: DiagnosticEngineControlling {
             routes: routes,
             reachability: probes
         )
+        let advice = grader.advice(
+            path: path,
+            interfaces: interfaces,
+            dns: dns,
+            routes: routes,
+            reachability: probes
+        )
         let report = DiagnosisReport(
             timestamp: Date(),
             path: path,
@@ -110,6 +117,7 @@ public final class DiagnosticEngine: DiagnosticEngineControlling {
             routes: routes,
             reachability: probes,
             latency: latency,
+            advice: advice,
             health: grade,
             summary: summary
         )

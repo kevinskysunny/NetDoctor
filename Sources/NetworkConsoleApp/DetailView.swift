@@ -118,6 +118,32 @@ private struct OverviewView: View {
                         Text(report.summary)
                             .textSelection(.enabled)
                     }
+
+                    if !report.advice.isEmpty {
+                        Divider()
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text("排查建议")
+                                .font(.headline)
+                            ForEach(report.advice) { advice in
+                                HStack(alignment: .top, spacing: 10) {
+                                    Image(systemName: advice.severity.symbolName)
+                                        .foregroundStyle(adviceColor(advice.severity))
+                                        .frame(width: 22)
+                                    VStack(alignment: .leading, spacing: 3) {
+                                        Text(advice.title)
+                                            .font(.subheadline.weight(.semibold))
+                                        Text(advice.message)
+                                            .font(.callout)
+                                            .foregroundStyle(.secondary)
+                                            .fixedSize(horizontal: false, vertical: true)
+                                    }
+                                }
+                                .padding(10)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .background(.quaternary.opacity(0.35), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                            }
+                        }
+                    }
                 } else {
                     ContentUnavailableView(
                         "尚未完成检查",
@@ -127,6 +153,19 @@ private struct OverviewView: View {
                 }
             }
             .padding(24)
+        }
+    }
+
+    private func adviceColor(_ grade: HealthGrade) -> Color {
+        switch grade {
+        case .healthy:
+            return .green
+        case .warning:
+            return .orange
+        case .critical:
+            return .red
+        case .checking:
+            return .secondary
         }
     }
 }

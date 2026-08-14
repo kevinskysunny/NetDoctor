@@ -31,6 +31,22 @@ struct QuickCheckView: View {
                 InfoRow(title: "活动接口", value: "\(report.interfaces.filter { $0.isActive }.count)", systemImage: "network")
                 InfoRow(title: "DNS", value: report.dns.servers.first ?? "未获取", systemImage: "server.rack")
                 InfoRow(title: "外网", value: reachabilityText(report), systemImage: "globe")
+
+                if let advice = report.advice.first {
+                    Divider()
+                    HStack(alignment: .top, spacing: 8) {
+                        Image(systemName: advice.severity.symbolName)
+                            .foregroundStyle(adviceColor(advice.severity))
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text(advice.title)
+                                .font(.subheadline.weight(.semibold))
+                            Text(advice.message)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+                }
             }
 
             if let lastError = model.lastError {
@@ -83,5 +99,18 @@ struct QuickCheckView: View {
         guard !report.reachability.isEmpty else { return "未探测" }
         let success = report.reachability.filter { $0.status == .success }.count
         return "\(success)/\(report.reachability.count) 成功"
+    }
+
+    private func adviceColor(_ grade: HealthGrade) -> Color {
+        switch grade {
+        case .healthy:
+            return .green
+        case .warning:
+            return .orange
+        case .critical:
+            return .red
+        case .checking:
+            return .secondary
+        }
     }
 }
