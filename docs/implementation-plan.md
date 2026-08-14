@@ -36,7 +36,8 @@
 ## M4：App Store 发布准备
 
 - [x] 独立 Bundle ID、正式 App 名称。
-- [ ] App 图标和多尺寸截图。
+- [x] App 图标。
+- [ ] App Store 多尺寸截图。
 - [x] App Sandbox 与最小 entitlements。
 - [x] Hardened Runtime。
 - [x] `PrivacyInfo.xcprivacy` 隐私清单。

@@ -35,6 +35,8 @@ NetworkConsoleApp
 
 目标平台为 macOS 14+，SwiftUI + Swift Package。核心依赖通过协议注入，测试不访问真实网络。
 
+仓库同时提供可由 `xcodegen` 生成的 macOS App 工程，用于本地签名、归档和 App Store 发布。
+
 ## 构建与测试
 
 ```bash
@@ -48,6 +50,25 @@ swift test
 swift run NetworkConsoleApp
 ```
 
+生成并验证 macOS App：
+
+```bash
+xcodegen generate
+swift build
+swift test
+xcodebuild -project NetworkConsoleLite.xcodeproj \
+  -scheme NetworkConsoleApp \
+  -configuration Release \
+  -derivedDataPath .build/DerivedData \
+CODE_SIGNING_ALLOWED=NO build
+```
+
+重新生成 App 图标：
+
+```bash
+swift Scripts/generate_app_icon.swift
+```
+
 ## App Store 配置
 
 发布配置位于 `Config/`：
@@ -56,6 +77,8 @@ swift run NetworkConsoleApp
 - [Hardened Runtime 与版本设置](./Config/NetworkConsoleLite.xcconfig)
 - [Info.plist](./Config/Info.plist)
 - [隐私清单](./Sources/NetworkConsoleApp/Resources/PrivacyInfo.xcprivacy)
+- [App 图标资源](./Assets.xcassets/AppIcon.appiconset)
+- [XcodeGen 工程配置](./project.yml)
 
 ## 硬性边界
 
