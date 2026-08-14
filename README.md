@@ -1,26 +1,39 @@
 # NetworkConsole Lite（网络体检）
 
-一个面向 Mac App Store 的只读网络体检应用。当前仓库已完成产品规划与交接准备，尚未开始代码施工。
+一个面向 Mac App Store 的只读 macOS 网络体检应用。它帮助普通 Mac 用户和轻度运维用户快速判断网络是否正常，不会修改 DNS、路由、代理、VPN 或任何系统服务。
 
-## 产品定位
+## 产品能力
 
-- 普通 Mac 用户和轻度运维用户快速了解网络是否正常。
-- 覆盖 Wi-Fi、有线、VPN、DNS、默认路由、外网可达性、延迟和丢包。
-- 只读诊断，不修改任何网络配置。
+- 菜单栏状态图标：健康、警告、严重、检查中。
+- 快速检查窗口：当前状态、最近检查、立即检查、打开详情、导出支持包。
+- 详情窗口：概览、网络接口、DNS 与路由、外网探测、本地时间线和设置。
+- 只读采集：`NWPathMonitor`、`Network.framework`、`SystemConfiguration`、`CoreWLAN`。
+- 外网探测：对公开 HTTPS/TCP 端点并发采样，输出 RTT 分位数和失败比例近似。
+- 本地支持包：脱敏 JSON，主动选择保存位置，不自动上传。
 
-## 硬性边界
+## 技术架构
 
-- 不使用 SSH、Clash、企业内网认证。
-- 不修改 DNS、路由、代理、VPN 或系统服务。
-- 不安装 LaunchDaemon，不申请管理员权限，不安装特权 Helper。
-- 不调用 Shell、Rust 子进程或外部诊断脚本。
+```text
+NetworkCore
+  Models
+  Protocols
+  NWPathMonitorProvider
+  SystemInterfaceCollector / SystemDNSCollector / SystemRouteCollector
+  URLSessionReachabilityProber
+  HealthGrader
+  TimelineStore
+  SupportPackageExporter
+  DiagnosticEngine
 
-## 目标架构
+NetworkConsoleApp
+  MenuBarExtra
+  QuickCheckView
+  DetailView
+  SettingsView
+  AppModel
+```
 
-- Swift Package，macOS 14+，SwiftUI。
-- `NetworkCore`：模型、采集、诊断、导出。
-- `NetworkConsoleApp`：菜单栏状态和详情窗口。
-- 使用 `Network.framework`、`NWPathMonitor`、`NWConnection`、`URLSession` 和只读系统接口。
+目标平台为 macOS 14+，SwiftUI + Swift Package。核心依赖通过协议注入，测试不访问真实网络。
 
 ## 构建与测试
 
@@ -29,9 +42,32 @@ swift build
 swift test
 ```
 
+运行菜单栏应用：
+
+```bash
+swift run NetworkConsoleApp
+```
+
+## App Store 配置
+
+发布配置位于 `Config/`：
+
+- [App Sandbox entitlements](./Config/NetworkConsoleLite.entitlements)
+- [Hardened Runtime 与版本设置](./Config/NetworkConsoleLite.xcconfig)
+- [Info.plist](./Config/Info.plist)
+- [隐私清单](./Sources/NetworkConsoleApp/Resources/PrivacyInfo.xcprivacy)
+
+## 硬性边界
+
+- 只读诊断，不修改网络配置。
+- 不使用 SSH、Clash、AOne、EasyConnect 或企业内网认证。
+- 不安装 LaunchDaemon、LaunchAgent、特权 Helper，不申请管理员权限。
+- 不调用 Shell、Rust 子进程、外部诊断脚本、`Process` 或 `NSTask`。
+- 不硬编码企业域名、IP、证书指纹或本机路径。
+- 默认不上传诊断数据，不启用遥测。
+
 ## 规划文档
 
 - [PRD](./docs/PRD.md)
 - [实施计划](./docs/implementation-plan.md)
 - [App Store 检查清单](./docs/appstore-checklist.md)
-- [新会话施工提示词](./docs/new-session-prompt.md)

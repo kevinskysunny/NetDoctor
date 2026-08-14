@@ -1,0 +1,536 @@
+import Foundation
+
+public enum NetworkStatus: String, Codable, Sendable {
+    case available
+    case unavailable
+    case unknown
+
+    public var displayName: String {
+        switch self {
+        case .available:
+            return "可用"
+        case .unavailable:
+            return "不可用"
+        case .unknown:
+            return "未知"
+        }
+    }
+}
+
+public enum InterfaceKind: String, Codable, CaseIterable, Sendable {
+    case wifi
+    case wired
+    case cellular
+    case loopback
+    case other
+
+    public var displayName: String {
+        switch self {
+        case .wifi:
+            return "Wi-Fi"
+        case .wired:
+            return "有线"
+        case .cellular:
+            return "蜂窝"
+        case .loopback:
+            return "回环"
+        case .other:
+            return "其他"
+        }
+    }
+}
+
+public enum LinkState: String, Codable, Sendable {
+    case up
+    case down
+    case unknown
+
+    public var displayName: String {
+        switch self {
+        case .up:
+            return "已连接"
+        case .down:
+            return "未连接"
+        case .unknown:
+            return "未知"
+        }
+    }
+}
+
+public struct IPAddressInfo: Codable, Equatable, Sendable {
+    public let family: String
+    public let address: String
+
+    public init(family: String, address: String) {
+        self.family = family
+        self.address = address
+    }
+}
+
+public struct InterfaceInfo: Identifiable, Codable, Equatable, Sendable {
+    public let id: String
+    public let name: String
+    public let kind: InterfaceKind
+    public let isActive: Bool
+    public let addresses: [IPAddressInfo]
+    public let ssid: String?
+    public let linkState: LinkState
+    public let isDefaultRouteInterface: Bool
+
+    public init(
+        id: String,
+        name: String,
+        kind: InterfaceKind,
+        isActive: Bool,
+        addresses: [IPAddressInfo],
+        ssid: String?,
+        linkState: LinkState,
+        isDefaultRouteInterface: Bool
+    ) {
+        self.id = id
+        self.name = name
+        self.kind = kind
+        self.isActive = isActive
+        self.addresses = addresses
+        self.ssid = ssid
+        self.linkState = linkState
+        self.isDefaultRouteInterface = isDefaultRouteInterface
+    }
+}
+
+public struct InterfaceDescriptor: Codable, Equatable, Hashable, Sendable {
+    public let name: String
+    public let kind: InterfaceKind
+
+    public init(name: String, kind: InterfaceKind) {
+        self.name = name
+        self.kind = kind
+    }
+}
+
+public struct NetworkPathInfo: Codable, Equatable, Sendable {
+    public var status: NetworkStatus
+    public var isExpensive: Bool
+    public var isConstrained: Bool
+    public var supportsDNS: Bool
+    public var supportsIPv4: Bool
+    public var supportsIPv6: Bool
+    public var interfaces: [InterfaceDescriptor]
+
+    public init(
+        status: NetworkStatus,
+        isExpensive: Bool,
+        isConstrained: Bool,
+        supportsDNS: Bool,
+        supportsIPv4: Bool,
+        supportsIPv6: Bool,
+        interfaces: [InterfaceDescriptor]
+    ) {
+        self.status = status
+        self.isExpensive = isExpensive
+        self.isConstrained = isConstrained
+        self.supportsDNS = supportsDNS
+        self.supportsIPv4 = supportsIPv4
+        self.supportsIPv6 = supportsIPv6
+        self.interfaces = interfaces
+    }
+
+    public static let unknown = NetworkPathInfo(
+        status: .unknown,
+        isExpensive: false,
+        isConstrained: false,
+        supportsDNS: false,
+        supportsIPv4: false,
+        supportsIPv6: false,
+        interfaces: []
+    )
+}
+
+public struct DNSSummary: Codable, Equatable, Sendable {
+    public let resolverSource: String
+    public let servers: [String]
+    public let searchDomains: [String]
+    public let timestamp: Date
+
+    public init(
+        resolverSource: String,
+        servers: [String],
+        searchDomains: [String],
+        timestamp: Date
+    ) {
+        self.resolverSource = resolverSource
+        self.servers = servers
+        self.searchDomains = searchDomains
+        self.timestamp = timestamp
+    }
+
+    public static let empty = DNSSummary(
+        resolverSource: "未获取",
+        servers: [],
+        searchDomains: [],
+        timestamp: Date()
+    )
+}
+
+public struct RouteEntry: Identifiable, Codable, Equatable, Sendable {
+    public let id: String
+    public let family: String
+    public let destination: String
+    public let gateway: String?
+    public let interfaceName: String?
+    public let isDefault: Bool
+
+    public init(
+        id: String,
+        family: String,
+        destination: String,
+        gateway: String?,
+        interfaceName: String?,
+        isDefault: Bool
+    ) {
+        self.id = id
+        self.family = family
+        self.destination = destination
+        self.gateway = gateway
+        self.interfaceName = interfaceName
+        self.isDefault = isDefault
+    }
+}
+
+public struct RouteSummary: Codable, Equatable, Sendable {
+    public let routes: [RouteEntry]
+    public let primaryServiceID: String?
+    public let primaryInterfaceName: String?
+
+    public init(
+        routes: [RouteEntry],
+        primaryServiceID: String?,
+        primaryInterfaceName: String?
+    ) {
+        self.routes = routes
+        self.primaryServiceID = primaryServiceID
+        self.primaryInterfaceName = primaryInterfaceName
+    }
+
+    public static let empty = RouteSummary(
+        routes: [],
+        primaryServiceID: nil,
+        primaryInterfaceName: nil
+    )
+}
+
+public enum ProbeKind: String, Codable, Sendable {
+    case https
+    case tcp
+}
+
+public struct ReachabilityEndpoint: Identifiable, Codable, Hashable, Sendable {
+    public let id: String
+    public let displayName: String
+    public let host: String
+    public let port: UInt16
+    public let kind: ProbeKind
+
+    public init(
+        id: String,
+        displayName: String,
+        host: String,
+        port: UInt16,
+        kind: ProbeKind
+    ) {
+        self.id = id
+        self.displayName = displayName
+        self.host = host
+        self.port = port
+        self.kind = kind
+    }
+
+    public var url: URL? {
+        guard kind == .https else { return nil }
+        var components = URLComponents()
+        components.scheme = "https"
+        components.host = host
+        if port != 443 {
+            components.port = Int(port)
+        }
+        return components.url
+    }
+
+    public static let defaultPublicEndpoints: [ReachabilityEndpoint] = [
+        ReachabilityEndpoint(
+            id: "apple",
+            displayName: "Apple",
+            host: "www.apple.com",
+            port: 443,
+            kind: .https
+        ),
+        ReachabilityEndpoint(
+            id: "cloudflare",
+            displayName: "Cloudflare",
+            host: "www.cloudflare.com",
+            port: 443,
+            kind: .https
+        ),
+        ReachabilityEndpoint(
+            id: "google",
+            displayName: "Google",
+            host: "connectivitycheck.gstatic.com",
+            port: 443,
+            kind: .https
+        )
+    ]
+}
+
+public enum ProbeStatus: String, Codable, Sendable {
+    case success
+    case timeout
+    case failed
+    case cancelled
+
+    public var displayName: String {
+        switch self {
+        case .success:
+            return "成功"
+        case .timeout:
+            return "超时"
+        case .failed:
+            return "失败"
+        case .cancelled:
+            return "已取消"
+        }
+    }
+}
+
+public struct ReachabilityProbe: Identifiable, Codable, Equatable, Sendable {
+    public let id: UUID
+    public let endpointID: String
+    public let endpointName: String
+    public let target: String
+    public let kind: ProbeKind
+    public let startedAt: Date
+    public let durationMilliseconds: Double?
+    public let status: ProbeStatus
+    public let httpStatusCode: Int?
+    public let errorDescription: String?
+
+    public init(
+        id: UUID = UUID(),
+        endpointID: String,
+        endpointName: String,
+        target: String,
+        kind: ProbeKind,
+        startedAt: Date,
+        durationMilliseconds: Double?,
+        status: ProbeStatus,
+        httpStatusCode: Int?,
+        errorDescription: String?
+    ) {
+        self.id = id
+        self.endpointID = endpointID
+        self.endpointName = endpointName
+        self.target = target
+        self.kind = kind
+        self.startedAt = startedAt
+        self.durationMilliseconds = durationMilliseconds
+        self.status = status
+        self.httpStatusCode = httpStatusCode
+        self.errorDescription = errorDescription
+    }
+}
+
+public struct LatencySample: Identifiable, Codable, Equatable, Sendable {
+    public let id: UUID
+    public let endpointID: String
+    public let endpointName: String
+    public let durationMilliseconds: Double
+    public let timestamp: Date
+    public let success: Bool
+
+    public init(
+        id: UUID = UUID(),
+        endpointID: String,
+        endpointName: String,
+        durationMilliseconds: Double,
+        timestamp: Date,
+        success: Bool
+    ) {
+        self.id = id
+        self.endpointID = endpointID
+        self.endpointName = endpointName
+        self.durationMilliseconds = durationMilliseconds
+        self.timestamp = timestamp
+        self.success = success
+    }
+}
+
+public struct LatencyPercentiles: Codable, Equatable, Sendable {
+    public let p50: Double?
+    public let p90: Double?
+    public let p95: Double?
+
+    public init(samples: [Double]) {
+        let sorted = samples.sorted()
+        func percentile(_ value: Double) -> Double? {
+            guard !sorted.isEmpty else { return nil }
+            let rank = value * Double(sorted.count - 1)
+            let lower = Int(floor(rank))
+            let upper = Int(ceil(rank))
+            guard lower >= 0, upper < sorted.count else {
+                return sorted[min(max(Int(rank.rounded()), 0), sorted.count - 1)]
+            }
+            let weight = rank - Double(lower)
+            return sorted[lower] * (1 - weight) + sorted[upper] * weight
+        }
+
+        self.p50 = percentile(0.50)
+        self.p90 = percentile(0.90)
+        self.p95 = percentile(0.95)
+    }
+}
+
+public struct ReachabilitySummary: Identifiable, Codable, Equatable, Sendable {
+    public var id: String { endpointID }
+    public let endpointID: String
+    public let endpointName: String
+    public let attempts: Int
+    public let successCount: Int
+    public let failureCount: Int
+    public let lossRate: Double
+    public let rttSamples: [Double]
+    public let percentiles: LatencyPercentiles
+
+    public init(endpointID: String, endpointName: String, probes: [ReachabilityProbe]) {
+        self.endpointID = endpointID
+        self.endpointName = endpointName
+        self.attempts = probes.count
+        self.successCount = probes.filter { $0.status == .success }.count
+        self.failureCount = probes.count - successCount
+        self.lossRate = probes.isEmpty ? 0 : Double(failureCount) / Double(probes.count)
+        self.rttSamples = probes.compactMap { $0.durationMilliseconds }
+        self.percentiles = LatencyPercentiles(samples: rttSamples)
+    }
+}
+
+public enum HealthGrade: String, Codable, Sendable {
+    case checking
+    case healthy
+    case warning
+    case critical
+
+    public var displayName: String {
+        switch self {
+        case .checking:
+            return "检查中"
+        case .healthy:
+            return "健康"
+        case .warning:
+            return "警告"
+        case .critical:
+            return "严重"
+        }
+    }
+
+    public var symbolName: String {
+        switch self {
+        case .checking:
+            return "arrow.triangle.2.circlepath"
+        case .healthy:
+            return "checkmark.circle.fill"
+        case .warning:
+            return "exclamationmark.triangle.fill"
+        case .critical:
+            return "xmark.octagon.fill"
+        }
+    }
+}
+
+public struct DiagnosisReport: Identifiable, Codable, Equatable, Sendable {
+    public let id: UUID
+    public let timestamp: Date
+    public let path: NetworkPathInfo
+    public let interfaces: [InterfaceInfo]
+    public let dns: DNSSummary
+    public let routes: RouteSummary
+    public let reachability: [ReachabilityProbe]
+    public let latency: [LatencySample]
+    public let health: HealthGrade
+    public let summary: String
+
+    public init(
+        id: UUID = UUID(),
+        timestamp: Date,
+        path: NetworkPathInfo,
+        interfaces: [InterfaceInfo],
+        dns: DNSSummary,
+        routes: RouteSummary,
+        reachability: [ReachabilityProbe],
+        latency: [LatencySample],
+        health: HealthGrade,
+        summary: String
+    ) {
+        self.id = id
+        self.timestamp = timestamp
+        self.path = path
+        self.interfaces = interfaces
+        self.dns = dns
+        self.routes = routes
+        self.reachability = reachability
+        self.latency = latency
+        self.health = health
+        self.summary = summary
+    }
+
+    public var reachabilitySummaries: [ReachabilitySummary] {
+        Dictionary(grouping: reachability, by: \.endpointID)
+            .map { key, value in
+                ReachabilitySummary(
+                    endpointID: key,
+                    endpointName: value.first?.endpointName ?? key,
+                    probes: value
+                )
+            }
+            .sorted { $0.endpointName.localizedCaseInsensitiveCompare($1.endpointName) == .orderedAscending }
+    }
+}
+
+public enum TimelineEventKind: String, Codable, Sendable {
+    case pathChanged
+    case checkStarted
+    case checkFinished
+    case exportCreated
+    case diagnostic
+
+    public var displayName: String {
+        switch self {
+        case .pathChanged:
+            return "网络变化"
+        case .checkStarted:
+            return "检查开始"
+        case .checkFinished:
+            return "检查完成"
+        case .exportCreated:
+            return "支持包导出"
+        case .diagnostic:
+            return "诊断"
+        }
+    }
+}
+
+public struct TimelineEvent: Identifiable, Codable, Equatable, Sendable {
+    public let id: UUID
+    public let timestamp: Date
+    public let kind: TimelineEventKind
+    public let message: String
+
+    public init(
+        id: UUID = UUID(),
+        timestamp: Date = Date(),
+        kind: TimelineEventKind,
+        message: String
+    ) {
+        self.id = id
+        self.timestamp = timestamp
+        self.kind = kind
+        self.message = message
+    }
+}
