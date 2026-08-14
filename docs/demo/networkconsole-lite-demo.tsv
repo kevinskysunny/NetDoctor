@@ -1,0 +1,7 @@
+start	end	zh	en
+00:00	00:03	打开 NetworkConsole Lite 后，概览页立即显示网络路径和健康状态	After launching NetworkConsole Lite, the overview shows the network path and health status
+00:03	00:08	网络接口页列出 Wi-Fi、有线、VPN 相关接口和地址	The Interfaces page lists Wi-Fi, wired, and VPN-related interfaces with addresses
+00:08	00:13	DNS 与路由页显示解析器来源、DNS 服务器和默认网关	DNS & Route shows resolver source, DNS servers, and the default gateway
+00:13	00:18	外网探测页展示 Apple、Cloudflare、Google 的成功率、延迟和丢包近似	Internet probes show success rate, latency, and loss approximation for public endpoints
+00:18	00:23	本地时间线记录网络变化和每次检查，数据仅保存在本机	The local timeline records network changes and every check, stored only on this Mac
+00:23	00:28	设置页支持中英文切换，并显示当前版本信息	Settings supports Chinese and English switching and shows the current version
