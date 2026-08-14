@@ -215,7 +215,10 @@ public final class URLSessionReachabilityProber: ReachabilityProbing {
     }
 
     private func targetString(_ endpoint: ReachabilityEndpoint) -> String {
-        "\(endpoint.host):\(endpoint.port)"
+        if endpoint.kind == .https, let url = endpoint.url {
+            return url.absoluteString
+        }
+        return "\(endpoint.host):\(endpoint.port)"
     }
 
     private static func elapsedMilliseconds(from start: Date) -> Double {

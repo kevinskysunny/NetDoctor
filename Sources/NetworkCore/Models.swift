@@ -228,6 +228,7 @@ public struct ReachabilityEndpoint: Identifiable, Codable, Hashable, Sendable {
     public let id: String
     public let displayName: String
     public let host: String
+    public let path: String
     public let port: UInt16
     public let kind: ProbeKind
 
@@ -235,12 +236,14 @@ public struct ReachabilityEndpoint: Identifiable, Codable, Hashable, Sendable {
         id: String,
         displayName: String,
         host: String,
+        path: String = "/",
         port: UInt16,
         kind: ProbeKind
     ) {
         self.id = id
         self.displayName = displayName
         self.host = host
+        self.path = path
         self.port = port
         self.kind = kind
     }
@@ -250,6 +253,7 @@ public struct ReachabilityEndpoint: Identifiable, Codable, Hashable, Sendable {
         var components = URLComponents()
         components.scheme = "https"
         components.host = host
+        components.path = path
         if port != 443 {
             components.port = Int(port)
         }
@@ -261,6 +265,7 @@ public struct ReachabilityEndpoint: Identifiable, Codable, Hashable, Sendable {
             id: "apple",
             displayName: "Apple",
             host: "www.apple.com",
+            path: "/library/test/success.html",
             port: 443,
             kind: .https
         ),
@@ -268,6 +273,7 @@ public struct ReachabilityEndpoint: Identifiable, Codable, Hashable, Sendable {
             id: "cloudflare",
             displayName: "Cloudflare",
             host: "www.cloudflare.com",
+            path: "/cdn-cgi/trace",
             port: 443,
             kind: .https
         ),
@@ -275,6 +281,7 @@ public struct ReachabilityEndpoint: Identifiable, Codable, Hashable, Sendable {
             id: "google",
             displayName: "Google",
             host: "connectivitycheck.gstatic.com",
+            path: "/generate_204",
             port: 443,
             kind: .https
         )

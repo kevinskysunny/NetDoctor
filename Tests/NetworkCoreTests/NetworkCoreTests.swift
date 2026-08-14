@@ -163,6 +163,18 @@ final class LatencyPercentilesTests: XCTestCase {
     }
 }
 
+final class ReachabilityEndpointTests: XCTestCase {
+    func testDefaultHTTPSEndpointsUseConcreteProbePaths() {
+        let endpoints = Dictionary(
+            uniqueKeysWithValues: ReachabilityEndpoint.defaultPublicEndpoints.map { ($0.id, $0) }
+        )
+
+        XCTAssertEqual(endpoints["apple"]?.url?.path, "/library/test/success.html")
+        XCTAssertEqual(endpoints["cloudflare"]?.url?.path, "/cdn-cgi/trace")
+        XCTAssertEqual(endpoints["google"]?.url?.path, "/generate_204")
+    }
+}
+
 final class DiagnosticEngineTests: XCTestCase {
     @MainActor
     func testEngineBuildsReportFromMocks() async {
