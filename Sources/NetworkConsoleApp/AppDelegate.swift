@@ -1,9 +1,11 @@
 import AppKit
+import Combine
 import SwiftUI
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
     var model: AppModel?
     private var detailWindow: NSWindow?
+    private var languageCancellable: AnyCancellable?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         showDetailWindow()
@@ -37,6 +39,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             window.center()
             window.isReleasedWhenClosed = false
             detailWindow = window
+            languageCancellable = model.$language
+                .receive(on: RunLoop.main)
+                .sink { [weak self] _ in
+                    guard let self, let window = self.detailWindow, let model = self.model else { return }
+                    window.title = model.text("detail.window.title")
+                }
             window.makeKeyAndOrderFront(nil)
             NSApp.activate(ignoringOtherApps: true)
         }

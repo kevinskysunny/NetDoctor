@@ -15,6 +15,7 @@ final class AppModel: ObservableObject {
     private let engine: DiagnosticEngine
     private let timelineStore: TimelineStore
     private let exporter = SupportPackageExporter()
+    private var lastRawReport: DiagnosisReport?
     private var pathRefreshTask: Task<Void, Never>?
     private var periodicRefreshTask: Task<Void, Never>?
 
@@ -108,6 +109,7 @@ final class AppModel: ObservableObject {
             timeout: settings.timeoutSeconds
         )
 
+        lastRawReport = result
         report = localizedReport(result)
         isChecking = false
         refreshTimeline()
@@ -158,8 +160,8 @@ final class AppModel: ObservableObject {
     func updateLanguage(_ value: AppLanguage) {
         language = value
         UserDefaults.standard.set(value.rawValue, forKey: "networkConsoleLite.language")
-        if let report {
-            self.report = localizedReport(report)
+        if let lastRawReport {
+            report = localizedReport(lastRawReport)
         }
         refreshTimeline()
     }
@@ -246,6 +248,7 @@ final class AppModel: ObservableObject {
         engine.onReport = { [weak self] report in
             Task { @MainActor in
                 guard let self else { return }
+                self.lastRawReport = report
                 self.report = self.localizedReport(report)
                 self.refreshTimeline()
             }
@@ -482,9 +485,14 @@ final class AppModel: ObservableObject {
 
     private static func loadLanguage() -> AppLanguage {
         guard let rawValue = UserDefaults.standard.string(forKey: "networkConsoleLite.language") else {
-            return .chinese
+            return systemPreferredLanguage()
         }
-        return AppLanguage(rawValue: rawValue) ?? .chinese
+        return AppLanguage(rawValue: rawValue) ?? systemPreferredLanguage()
+    }
+
+    private static func systemPreferredLanguage() -> AppLanguage {
+        let preferred = Locale.preferredLanguages.first?.lowercased() ?? ""
+        return preferred.hasPrefix("zh") ? .chinese : .english
     }
 
     private static var appVersion: String {
