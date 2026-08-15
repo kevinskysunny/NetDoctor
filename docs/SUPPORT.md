@@ -29,7 +29,7 @@ For support or privacy questions, contact kevinskysunny@gmail.com.
 
 ## Demo
 
-[Watch a bilingual demo video](https://github.com/kevinskysunny/networkconsole-lite/releases/tag/v0.1.0-demo)
+[Watch a bilingual demo video](https://github.com/kevinskysunny/networkconsole-lite/releases/tag/v0.2.0-demo)
 
 ## Privacy
 
