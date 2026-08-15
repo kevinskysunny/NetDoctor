@@ -5,6 +5,7 @@ Public media assets for NetworkConsole Lite marketing and documentation.
 ## Demo
 
 - [Bilingual demo video](https://github.com/kevinskysunny/networkconsole-lite-media/raw/main/networkconsole-lite-demo-bilingual.mp4)
+- [Play demo video in browser](https://kevinskysunny.github.io/networkconsole-lite-media/review/)
 
 ## App Store Screenshots
 
