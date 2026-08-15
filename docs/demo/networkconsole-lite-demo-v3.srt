@@ -1,0 +1,49 @@
+1
+00:00:00,500 --> 00:00:06,000
+打开 NetworkConsole Lite，概览显示当前网络状态。
+Open NetworkConsole Lite and review the current network status overview.
+
+2
+00:00:06,000 --> 00:00:12,000
+切换到网络接口页，查看活动接口和 IP 地址。
+Switch to Interfaces to see active interfaces and IP addresses.
+
+3
+00:00:12,000 --> 00:00:16,500
+查看 DNS 解析器和默认路由。
+Check the DNS resolver and default route.
+
+4
+00:00:17,000 --> 00:00:22,000
+打开互联网连通性页，查看 Apple、Cloudflare 和 Google 的探测结果。
+Open Internet Connectivity to review Apple, Cloudflare, and Google probe results.
+
+5
+00:00:22,000 --> 00:00:28,000
+查看延迟和丢包近似，确认 9/9 探测成功。
+Review latency and loss approximations with 9/9 probes succeeding.
+
+6
+00:00:28,000 --> 00:00:32,000
+查看本地时间线中的检查和导出记录。
+View local check and export history in the timeline.
+
+7
+00:00:32,500 --> 00:00:38,000
+打开设置，查看检测、自动巡检和隐私选项。
+Open Settings to review probes, automatic checks, and privacy options.
+
+8
+00:00:38,000 --> 00:00:42,500
+界面使用英文，可在设置中切换语言，并显示当前版本。
+The UI stays in English, with language switching in Settings and the current version shown.
+
+9
+00:00:42,500 --> 00:00:44,500
+导出脱敏支持包，用于与支持人员分享。
+Export a redacted support package to share with a helper.
+
+10
+00:00:44,500 --> 00:00:46,800
+演示结束，所有诊断数据都保存在本机。
+Demo complete; all diagnostic data stays on this Mac.

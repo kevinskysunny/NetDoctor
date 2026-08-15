@@ -1,0 +1,11 @@
+start	end	zh	en
+00:00.5	00:06.0	打开 NetworkConsole Lite，概览显示当前网络状态。	Open NetworkConsole Lite and review the current network status overview.
+00:06.0	00:12.0	切换到网络接口页，查看活动接口和 IP 地址。	Switch to Interfaces to see active interfaces and IP addresses.
+00:12.0	00:16.5	查看 DNS 解析器和默认路由。	Check the DNS resolver and default route.
+00:17.0	00:22.0	打开互联网连通性页，查看 Apple、Cloudflare 和 Google 的探测结果。	Open Internet Connectivity to review Apple, Cloudflare, and Google probe results.
+00:22.0	00:28.0	查看延迟和丢包近似，确认 9/9 探测成功。	Review latency and loss approximations with 9/9 probes succeeding.
+00:28.0	00:32.0	查看本地时间线中的检查和导出记录。	View local check and export history in the timeline.
+00:32.5	00:38.0	打开设置，查看检测、自动巡检和隐私选项。	Open Settings to review probes, automatic checks, and privacy options.
+00:38.0	00:42.5	界面使用英文，可在设置中切换语言，并显示当前版本。	The UI stays in English, with language switching in Settings and the current version shown.
+00:42.5	00:44.5	导出脱敏支持包，用于与支持人员分享。	Export a redacted support package to share with a helper.
+00:44.5	00:46.8	演示结束，所有诊断数据都保存在本机。	Demo complete; all diagnostic data stays on this Mac.
