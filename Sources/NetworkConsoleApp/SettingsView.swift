@@ -118,7 +118,7 @@ struct SettingsView: View {
                             HStack {
                                 Text(model.text("settings.ksicstudio.title"))
                                     .font(.headline)
-                                Text("Free")
+                                Text("App Store")
                                     .font(.caption2)
                                     .padding(.horizontal, 5)
                                     .padding(.vertical, 1.5)

@@ -550,16 +550,30 @@ public struct TimelineEvent: Identifiable, Codable, Equatable, Sendable {
     public let timestamp: Date
     public let kind: TimelineEventKind
     public let message: String
+    /// Language-neutral values (status/grade raw values, counts, filenames)
+    /// used to rebuild a localized message at display time.
+    public let arguments: [String]
 
     public init(
         id: UUID = UUID(),
         timestamp: Date = Date(),
         kind: TimelineEventKind,
-        message: String
+        message: String,
+        arguments: [String] = []
     ) {
         self.id = id
         self.timestamp = timestamp
         self.kind = kind
         self.message = message
+        self.arguments = arguments
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        timestamp = try container.decode(Date.self, forKey: .timestamp)
+        kind = try container.decode(TimelineEventKind.self, forKey: .kind)
+        message = try container.decode(String.self, forKey: .message)
+        arguments = try container.decodeIfPresent([String].self, forKey: .arguments) ?? []
     }
 }

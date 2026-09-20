@@ -278,6 +278,128 @@ final class DiagnosticEngineTests: XCTestCase {
         XCTAssertTrue(events.events.contains { $0.kind == .checkStarted })
         XCTAssertTrue(events.events.contains { $0.kind == .checkFinished })
     }
+
+    @MainActor
+    func testEngineRecordsPathChangeOnlyWhenPathActuallyChanges() {
+        let path = NetworkPathInfo(
+            status: .available,
+            isExpensive: false,
+            isConstrained: false,
+            supportsDNS: true,
+            supportsIPv4: true,
+            supportsIPv6: false,
+            interfaces: [InterfaceDescriptor(name: "en0", kind: .wifi)]
+        )
+        let pathProvider = MockPathProvider(path: path)
+        let events = MemoryEventStore()
+        let engine = DiagnosticEngine(
+            pathProvider: pathProvider,
+            interfaceCollector: MockInterfaceCollector(interfaces: []),
+            dnsCollector: MockDNSCollector(dns: .empty),
+            routeCollector: MockRouteCollector(routes: .empty),
+            reachabilityProber: MockReachabilityProber(result: []),
+            eventStore: events
+        )
+
+        engine.start()
+        pathProvider.emit(path)
+        XCTAssertFalse(events.events.contains { $0.kind == .pathChanged })
+
+        let changed = NetworkPathInfo(
+            status: .unavailable,
+            isExpensive: false,
+            isConstrained: false,
+            supportsDNS: false,
+            supportsIPv4: false,
+            supportsIPv6: false,
+            interfaces: []
+        )
+        pathProvider.emit(changed)
+        pathProvider.emit(changed)
+
+        let pathEvents = events.events.filter { $0.kind == .pathChanged }
+        XCTAssertEqual(pathEvents.count, 1)
+        XCTAssertEqual(pathEvents.first?.arguments.first, NetworkStatus.unavailable.rawValue)
+    }
+
+    @MainActor
+    func testCheckEventsCarryStructuredArguments() async {
+        let path = NetworkPathInfo(
+            status: .available,
+            isExpensive: false,
+            isConstrained: false,
+            supportsDNS: true,
+            supportsIPv4: true,
+            supportsIPv6: false,
+            interfaces: [InterfaceDescriptor(name: "en0", kind: .wifi)]
+        )
+        let pathProvider = MockPathProvider(path: path)
+        let interface = InterfaceInfo(
+            id: "en0",
+            name: "en0",
+            kind: .wifi,
+            isActive: true,
+            addresses: [IPAddressInfo(family: "IPv4", address: "192.168.1.10")],
+            ssid: "Home",
+            linkState: .up,
+            isDefaultRouteInterface: true
+        )
+        let dns = DNSSummary(
+            resolverSource: "mock",
+            servers: ["1.1.1.1"],
+            searchDomains: [],
+            timestamp: Date()
+        )
+        let route = RouteSummary(
+            routes: [
+                RouteEntry(
+                    id: "default",
+                    family: "IPv4",
+                    destination: "0.0.0.0/0",
+                    gateway: "192.168.1.1",
+                    interfaceName: "en0",
+                    isDefault: true
+                )
+            ],
+            primaryServiceID: nil,
+            primaryInterfaceName: "en0"
+        )
+        let probe = ReachabilityProbe(
+            endpointID: "apple",
+            endpointName: "Apple",
+            target: "www.apple.com:443",
+            kind: .https,
+            startedAt: Date(),
+            durationMilliseconds: 25,
+            status: .success,
+            httpStatusCode: 200,
+            errorDescription: nil
+        )
+        let events = MemoryEventStore()
+        let engine = DiagnosticEngine(
+            pathProvider: pathProvider,
+            interfaceCollector: MockInterfaceCollector(interfaces: [interface]),
+            dnsCollector: MockDNSCollector(dns: dns),
+            routeCollector: MockRouteCollector(routes: route),
+            reachabilityProber: MockReachabilityProber(result: [probe]),
+            eventStore: events
+        )
+
+        _ = await engine.performCheck(
+            endpoints: ReachabilityEndpoint.defaultPublicEndpoints,
+            attemptsPerEndpoint: 1,
+            timeout: 1
+        )
+
+        let started = events.events.first { $0.kind == .checkStarted }
+        XCTAssertEqual(started?.arguments, ["\(ReachabilityEndpoint.defaultPublicEndpoints.count)"])
+
+        let finished = events.events.first { $0.kind == .checkFinished }
+        XCTAssertEqual(
+            finished?.arguments,
+            [HealthGrade.healthy.rawValue, "1", "1", "25ms"]
+        )
+    }
 }
 
 final class SupportPackageExporterTests: XCTestCase {
@@ -339,5 +461,19 @@ final class TimelineStoreTests: XCTestCase {
 
         let reloaded = TimelineStore(fileURL: url, maximumStoredEvents: 10)
         XCTAssertEqual(reloaded.allEvents().first?.message, "test")
+    }
+
+    func testTimelineEventDecodesLegacyRecordWithoutArguments() throws {
+        let legacy = """
+            {"id":"123E4567-E89B-12D3-A456-426614174000","timestamp":"2026-09-20T14:00:00Z","kind":"checkStarted","message":"开始网络体检"}
+            """
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+
+        let event = try decoder.decode(TimelineEvent.self, from: Data(legacy.utf8))
+
+        XCTAssertEqual(event.kind, .checkStarted)
+        XCTAssertEqual(event.message, "开始网络体检")
+        XCTAssertEqual(event.arguments, [])
     }
 }

@@ -273,9 +273,13 @@ final class AppModel: ObservableObject {
         }
     }
 
+    private var lastPathUpdate: NetworkPathInfo?
+
     private func handlePathUpdate(_ path: NetworkPathInfo) {
         refreshTimeline()
-        guard settings.autoRefreshEnabled else { return }
+        let changed = lastPathUpdate.map { $0 != path } ?? false
+        lastPathUpdate = path
+        guard changed, settings.autoRefreshEnabled else { return }
         pathRefreshTask?.cancel()
         pathRefreshTask = Task { [weak self] in
             try? await Task.sleep(nanoseconds: 2_000_000_000)
@@ -311,7 +315,8 @@ final class AppModel: ObservableObject {
             timelineStore.append(
                 TimelineEvent(
                     kind: .exportCreated,
-                    message: text("export.timeline.message", url.lastPathComponent)
+                    message: "已导出脱敏支持包：\(url.lastPathComponent)",
+                    arguments: [url.lastPathComponent]
                 )
             )
             refreshTimeline()
@@ -445,23 +450,46 @@ final class AppModel: ObservableObject {
                 id: event.id,
                 timestamp: event.timestamp,
                 kind: event.kind,
-                message: localizedTimelineMessage(event.kind)
+                message: localizedTimelineMessage(event),
+                arguments: event.arguments
             )
         }
     }
 
-    private func localizedTimelineMessage(_ kind: TimelineEventKind) -> String {
-        switch kind {
+    private func localizedTimelineMessage(_ event: TimelineEvent) -> String {
+        let args = event.arguments
+        switch event.kind {
         case .pathChanged:
-            return text("timeline.pathChanged")
+            guard let rawStatus = args.first,
+                  let status = NetworkStatus(rawValue: rawStatus) else { return event.message }
+            let statusText = text(for: status)
+            let kinds = args.count > 1
+                ? args[1].split(separator: ",").compactMap { InterfaceKind(rawValue: String($0)) }
+                : []
+            guard !kinds.isEmpty else {
+                return text("timeline.detail.pathChanged.statusOnly", statusText)
+            }
+            let interfaceText = kinds
+                .map { text(for: $0) }
+                .joined(separator: text("timeline.detail.listSeparator"))
+            return text("timeline.detail.pathChanged", statusText, interfaceText)
         case .checkStarted:
-            return text("timeline.checkStarted")
+            guard let count = args.first else { return event.message }
+            return text("timeline.detail.checkStarted", count)
         case .checkFinished:
-            return text("timeline.checkFinished")
+            guard args.count >= 4,
+                  let grade = HealthGrade(rawValue: args[0]) else { return event.message }
+            return text(
+                "timeline.detail.checkFinished",
+                text(for: grade),
+                "\(args[1])/\(args[2])",
+                args[3]
+            )
         case .exportCreated:
-            return text("timeline.exportCreated")
+            guard let filename = args.first else { return event.message }
+            return text("export.timeline.message", filename)
         case .diagnostic:
-            return text("timeline.diagnostic")
+            return event.message
         }
     }
 

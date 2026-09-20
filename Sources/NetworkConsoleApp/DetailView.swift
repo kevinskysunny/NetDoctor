@@ -366,23 +366,68 @@ private struct TimelineView: View {
                 )
             } else {
                 List(model.timelineEvents.reversed()) { event in
-                    VStack(alignment: .leading, spacing: 4) {
-                        HStack {
-                            Text(model.text(for: event.kind))
-                                .font(.callout.weight(.semibold))
-                            Spacer()
-                            Text(event.timestamp, style: .time)
-                                .font(.caption.monospacedDigit())
-                                .foregroundStyle(.secondary)
+                    HStack(alignment: .top, spacing: 10) {
+                        Image(systemName: symbolName(for: event.kind))
+                            .foregroundStyle(tint(for: event.kind))
+                            .frame(width: 18)
+                        VStack(alignment: .leading, spacing: 4) {
+                            HStack {
+                                Text(model.text(for: event.kind))
+                                    .font(.callout.weight(.semibold))
+                                Spacer()
+                                Text(event.timestamp, format: timestampFormat(for: event.timestamp))
+                                    .font(.caption.monospacedDigit())
+                                    .foregroundStyle(.secondary)
+                            }
+                            if !event.message.isEmpty {
+                                Text(event.message)
+                                    .font(.callout)
+                                    .foregroundStyle(.secondary)
+                                    .textSelection(.enabled)
+                            }
                         }
-                        Text(event.message)
-                            .font(.callout)
-                            .textSelection(.enabled)
                     }
                     .padding(.vertical, 2)
                 }
             }
         }
         .navigationTitle(model.text("detail.tab.timeline"))
+    }
+
+    private func symbolName(for kind: TimelineEventKind) -> String {
+        switch kind {
+        case .pathChanged:
+            return "arrow.triangle.swap"
+        case .checkStarted:
+            return "play.circle"
+        case .checkFinished:
+            return "checkmark.circle"
+        case .exportCreated:
+            return "square.and.arrow.up"
+        case .diagnostic:
+            return "stethoscope"
+        }
+    }
+
+    private func tint(for kind: TimelineEventKind) -> Color {
+        switch kind {
+        case .pathChanged:
+            return .orange
+        case .checkStarted:
+            return .blue
+        case .checkFinished:
+            return .green
+        case .exportCreated:
+            return .purple
+        case .diagnostic:
+            return .secondary
+        }
+    }
+
+    private func timestampFormat(for date: Date) -> Date.FormatStyle {
+        if Calendar.current.isDateInToday(date) {
+            return .dateTime.hour().minute()
+        }
+        return .dateTime.month(.abbreviated).day().hour().minute()
     }
 }
