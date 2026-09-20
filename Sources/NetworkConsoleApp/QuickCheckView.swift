@@ -6,16 +6,27 @@ struct QuickCheckView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            HStack {
-                Image(systemName: model.statusSymbolName)
-                    .font(.title2)
-                    .foregroundStyle(statusColor)
-                VStack(alignment: .leading, spacing: 2) {
+            HStack(spacing: 12) {
+                if let appIcon = NSImage(named: "AppIcon") ?? NSApplication.shared.applicationIconImage {
+                    Image(nsImage: appIcon)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 36, height: 36)
+                        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                }
+                VStack(alignment: .leading, spacing: 3) {
                     Text(model.text("app.name"))
-                        .font(.headline)
-                    Text(model.statusTitle)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .font(.headline.weight(.semibold))
+                    HStack(spacing: 4) {
+                        Image(systemName: model.statusSymbolName)
+                            .font(.system(size: 10, weight: .bold))
+                        Text(model.statusTitle)
+                            .font(.caption.weight(.medium))
+                    }
+                    .foregroundStyle(statusColor)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(statusColor.opacity(0.12), in: Capsule())
                 }
                 Spacer()
             }

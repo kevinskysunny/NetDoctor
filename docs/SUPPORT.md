@@ -1,6 +1,6 @@
-# NetworkConsole Lite Support
+# NetDoctor Support
 
-NetworkConsole Lite is a read-only macOS network checkup app for macOS 14 and later. It helps you quickly understand whether your network is healthy and what to check next.
+NetDoctor is a read-only macOS network checkup app for macOS 14 and later. It helps you quickly understand whether your network is healthy and what to check next.
 
 ## What It Checks
 
@@ -13,11 +13,11 @@ NetworkConsole Lite is a read-only macOS network checkup app for macOS 14 and la
 
 ## Important Boundaries
 
-NetworkConsole Lite is read-only. It never modifies DNS, routing, proxies, VPN, or system settings. It does not require an account, a private network, or enterprise configuration. Diagnostic data stays on this Mac and is never uploaded automatically.
+NetDoctor is read-only. It never modifies DNS, routing, proxies, VPN, or system settings. It does not require an account, a private network, or enterprise configuration. Diagnostic data stays on this Mac and is never uploaded automatically.
 
 ## How to Use
 
-1. Launch NetworkConsole Lite from the Applications folder.
+1. Launch NetDoctor from the Applications folder.
 2. Use the menu bar icon for a quick check.
 3. Open Details from the menu bar for the full report.
 4. Use Check Now to rerun the check.

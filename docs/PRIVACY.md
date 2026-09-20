@@ -1,12 +1,12 @@
-# NetworkConsole Lite Privacy Policy
+# NetDoctor Privacy Policy
 
 Last updated: August 15, 2026
 
-NetworkConsole Lite is a read-only network diagnostic app for macOS.
+NetDoctor is a read-only network diagnostic app for macOS.
 
-## Data We Collect
+## Data Collection
 
-NetworkConsole Lite does not collect, transmit, or sell personal data. Diagnostic data stays on your Mac.
+NetDoctor does not collect, transmit, or sell personal data. Diagnostic data stays on your Mac.
 
 The app may read local network state such as active interfaces, DNS resolver settings, default route information, Wi-Fi SSID, and connectivity results to public endpoints. This information is used only to show results inside the app.
 
@@ -28,15 +28,15 @@ For privacy questions, contact kevinskysunny@gmail.com.
 
 ---
 
-# NetworkConsole Lite 隐私政策
+# NetDoctor 隐私政策
 
 更新日期：2026年8月15日
 
-NetworkConsole Lite 是一款面向 macOS 的只读网络诊断应用。
+NetDoctor 是一款面向 macOS 的只读网络诊断应用。
 
 ## 数据收集
 
-NetworkConsole Lite 不会收集、上传或出售个人数据。诊断数据仅保存在你的 Mac 上。
+NetDoctor 不会收集、上传或出售个人数据。诊断数据仅保存在你的 Mac 上。
 
 应用可能读取本地网络状态，包括活动接口、DNS 解析器、默认路由、Wi-Fi SSID 以及对公开端点的连通性结果。这些信息仅用于在应用内展示结果。
 

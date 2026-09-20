@@ -18,6 +18,7 @@ final class AppModel: ObservableObject {
     private var lastRawReport: DiagnosisReport?
     private var pathRefreshTask: Task<Void, Never>?
     private var periodicRefreshTask: Task<Void, Never>?
+    private var systemLocaleCancellable: AnyCancellable?
 
     init(
         engine: DiagnosticEngine? = nil,
@@ -48,6 +49,19 @@ final class AppModel: ObservableObject {
         resolvedEngine.start()
         refreshTimeline()
         startPeriodicRefresh()
+
+        systemLocaleCancellable = NotificationCenter.default
+            .publisher(for: NSLocale.currentLocaleDidChangeNotification)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                guard let self, self.language == .system else { return }
+                self.objectWillChange.send()
+                if let last = self.lastRawReport {
+                    self.report = self.localizedReport(last)
+                }
+                self.refreshTimeline()
+            }
+
         Task {
             await runCheck(manual: false)
         }
@@ -57,7 +71,7 @@ final class AppModel: ObservableObject {
         if isChecking {
             return HealthGrade.checking.symbolName
         }
-        return report?.health.symbolName ?? HealthGrade.checking.symbolName
+        return report?.health.symbolName ?? "waveform.path.ecg"
     }
 
     var statusTitle: String {
@@ -166,8 +180,12 @@ final class AppModel: ObservableObject {
         refreshTimeline()
     }
 
+    var effectiveLanguage: AppLanguage {
+        language.resolvedLanguage
+    }
+
     func text(_ key: String, _ arguments: CVarArg...) -> String {
-        let template = L10n.string(key, language: language)
+        let template = L10n.string(key, language: effectiveLanguage)
         if arguments.isEmpty {
             return template
         }
@@ -282,7 +300,7 @@ final class AppModel: ObservableObject {
     private func writeSupportPackage(to url: URL) {
         do {
             let data = try exporter.jsonData(
-                appName: "NetworkConsole Lite",
+                appName: "NetDoctor",
                 appVersion: Self.appVersion,
                 appBuild: Self.appBuild,
                 report: report,
@@ -348,13 +366,12 @@ final class AppModel: ObservableObject {
     }
 
     private func localizedProbe(_ probe: ReachabilityProbe) -> ReachabilityProbe {
-        guard language == .english else { return probe }
         let errorDescription: String?
         switch probe.errorDescription {
-        case "无效 URL":
-            errorDescription = "Invalid URL"
-        case "无效端口":
-            errorDescription = "Invalid port"
+        case "无效 URL", "Invalid URL":
+            errorDescription = text("probe.error.invalidURL")
+        case "无效端口", "Invalid port":
+            errorDescription = text("probe.error.invalidPort")
         default:
             errorDescription = probe.errorDescription
         }
@@ -374,86 +391,55 @@ final class AppModel: ObservableObject {
     }
 
     private func localizedResolverSource(_ source: String) -> String {
-        guard language == .english else { return source }
-        if source == "未获取" {
-            return "Not available"
+        if source == "未获取" || source == "Not available" {
+            return text("overview.notAvailable")
         }
         return source
     }
 
     private func localizedAdvice(_ advice: DiagnosticAdvice) -> DiagnosticAdvice {
-        guard language == .english else { return advice }
+        let titleKey: String
+        let messageKey: String
         switch advice.title {
-        case "确认网络已连接":
-            return DiagnosticAdvice(
-                id: advice.id,
-                title: "Confirm your network connection",
-                message: "Check the Wi-Fi icon in the menu bar or the Ethernet cable. If it is already connected, try turning Wi-Fi off and on again, or switch to a phone hotspot to see whether the issue is local.",
-                severity: advice.severity
-            )
-        case "启用网络接口":
-            return DiagnosticAdvice(
-                id: advice.id,
-                title: "Enable a network interface",
-                message: "No active interface was detected. Open System Settings > Network and make sure Wi-Fi or Ethernet is enabled.",
-                severity: advice.severity
-            )
-        case "检查 DNS 设置":
-            return DiagnosticAdvice(
-                id: advice.id,
-                title: "Check DNS settings",
-                message: "No DNS server was found. Open System Settings > Network > Details > DNS, or ask your network administrator whether DHCP should provide one.",
-                severity: advice.severity
-            )
-        case "检查默认路由或 VPN":
-            return DiagnosticAdvice(
-                id: advice.id,
-                title: "Check the default route or VPN",
-                message: "No default route was found. If you are using a VPN, disconnect it and check again. Otherwise, confirm that the current service received an address and gateway.",
-                severity: advice.severity
-            )
-        case "网络处于受限状态":
-            return DiagnosticAdvice(
-                id: advice.id,
-                title: "The network is constrained",
-                message: "macOS reports that this network is constrained. This often happens with phone hotspots, Low Data Mode, or captive portals.",
-                severity: advice.severity
-            )
-        case "外网不可达":
-            return DiagnosticAdvice(
-                id: advice.id,
-                title: "The internet is unreachable",
-                message: "All public endpoints failed. Check the router, modem, and VPN first, then verify that a firewall is not blocking outbound connections.",
-                severity: advice.severity
-            )
-        case "部分外网站点不可达":
-            return DiagnosticAdvice(
-                id: advice.id,
-                title: "Some internet endpoints are unreachable",
-                message: "Some public endpoints failed. This may be a blocked site or a remote service issue. Check whether Apple and Cloudflare succeeded.",
-                severity: advice.severity
-            )
-        case "延迟偏高":
-            return DiagnosticAdvice(
-                id: advice.id,
-                title: "Latency is high",
-                message: "P90 latency is above 800 ms. Pause large downloads or backups and prefer 5 GHz Wi-Fi or a wired connection.",
-                severity: advice.severity
-            )
-        case "网络状态正常":
-            return DiagnosticAdvice(
-                id: advice.id,
-                title: "Your network looks healthy",
-                message: "No issue was found. If a specific website still fails, check whether that site is unavailable by itself.",
-                severity: advice.severity
-            )
+        case "确认网络已连接", "Confirm your network connection":
+            titleKey = "advice.confirmConnection.title"
+            messageKey = "advice.confirmConnection.message"
+        case "启用网络接口", "Enable a network interface":
+            titleKey = "advice.enableInterface.title"
+            messageKey = "advice.enableInterface.message"
+        case "检查 DNS 设置", "Check DNS settings":
+            titleKey = "advice.checkDNS.title"
+            messageKey = "advice.checkDNS.message"
+        case "检查默认路由或 VPN", "Check the default route or VPN":
+            titleKey = "advice.checkRoute.title"
+            messageKey = "advice.checkRoute.message"
+        case "网络处于受限状态", "The network is constrained":
+            titleKey = "advice.constrained.title"
+            messageKey = "advice.constrained.message"
+        case "外网不可达", "The internet is unreachable":
+            titleKey = "advice.unreachable.title"
+            messageKey = "advice.unreachable.message"
+        case "部分外网站点不可达", "Some internet endpoints are unreachable":
+            titleKey = "advice.partialUnreachable.title"
+            messageKey = "advice.partialUnreachable.message"
+        case "延迟偏高", "Latency is high":
+            titleKey = "advice.highLatency.title"
+            messageKey = "advice.highLatency.message"
+        case "网络状态正常", "Your network looks healthy":
+            titleKey = "advice.healthy.title"
+            messageKey = "advice.healthy.message"
         default:
             return advice
         }
+        return DiagnosticAdvice(
+            id: advice.id,
+            title: text(titleKey),
+            message: text(messageKey),
+            severity: advice.severity
+        )
     }
 
     private func localizedTimelineEvents(_ events: [TimelineEvent]) -> [TimelineEvent] {
-        guard language == .english else { return events }
         return events.map { event in
             TimelineEvent(
                 id: event.id,
@@ -467,15 +453,15 @@ final class AppModel: ObservableObject {
     private func localizedTimelineMessage(_ kind: TimelineEventKind) -> String {
         switch kind {
         case .pathChanged:
-            return "Network path changed"
+            return text("timeline.pathChanged")
         case .checkStarted:
-            return "Network health check started"
+            return text("timeline.checkStarted")
         case .checkFinished:
-            return "Network health check finished"
+            return text("timeline.checkFinished")
         case .exportCreated:
-            return "Support package exported"
+            return text("timeline.exportCreated")
         case .diagnostic:
-            return "Diagnostic event recorded"
+            return text("timeline.diagnostic")
         }
     }
 
@@ -484,15 +470,8 @@ final class AppModel: ObservableObject {
     }
 
     private static func loadLanguage() -> AppLanguage {
-        guard let rawValue = UserDefaults.standard.string(forKey: "networkConsoleLite.language") else {
-            return systemPreferredLanguage()
-        }
-        return AppLanguage(rawValue: rawValue) ?? systemPreferredLanguage()
-    }
-
-    private static func systemPreferredLanguage() -> AppLanguage {
-        let preferred = Locale.preferredLanguages.first?.lowercased() ?? ""
-        return preferred.hasPrefix("zh") ? .chinese : .english
+        let stored = UserDefaults.standard.string(forKey: "networkConsoleLite.language")
+        return AppLanguage.from(stored: stored)
     }
 
     private static var appVersion: String {

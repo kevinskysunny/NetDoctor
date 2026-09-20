@@ -442,7 +442,7 @@ public enum HealthGrade: String, Codable, Sendable {
         case .checking:
             return "arrow.triangle.2.circlepath"
         case .healthy:
-            return "checkmark.circle.fill"
+            return "waveform.path.ecg"
         case .warning:
             return "exclamationmark.triangle.fill"
         case .critical:

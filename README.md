@@ -1,4 +1,4 @@
-# NetworkConsole Lite（网络体检）
+# NetDoctor（网络体检）
 
 一个面向 Mac App Store 的只读 macOS 网络体检应用。它帮助普通 Mac 用户和轻度运维用户快速判断网络是否正常，不会修改 DNS、路由、代理、VPN 或任何系统服务。
 
