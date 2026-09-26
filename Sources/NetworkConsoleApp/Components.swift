@@ -67,18 +67,11 @@ struct MetricCard: View {
         .overlay(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
                 .stroke(
-                    isHovered ? (accentColor ?? Color.white).opacity(0.3) : Color.white.opacity(0.09),
+                    isHovered ? (accentColor ?? Color.white).opacity(0.4) : Color.white.opacity(0.09),
                     lineWidth: 1
                 )
         )
-        .shadow(
-            color: isHovered ? (accentColor ?? Color.black).opacity(0.15) : Color.clear,
-            radius: 8,
-            x: 0,
-            y: isHovered ? 4 : 0
-        )
-        .offset(y: isHovered ? -2 : 0)
-        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isHovered)
+        .animation(.easeInOut(duration: 0.15), value: isHovered)
         .onHover { hovering in
             isHovered = hovering
         }
@@ -155,10 +148,10 @@ struct SonarWaveEffect: View {
         guard isActive else { return }
         wave1 = false
         wave2 = false
-        withAnimation(.easeOut(duration: 1.5).repeatForever(autoreverses: false)) {
+        withAnimation(.easeOut(duration: 1.2).repeatCount(2, autoreverses: false)) {
             wave1 = true
         }
-        withAnimation(.easeOut(duration: 1.5).repeatForever(autoreverses: false).delay(0.4)) {
+        withAnimation(.easeOut(duration: 1.2).repeatCount(2, autoreverses: false).delay(0.3)) {
             wave2 = true
         }
     }

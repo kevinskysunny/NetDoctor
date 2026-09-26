@@ -27,7 +27,7 @@ struct HealthScoreGaugeView: View {
                         style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)
                     )
                     .rotationEffect(.degrees(-90))
-                    .shadow(color: themeColor.opacity(0.4), radius: 6, x: 0, y: 0)
+                    .shadow(color: size > 60 ? themeColor.opacity(0.3) : .clear, radius: size > 60 ? 4 : 0, x: 0, y: 0)
 
                 // 中间得分与等级
                 VStack(spacing: 2) {

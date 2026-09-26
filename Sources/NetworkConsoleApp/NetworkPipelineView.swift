@@ -1,13 +1,11 @@
 import NetworkCore
 import SwiftUI
 
-/// 4 节点网络拓扑链路流光管线（GPU 硬件加速，0 CPU 开销）
+/// 4 节点网络拓扑链路管线（静默零 CPU 功耗）
 struct NetworkPipelineView: View {
     let report: DiagnosisReport?
     let isChecking: Bool
     var onSelectNode: ((PipelineNodeType) -> Void)? = nil
-
-    @State private var particleFlow: Bool = false
 
     enum PipelineNodeType: String, CaseIterable, Identifiable {
         case localMac
@@ -67,11 +65,6 @@ struct NetworkPipelineView: View {
             RoundedRectangle(cornerRadius: 12, style: .continuous)
                 .stroke(Color.white.opacity(0.12), lineWidth: 1)
         )
-        .onAppear {
-            withAnimation(.linear(duration: 1.8).repeatForever(autoreverses: false)) {
-                particleFlow = true
-            }
-        }
     }
 
     // MARK: - 节点状态逻辑
@@ -157,36 +150,28 @@ struct NetworkPipelineView: View {
         .buttonStyle(.plain)
     }
 
-    // MARK: - 节点连接管道（GPU 硬件加速，零 CPU 开销）
+    // MARK: - 节点连接管道（静默稳态零 CPU 开销）
     @ViewBuilder
     private func pipelineSegment(isActive: Bool, health: NodeHealth) -> some View {
-        GeometryReader { proxy in
-            let w = proxy.size.width
-            let h = proxy.size.height
-            let midY = h * 0.35
+        VStack(spacing: 0) {
+            Spacer()
+                .frame(height: 21)
 
-            ZStack(alignment: .leading) {
-                // 底层管道轨道
-                Path { p in
-                    p.move(to: CGPoint(x: 0, y: midY))
-                    p.addLine(to: CGPoint(x: w, y: midY))
-                }
-                .stroke(
-                    health.color.opacity(isActive ? 0.25 : 0.5),
-                    style: StrokeStyle(lineWidth: isActive ? 2.5 : 2, lineCap: .round, dash: isActive ? [] : [4, 4])
-                )
+            ZStack {
+                Rectangle()
+                    .fill(health.color.opacity(isActive ? 0.35 : 0.2))
+                    .frame(height: 2)
 
-                // GPU 驱动的能量粒子流动
-                if isActive && w > 0 {
+                if isActive {
                     Circle()
-                        .fill(Color.white)
-                        .frame(width: 6, height: 6)
-                        .shadow(color: health.color, radius: 4)
-                        .offset(x: particleFlow ? w - 6 : 0, y: midY - 3)
+                        .fill(health.color)
+                        .frame(width: 4, height: 4)
                 }
             }
+
+            Spacer()
         }
-        .frame(minWidth: 28, maxHeight: .infinity)
+        .frame(minWidth: 20, maxWidth: .infinity)
     }
 
     private func iconName(for type: PipelineNodeType) -> String {

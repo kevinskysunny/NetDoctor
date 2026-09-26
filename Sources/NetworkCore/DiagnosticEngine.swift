@@ -44,18 +44,21 @@ public final class DiagnosticEngine: DiagnosticEngineControlling {
             guard let self else { return }
             self.lock.lock()
             let previous = self.pathInfo
+            guard path != previous else {
+                self.lock.unlock()
+                return
+            }
             self.pathInfo = path
             self.lock.unlock()
-            if path != previous {
-                let interfaceKinds = path.interfaces.map(\.kind.rawValue).joined(separator: ",")
-                self.eventStore.append(
-                    TimelineEvent(
-                        kind: .pathChanged,
-                        message: "网络路径变化：\(path.status.displayName)",
-                        arguments: [path.status.rawValue, interfaceKinds]
-                    )
+
+            let interfaceKinds = path.interfaces.map(\.kind.rawValue).joined(separator: ",")
+            self.eventStore.append(
+                TimelineEvent(
+                    kind: .pathChanged,
+                    message: "网络路径变化：\(path.status.displayName)",
+                    arguments: [path.status.rawValue, interfaceKinds]
                 )
-            }
+            )
             self.onPathUpdate?(path)
         }
     }

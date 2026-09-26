@@ -22,9 +22,14 @@ struct QuickCheckView: View {
                         .font(.headline.weight(.semibold))
 
                     HStack(spacing: 4) {
-                        Image(systemName: model.statusSymbolName)
-                            .font(.system(size: 10, weight: .bold))
-                            .symbolEffect(.variableColor.iterative.reversing, isActive: model.isChecking)
+                        if model.isChecking {
+                            Image(systemName: model.statusSymbolName)
+                                .font(.system(size: 10, weight: .bold))
+                                .symbolEffect(.variableColor.iterative.reversing)
+                        } else {
+                            Image(systemName: model.statusSymbolName)
+                                .font(.system(size: 10, weight: .bold))
+                        }
 
                         Text(model.statusTitle)
                             .font(.caption.weight(.medium))
@@ -144,8 +149,10 @@ struct QuickCheckView: View {
             // 5. 底部操作栏（带声呐涟漪反馈）
             HStack(spacing: 8) {
                 ZStack {
-                    SonarWaveEffect(isActive: model.isChecking, tintColor: statusColor)
-                        .frame(width: 32, height: 32)
+                    if model.isChecking {
+                        SonarWaveEffect(isActive: true, tintColor: statusColor)
+                            .frame(width: 32, height: 32)
+                    }
 
                     Button {
                         Task {
@@ -201,9 +208,6 @@ struct QuickCheckView: View {
         }
         .onDisappear {
             isVisible = false
-        }
-        .task {
-            model.start()
         }
     }
 

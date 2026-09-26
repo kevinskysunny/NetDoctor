@@ -7,6 +7,7 @@ import NetworkCore
 final class AppModel: ObservableObject {
     @Published private(set) var report: DiagnosisReport?
     @Published private(set) var isChecking = false
+    @Published private(set) var statusSymbolName: String = HealthGrade.checking.symbolName
     @Published private(set) var lastError: String?
     @Published private(set) var timelineEvents: [TimelineEvent] = []
     @Published var settings: AppSettings
@@ -67,11 +68,11 @@ final class AppModel: ObservableObject {
         }
     }
 
-    var statusSymbolName: String {
-        if isChecking {
-            return HealthGrade.checking.symbolName
+    private func updateStatusSymbol() {
+        let next = isChecking ? HealthGrade.checking.symbolName : (report?.health.symbolName ?? "waveform.path.ecg")
+        if statusSymbolName != next {
+            statusSymbolName = next
         }
-        return report?.health.symbolName ?? "waveform.path.ecg"
     }
 
     var statusTitle: String {
@@ -149,6 +150,7 @@ final class AppModel: ObservableObject {
     func runCheck(manual: Bool = true) async {
         guard !isChecking else { return }
         isChecking = true
+        updateStatusSymbol()
         lastError = nil
 
         let result = await engine.performCheck(
@@ -160,6 +162,7 @@ final class AppModel: ObservableObject {
         lastRawReport = result
         report = localizedReport(result)
         isChecking = false
+        updateStatusSymbol()
         refreshTimeline()
     }
 
@@ -310,13 +313,14 @@ final class AppModel: ObservableObject {
     private var lastPathUpdate: NetworkPathInfo?
 
     private func handlePathUpdate(_ path: NetworkPathInfo) {
-        refreshTimeline()
-        let changed = lastPathUpdate.map { $0 != path } ?? false
+        let changed = lastPathUpdate.map { $0 != path } ?? (lastPathUpdate != nil)
+        guard changed else { return }
         lastPathUpdate = path
-        guard changed, settings.autoRefreshEnabled else { return }
+        refreshTimeline()
+        guard settings.autoRefreshEnabled else { return }
         pathRefreshTask?.cancel()
         pathRefreshTask = Task { [weak self] in
-            try? await Task.sleep(nanoseconds: 2_000_000_000)
+            try? await Task.sleep(nanoseconds: 5_000_000_000)
             guard !Task.isCancelled else { return }
             await self?.runCheck(manual: false)
         }
@@ -361,7 +365,7 @@ final class AppModel: ObservableObject {
     }
 
     private func refreshTimeline() {
-        timelineEvents = localizedTimelineEvents(timelineStore.allEvents(limit: 500))
+        timelineEvents = localizedTimelineEvents(timelineStore.allEvents(limit: 50))
     }
 
     private func localizedReport(_ report: DiagnosisReport) -> DiagnosisReport {
