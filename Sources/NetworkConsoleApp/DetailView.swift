@@ -94,16 +94,20 @@ struct DetailView: View {
             Group {
                 switch selectedTab {
                 case .overview:
-                    OverviewView(model: model, onSelectPipelineNode: { node in
-                        switch node {
-                        case .localMac:
-                            selectedTab = .interfaces
-                        case .gateway, .dns:
-                            selectedTab = .dnsRoute
-                        case .internet:
-                            selectedTab = .reachability
+                    OverviewView(
+                        model: model,
+                        isTabActive: selectedTab == .overview,
+                        onSelectPipelineNode: { node in
+                            switch node {
+                            case .localMac:
+                                selectedTab = .interfaces
+                            case .gateway, .dns:
+                                selectedTab = .dnsRoute
+                            case .internet:
+                                selectedTab = .reachability
+                            }
                         }
-                    })
+                    )
                 case .interfaces:
                     InterfacesView(model: model)
                 case .dnsRoute:
@@ -154,6 +158,7 @@ struct DetailView: View {
 // MARK: - Overview 标签页（拓扑流光 + 评分环 + Bento）
 private struct OverviewView: View {
     @ObservedObject var model: AppModel
+    var isTabActive: Bool = true
     var onSelectPipelineNode: ((NetworkPipelineView.PipelineNodeType) -> Void)?
 
     var body: some View {
@@ -179,12 +184,14 @@ private struct OverviewView: View {
                             .foregroundStyle(.secondary)
                             .fixedSize(horizontal: false, vertical: true)
 
-                        // 4 节点拓扑流光链路
-                        NetworkPipelineView(
-                            report: model.report,
-                            isChecking: model.isChecking,
-                            onSelectNode: onSelectPipelineNode
-                        )
+                        // 4 节点拓扑流光链路（仅在 Overview 活跃时渲染）
+                        if isTabActive {
+                            NetworkPipelineView(
+                                report: model.report,
+                                isChecking: model.isChecking,
+                                onSelectNode: onSelectPipelineNode
+                            )
+                        }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }

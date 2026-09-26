@@ -116,7 +116,7 @@ struct HealthBadge: View {
     }
 }
 
-/// 声呐水波纹动效组件：用于体检按钮或状态检查时的声呐脉冲反馈
+/// 声呐水波纹动效组件：仅在体检中或激活时渲染，闲置时彻底释放动画开销
 struct SonarWaveEffect: View {
     let isActive: Bool
     var tintColor: Color = .cyan
@@ -139,21 +139,26 @@ struct SonarWaveEffect: View {
             }
         }
         .onAppear {
-            triggerWaves()
+            if isActive { triggerWaves() }
         }
         .onChange(of: isActive) { _, active in
             if active {
                 triggerWaves()
+            } else {
+                wave1 = false
+                wave2 = false
             }
         }
     }
 
     private func triggerWaves() {
         guard isActive else { return }
-        withAnimation(.easeOut(duration: 1.6).repeatForever(autoreverses: false)) {
+        wave1 = false
+        wave2 = false
+        withAnimation(.easeOut(duration: 1.5).repeatForever(autoreverses: false)) {
             wave1 = true
         }
-        withAnimation(.easeOut(duration: 1.6).repeatForever(autoreverses: false).delay(0.5)) {
+        withAnimation(.easeOut(duration: 1.5).repeatForever(autoreverses: false).delay(0.4)) {
             wave2 = true
         }
     }

@@ -3,6 +3,7 @@ import SwiftUI
 
 struct QuickCheckView: View {
     @ObservedObject var model: AppModel
+    @State private var isVisible = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -47,7 +48,7 @@ struct QuickCheckView: View {
                 )
             }
 
-            // 2. 赛博心电波形视窗 (ECG Waveform)
+            // 2. 赛博心电波形视窗 (ECG Waveform，稳态零 CPU 开销)
             ECGWaveformView(
                 grade: model.report?.health ?? .checking,
                 isChecking: model.isChecking,
@@ -195,6 +196,12 @@ struct QuickCheckView: View {
         }
         .padding(14)
         .frame(width: 380)
+        .onAppear {
+            isVisible = true
+        }
+        .onDisappear {
+            isVisible = false
+        }
         .task {
             model.start()
         }

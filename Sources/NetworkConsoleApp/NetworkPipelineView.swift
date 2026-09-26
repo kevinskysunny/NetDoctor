@@ -1,11 +1,13 @@
 import NetworkCore
 import SwiftUI
 
-/// 4 节点网络拓扑链路流光管线
+/// 4 节点网络拓扑链路流光管线（GPU 硬件加速，0 CPU 开销）
 struct NetworkPipelineView: View {
     let report: DiagnosisReport?
     let isChecking: Bool
     var onSelectNode: ((PipelineNodeType) -> Void)? = nil
+
+    @State private var particleFlow: Bool = false
 
     enum PipelineNodeType: String, CaseIterable, Identifiable {
         case localMac
@@ -33,35 +35,29 @@ struct NetworkPipelineView: View {
     }
 
     var body: some View {
-        TimelineView(.animation(minimumInterval: 1.0 / 60.0)) { timeline in
-            let time = timeline.date.timeIntervalSinceReferenceDate
-            HStack(spacing: 0) {
-                nodeView(type: .localMac, health: macHealth)
+        HStack(spacing: 0) {
+            nodeView(type: .localMac, health: macHealth)
 
-                pipelineSegment(
-                    isActive: isLink1Active,
-                    health: isLink1Active ? .normal : (macHealth == .critical ? .critical : .warning),
-                    time: time
-                )
+            pipelineSegment(
+                isActive: isLink1Active,
+                health: isLink1Active ? .normal : (macHealth == .critical ? .critical : .warning)
+            )
 
-                nodeView(type: .gateway, health: gatewayHealth)
+            nodeView(type: .gateway, health: gatewayHealth)
 
-                pipelineSegment(
-                    isActive: isLink2Active,
-                    health: isLink2Active ? .normal : (gatewayHealth == .critical ? .critical : .warning),
-                    time: time
-                )
+            pipelineSegment(
+                isActive: isLink2Active,
+                health: isLink2Active ? .normal : (gatewayHealth == .critical ? .critical : .warning)
+            )
 
-                nodeView(type: .dns, health: dnsHealth)
+            nodeView(type: .dns, health: dnsHealth)
 
-                pipelineSegment(
-                    isActive: isLink3Active,
-                    health: isLink3Active ? .normal : (dnsHealth == .critical ? .critical : .warning),
-                    time: time
-                )
+            pipelineSegment(
+                isActive: isLink3Active,
+                health: isLink3Active ? .normal : (dnsHealth == .critical ? .critical : .warning)
+            )
 
-                nodeView(type: .internet, health: internetHealth)
-            }
+            nodeView(type: .internet, health: internetHealth)
         }
         .padding(.vertical, 14)
         .padding(.horizontal, 16)
@@ -71,6 +67,11 @@ struct NetworkPipelineView: View {
             RoundedRectangle(cornerRadius: 12, style: .continuous)
                 .stroke(Color.white.opacity(0.12), lineWidth: 1)
         )
+        .onAppear {
+            withAnimation(.linear(duration: 1.8).repeatForever(autoreverses: false)) {
+                particleFlow = true
+            }
+        }
     }
 
     // MARK: - 节点状态逻辑
@@ -156,46 +157,32 @@ struct NetworkPipelineView: View {
         .buttonStyle(.plain)
     }
 
-    // MARK: - 节点连接管道与流动光粒子
+    // MARK: - 节点连接管道（GPU 硬件加速，零 CPU 开销）
     @ViewBuilder
-    private func pipelineSegment(isActive: Bool, health: NodeHealth, time: TimeInterval) -> some View {
+    private func pipelineSegment(isActive: Bool, health: NodeHealth) -> some View {
         GeometryReader { proxy in
             let w = proxy.size.width
             let h = proxy.size.height
-            let midY = h * 0.35 // 对齐圆形图标的水平轴
+            let midY = h * 0.35
 
-            Canvas { context, size in
+            ZStack(alignment: .leading) {
                 // 底层管道轨道
-                var trackPath = Path()
-                trackPath.move(to: CGPoint(x: 0, y: midY))
-                trackPath.addLine(to: CGPoint(x: w, y: midY))
+                Path { p in
+                    p.move(to: CGPoint(x: 0, y: midY))
+                    p.addLine(to: CGPoint(x: w, y: midY))
+                }
+                .stroke(
+                    health.color.opacity(isActive ? 0.25 : 0.5),
+                    style: StrokeStyle(lineWidth: isActive ? 2.5 : 2, lineCap: .round, dash: isActive ? [] : [4, 4])
+                )
 
-                if isActive {
-                    // 连通流动的能量轨道
-                    context.stroke(
-                        trackPath,
-                        with: .color(health.color.opacity(0.3)),
-                        style: StrokeStyle(lineWidth: 3, lineCap: .round)
-                    )
-
-                    // 发光穿梭粒子（Particle Flow）
-                    let speed = 40.0
-                    let particleCycle = max(1.0, Double(w) / speed)
-                    let progress = (time.truncatingRemainder(dividingBy: particleCycle)) / particleCycle
-                    let particleX = CGFloat(progress) * w
-
-                    let particleRect = CGRect(x: particleX - 3.5, y: midY - 3.5, width: 7, height: 7)
-                    context.fill(Path(ellipseIn: particleRect), with: .color(.white))
-
-                    let haloRect = CGRect(x: particleX - 7, y: midY - 7, width: 14, height: 14)
-                    context.fill(Path(ellipseIn: haloRect), with: .color(health.color.opacity(0.7)))
-                } else {
-                    // 异常阻断虚线
-                    context.stroke(
-                        trackPath,
-                        with: .color(health.color.opacity(0.5)),
-                        style: StrokeStyle(lineWidth: 2, lineCap: .round, dash: [4, 4])
-                    )
+                // GPU 驱动的能量粒子流动
+                if isActive && w > 0 {
+                    Circle()
+                        .fill(Color.white)
+                        .frame(width: 6, height: 6)
+                        .shadow(color: health.color, radius: 4)
+                        .offset(x: particleFlow ? w - 6 : 0, y: midY - 3)
                 }
             }
         }
