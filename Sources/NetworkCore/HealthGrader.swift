@@ -45,6 +45,121 @@ public struct HealthGrader {
         return .healthy
     }
 
+    public func score(
+        path: NetworkPathInfo,
+        interfaces: [InterfaceInfo],
+        dns: DNSSummary,
+        routes: RouteSummary,
+        reachability: [ReachabilityProbe]
+    ) -> Int {
+        if path.status != .available {
+            return 0
+        }
+
+        let activeInterfaces = interfaces.filter { $0.isActive && $0.kind != .loopback }
+        if activeInterfaces.isEmpty {
+            return 0
+        }
+
+        // 1. 基础路径分 (最高 30 分)
+        var pathScore = 30
+        if path.isConstrained {
+            pathScore = max(0, pathScore - 15)
+        }
+
+        // 2. DNS 配置分 (最高 25 分)
+        var dnsScore = 25
+        if dns.servers.isEmpty {
+            dnsScore = 0
+        } else if !path.supportsDNS {
+            dnsScore = max(0, dnsScore - 10)
+        }
+
+        // 3. 网关路由分 (最高 20 分)
+        let routeScore = routes.routes.isEmpty ? 0 : 20
+
+        // 4. 公网探测与质量分 (最高 25 分)
+        var probeScore = 20
+        var allProbesFailed = false
+        if !reachability.isEmpty {
+            let successCount = reachability.filter { $0.status == .success }.count
+            if successCount == 0 {
+                probeScore = 0
+                allProbesFailed = true
+            } else {
+                let successRatio = Double(successCount) / Double(reachability.count)
+                var rawProbeScore = Int((25.0 * successRatio).rounded())
+
+                let samples = reachability.compactMap(\.durationMilliseconds)
+                if let p90 = LatencyPercentiles(samples: samples).p90 {
+                    if p90 > 800 {
+                        rawProbeScore -= 10
+                    } else if p90 > 500 {
+                        rawProbeScore -= 5
+                    }
+                }
+                probeScore = max(0, min(25, rawProbeScore))
+            }
+        }
+
+        var total = pathScore + dnsScore + routeScore + probeScore
+        if allProbesFailed {
+            total = min(total, 35)
+        }
+        return min(100, max(0, total))
+    }
+
+    public func verdict(
+        grade: HealthGrade,
+        score: Int,
+        path: NetworkPathInfo,
+        interfaces: [InterfaceInfo],
+        dns: DNSSummary,
+        routes: RouteSummary,
+        reachability: [ReachabilityProbe]
+    ) -> String {
+        switch grade {
+        case .checking:
+            return "正在诊脉（网络体检中…）"
+        case .critical:
+            if path.status != .available {
+                return "休克急救（网络彻底断开）"
+            }
+            let active = interfaces.filter { $0.isActive && $0.kind != .loopback }
+            if active.isEmpty {
+                return "经脉阻滞（无活动网络接口）"
+            }
+            if !reachability.isEmpty && reachability.filter({ $0.status == .success }).isEmpty {
+                return "生命体征微弱（公网全线失联）"
+            }
+            return "严重失衡（网络异常中断）"
+        case .warning:
+            if dns.servers.isEmpty || !path.supportsDNS {
+                return "轻微咽喉炎（DNS响应迟钝）"
+            }
+            if path.isConstrained {
+                return "气血受限（网络策略受限）"
+            }
+            if !reachability.isEmpty {
+                let successCount = reachability.filter { $0.status == .success }.count
+                if successCount < reachability.count {
+                    return "心律不齐（网络偶发丢包）"
+                }
+                let samples = reachability.compactMap(\.durationMilliseconds)
+                if let p90 = LatencyPercentiles(samples: samples).p90, p90 > 500 {
+                    return "轻度低血糖（网络延迟偏高）"
+                }
+            }
+            return "经络微滞（需关注局部信号）"
+        case .healthy:
+            if score >= 95 {
+                return "经络畅通 · 战力全开"
+            } else {
+                return "机能良好 · 运行平稳"
+            }
+        }
+    }
+
     public func summary(
         grade: HealthGrade,
         path: NetworkPathInfo,

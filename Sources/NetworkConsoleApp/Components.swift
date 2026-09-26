@@ -24,31 +24,64 @@ struct InfoRow: View {
     }
 }
 
+/// 现代化 Bento Box 风格指标卡片，支持微光边框与 Hover 悬浮交互
 struct MetricCard: View {
     let title: String
     let value: String
     let detail: String?
     let systemImage: String
+    var accentColor: Color? = nil
+
+    @State private var isHovered = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Label(title, systemImage: systemImage)
-                .font(.caption)
-                .foregroundStyle(.secondary)
+            HStack {
+                Label(title, systemImage: systemImage)
+                    .font(.caption.weight(.medium))
+                    .foregroundStyle(.secondary)
+                Spacer()
+                if let accentColor {
+                    Circle()
+                        .fill(accentColor)
+                        .frame(width: 6, height: 6)
+                }
+            }
+
             Text(value)
-                .font(.title2.bold())
+                .font(.system(size: 20, weight: .bold, design: .rounded))
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
+
             if let detail {
                 Text(detail)
-                    .font(.caption)
+                    .font(.caption2)
                     .foregroundStyle(.secondary)
                     .lineLimit(2)
             }
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.quaternary.opacity(0.45), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .background(.ultraThinMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .stroke(
+                    isHovered ? (accentColor ?? Color.white).opacity(0.3) : Color.white.opacity(0.09),
+                    lineWidth: 1
+                )
+        )
+        .shadow(
+            color: isHovered ? (accentColor ?? Color.black).opacity(0.15) : Color.clear,
+            radius: 8,
+            x: 0,
+            y: isHovered ? 4 : 0
+        )
+        .offset(y: isHovered ? -2 : 0)
+        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isHovered)
+        .onHover { hovering in
+            isHovered = hovering
+        }
     }
 }
 
@@ -63,6 +96,10 @@ struct HealthBadge: View {
             .padding(.horizontal, 10)
             .padding(.vertical, 5)
             .background(color.opacity(0.14), in: Capsule())
+            .overlay(
+                Capsule()
+                    .stroke(color.opacity(0.3), lineWidth: 1)
+            )
     }
 
     private var color: Color {
@@ -70,11 +107,54 @@ struct HealthBadge: View {
         case .checking:
             return .secondary
         case .healthy:
-            return .green
+            return Color(red: 0.2, green: 0.88, blue: 0.5)
         case .warning:
             return .orange
         case .critical:
             return .red
+        }
+    }
+}
+
+/// 声呐水波纹动效组件：用于体检按钮或状态检查时的声呐脉冲反馈
+struct SonarWaveEffect: View {
+    let isActive: Bool
+    var tintColor: Color = .cyan
+
+    @State private var wave1 = false
+    @State private var wave2 = false
+
+    var body: some View {
+        ZStack {
+            if isActive {
+                Circle()
+                    .stroke(tintColor.opacity(wave1 ? 0.0 : 0.6), lineWidth: 2)
+                    .scaleEffect(wave1 ? 2.2 : 0.9)
+                    .opacity(wave1 ? 0.0 : 0.8)
+
+                Circle()
+                    .stroke(tintColor.opacity(wave2 ? 0.0 : 0.4), lineWidth: 1.5)
+                    .scaleEffect(wave2 ? 2.6 : 0.9)
+                    .opacity(wave2 ? 0.0 : 0.6)
+            }
+        }
+        .onAppear {
+            triggerWaves()
+        }
+        .onChange(of: isActive) { _, active in
+            if active {
+                triggerWaves()
+            }
+        }
+    }
+
+    private func triggerWaves() {
+        guard isActive else { return }
+        withAnimation(.easeOut(duration: 1.6).repeatForever(autoreverses: false)) {
+            wave1 = true
+        }
+        withAnimation(.easeOut(duration: 1.6).repeatForever(autoreverses: false).delay(0.5)) {
+            wave2 = true
         }
     }
 }

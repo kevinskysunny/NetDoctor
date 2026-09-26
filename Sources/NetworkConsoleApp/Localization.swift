@@ -213,7 +213,28 @@ enum L10n {
         "advice.healthy.title": "网络状态正常",
         "advice.healthy.message": "当前没有发现需要处理的问题。若仍有网页打不开，可检查具体网站是否单独不可用。",
         "probe.error.invalidURL": "无效 URL",
-        "probe.error.invalidPort": "无效端口"
+        "probe.error.invalidPort": "无效端口",
+        "verdict.checking": "正在诊脉（网络体检中…）",
+        "verdict.notChecked": "尚未检查（点击开始体检）",
+        "verdict.optimal": "经络畅通 · 战力全开",
+        "verdict.good": "机能良好 · 运行平稳",
+        "verdict.dnsSlow": "轻微咽喉炎（DNS响应迟钝）",
+        "verdict.constrained": "气血受限（网络策略受限）",
+        "verdict.jitterLoss": "心律不齐（网络偶发丢包）",
+        "verdict.highLatency": "轻度低血糖（网络延迟偏高）",
+        "verdict.warningDefault": "经络微滞（需关注局部信号）",
+        "verdict.offline": "休克急救（网络彻底断开）",
+        "verdict.noInterface": "经脉阻滞（无活动网络接口）",
+        "verdict.allProbesFailed": "生命体征微弱（公网全线失联）",
+        "verdict.criticalDefault": "严重失衡（网络异常中断）",
+        "quick.bento.latency": "延迟与体征",
+        "quick.bento.interface": "活动接口",
+        "quick.bento.dns": "DNS 解析",
+        "quick.bento.reachability": "公网质量",
+        "detail.copyCard": "复制赛博体检病历单",
+        "detail.copiedCard": "病历卡已拷贝到剪贴板",
+        "reachability.chart.title": "公开端点延迟对比与抖动分布 (ms)",
+        "reachability.chart.latency": "延迟"
     ]
 
     private static let en: [String: String] = [
@@ -346,7 +367,28 @@ enum L10n {
         "advice.healthy.title": "Your network looks healthy",
         "advice.healthy.message": "No issue was found. If a specific website still fails, check whether that site is unavailable by itself.",
         "probe.error.invalidURL": "Invalid URL",
-        "probe.error.invalidPort": "Invalid port"
+        "probe.error.invalidPort": "Invalid port",
+        "verdict.checking": "Diagnosing network health...",
+        "verdict.notChecked": "Not checked (Click to start)",
+        "verdict.optimal": "Peak Performance · Fully Healthy",
+        "verdict.good": "Normal Health · Stable Operation",
+        "verdict.dnsSlow": "DNS Hiccup · Slow Resolution",
+        "verdict.constrained": "Constrained Flow · Policy Restricted",
+        "verdict.jitterLoss": "Irregular Beat · Packet Loss Detected",
+        "verdict.highLatency": "Sluggish Flow · High Latency",
+        "verdict.warningDefault": "Sub-optimal · Check Local Signals",
+        "verdict.offline": "Critical Shock · Connection Severed",
+        "verdict.noInterface": "Blocked Link · No Active Interface",
+        "verdict.allProbesFailed": "Faint Vitals · All Probes Failed",
+        "verdict.criticalDefault": "Severe Disorder · Network Interrupted",
+        "quick.bento.latency": "Latency & Vitals",
+        "quick.bento.interface": "Active Interface",
+        "quick.bento.dns": "DNS Resolver",
+        "quick.bento.reachability": "Internet Quality",
+        "detail.copyCard": "Copy Cyber Health Card",
+        "detail.copiedCard": "Card copied to clipboard",
+        "reachability.chart.title": "Public Endpoint Latency & Jitter (ms)",
+        "reachability.chart.latency": "Latency"
     ]
 
     private static let ja: [String: String] = [

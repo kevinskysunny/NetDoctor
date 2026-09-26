@@ -1,40 +1,122 @@
+import Charts
 import NetworkCore
 import SwiftUI
 
+enum DetailTab: String, CaseIterable, Identifiable {
+    case overview
+    case interfaces
+    case dnsRoute
+    case reachability
+    case timeline
+    case settings
+
+    var id: String { rawValue }
+
+    var icon: String {
+        switch self {
+        case .overview: return "gauge.with.dots.needle.50percent"
+        case .interfaces: return "network"
+        case .dnsRoute: return "point.3.filled.connected.trianglepath.dotted"
+        case .reachability: return "globe"
+        case .timeline: return "clock"
+        case .settings: return "gearshape"
+        }
+    }
+}
+
 struct DetailView: View {
     @ObservedObject var model: AppModel
+    @State private var selectedTab: DetailTab = .overview
+    @State private var copiedToast: Bool = false
 
     var body: some View {
-        TabView {
-            OverviewView(model: model)
-                .tabItem {
-                    Label(model.text("detail.tab.overview"), systemImage: "gauge.with.dots.needle.50percent")
+        VStack(spacing: 0) {
+            // 现代化分段导航胶囊栏
+            HStack(spacing: 6) {
+                ForEach(DetailTab.allCases) { tab in
+                    Button {
+                        withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                            selectedTab = tab
+                        }
+                    } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: tab.icon)
+                                .font(.system(size: 13, weight: .medium))
+                            Text(tabTitle(tab))
+                                .font(.system(size: 13, weight: selectedTab == tab ? .semibold : .regular))
+                        }
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 7)
+                        .background(
+                            selectedTab == tab
+                                ? AnyShapeStyle(Color.accentColor.opacity(0.18))
+                                : AnyShapeStyle(Color.clear)
+                        )
+                        .clipShape(Capsule())
+                        .overlay(
+                            Capsule()
+                                .stroke(selectedTab == tab ? Color.accentColor.opacity(0.4) : Color.clear, lineWidth: 1)
+                        )
+                        .foregroundStyle(selectedTab == tab ? Color.accentColor : Color.secondary)
+                    }
+                    .buttonStyle(.plain)
                 }
 
-            InterfacesView(model: model)
-                .tabItem {
-                    Label(model.text("detail.tab.interfaces"), systemImage: "network")
+                Spacer()
+
+                if copiedToast {
+                    Text(model.text("detail.copiedCard"))
+                        .font(.caption2.bold())
+                        .foregroundStyle(.green)
+                        .transition(.opacity)
                 }
 
-            DNSRouteView(model: model)
-                .tabItem {
-                    Label(model.text("detail.tab.dnsRoute"), systemImage: "point.3.filled.connected.trianglepath.dotted")
+                Button {
+                    if model.copyDiagnosisCard() {
+                        withAnimation { copiedToast = true }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                            withAnimation { copiedToast = false }
+                        }
+                    }
+                } label: {
+                    Label(model.text("detail.copyCard"), systemImage: "doc.on.clipboard")
+                        .font(.caption)
                 }
+                .buttonStyle(.bordered)
+            }
+            .padding(.horizontal, 18)
+            .padding(.vertical, 10)
+            .background(.bar)
 
-            ReachabilityView(model: model)
-                .tabItem {
-                    Label(model.text("detail.tab.reachability"), systemImage: "globe")
-                }
+            Divider()
 
-            TimelineView(model: model)
-                .tabItem {
-                    Label(model.text("detail.tab.timeline"), systemImage: "clock")
+            // 选项卡内容区
+            Group {
+                switch selectedTab {
+                case .overview:
+                    OverviewView(model: model, onSelectPipelineNode: { node in
+                        switch node {
+                        case .localMac:
+                            selectedTab = .interfaces
+                        case .gateway, .dns:
+                            selectedTab = .dnsRoute
+                        case .internet:
+                            selectedTab = .reachability
+                        }
+                    })
+                case .interfaces:
+                    InterfacesView(model: model)
+                case .dnsRoute:
+                    DNSRouteView(model: model)
+                case .reachability:
+                    ReachabilityView(model: model)
+                case .timeline:
+                    TimelineView(model: model)
+                case .settings:
+                    SettingsView(model: model)
                 }
-
-            SettingsView(model: model)
-                .tabItem {
-                    Label(model.text("detail.tab.settings"), systemImage: "gearshape")
-                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .toolbar {
             ToolbarItemGroup {
@@ -54,82 +136,115 @@ struct DetailView: View {
                 }
             }
         }
+        .sensoryFeedback(.success, trigger: model.report?.timestamp)
+    }
+
+    private func tabTitle(_ tab: DetailTab) -> String {
+        switch tab {
+        case .overview: return model.text("detail.tab.overview")
+        case .interfaces: return model.text("detail.tab.interfaces")
+        case .dnsRoute: return model.text("detail.tab.dnsRoute")
+        case .reachability: return model.text("detail.tab.reachability")
+        case .timeline: return model.text("detail.tab.timeline")
+        case .settings: return model.text("detail.tab.settings")
+        }
     }
 }
 
+// MARK: - Overview 标签页（拓扑流光 + 评分环 + Bento）
 private struct OverviewView: View {
     @ObservedObject var model: AppModel
+    var onSelectPipelineNode: ((NetworkPipelineView.PipelineNodeType) -> Void)?
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 18) {
-                HStack {
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text(model.text("overview.title"))
-                            .font(.largeTitle.bold())
-                        Text(model.summaryText)
-                            .font(.title3)
-                            .foregroundStyle(.secondary)
-                    }
-                    Spacer()
-                    if let report = model.report {
-                        HealthBadge(grade: report.health, title: model.text(for: report.health))
-                    } else {
-                        HealthBadge(grade: .checking, title: model.text("status.checking"))
-                    }
-                }
+            VStack(alignment: .leading, spacing: 20) {
+                // 顶部首屏：健康分仪表盘 + 拓扑管线
+                HStack(alignment: .center, spacing: 24) {
+                    HealthScoreGaugeView(
+                        score: model.score,
+                        grade: model.report?.health ?? (model.isChecking ? .checking : .healthy),
+                        verdict: model.verdictText,
+                        size: 136,
+                        lineWidth: 10,
+                        showVerdict: true
+                    )
 
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text(model.text("overview.title"))
+                            .font(.title2.bold())
+
+                        Text(model.summaryText)
+                            .font(.callout)
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+
+                        // 4 节点拓扑流光链路
+                        NetworkPipelineView(
+                            report: model.report,
+                            isChecking: model.isChecking,
+                            onSelectNode: onSelectPipelineNode
+                        )
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .padding(18)
+                .background(.ultraThinMaterial)
+                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                )
+
+                // 2x2 Bento Box 指标矩阵
                 if let report = model.report {
                     LazyVGrid(
-                        columns: [GridItem(.adaptive(minimum: 220), spacing: 12)],
-                        spacing: 12
+                        columns: [GridItem(.adaptive(minimum: 220), spacing: 14)],
+                        spacing: 14
                     ) {
                         MetricCard(
                             title: model.text("overview.path"),
                             value: model.text(for: report.path.status),
                             detail: report.path.isConstrained ? model.text("overview.path.detailConstrained") : model.text("overview.path.detailNormal"),
-                            systemImage: "point.3.connected.trianglepath.dotted"
+                            systemImage: "point.3.connected.trianglepath.dotted",
+                            accentColor: report.path.status == .available ? Color.green : Color.red
                         )
                         MetricCard(
                             title: model.text("overview.activeInterfaces"),
                             value: "\(report.interfaces.filter { $0.isActive }.count)",
-                            detail: report.interfaces.map(\.name).joined(separator: ", "),
-                            systemImage: "network"
+                            detail: report.interfaces.filter { $0.isActive }.map(\.name).joined(separator: ", "),
+                            systemImage: "network",
+                            accentColor: .blue
                         )
                         MetricCard(
                             title: model.text("overview.dnsServers"),
                             value: report.dns.servers.first ?? model.text("overview.notAvailable"),
                             detail: report.dns.servers.joined(separator: ", "),
-                            systemImage: "server.rack"
+                            systemImage: "server.rack",
+                            accentColor: .purple
                         )
                         MetricCard(
                             title: model.text("overview.internet"),
                             value: "\(report.reachability.filter { $0.status == .success }.count)/\(report.reachability.count)",
                             detail: model.text("overview.internet.detail"),
-                            systemImage: "globe"
+                            systemImage: "globe",
+                            accentColor: .cyan
                         )
                     }
 
-                    Divider()
-
-                    VStack(alignment: .leading, spacing: 10) {
-                        Text(model.text("overview.summary"))
-                            .font(.headline)
-                        Text(model.summaryText)
-                            .textSelection(.enabled)
-                    }
-
+                    // 排查建议列表
                     if !report.advice.isEmpty {
                         Divider()
-                        VStack(alignment: .leading, spacing: 10) {
+                        VStack(alignment: .leading, spacing: 12) {
                             Text(model.text("overview.advice"))
                                 .font(.headline)
                             ForEach(report.advice) { advice in
-                                HStack(alignment: .top, spacing: 10) {
+                                HStack(alignment: .top, spacing: 12) {
                                     Image(systemName: advice.severity.symbolName)
                                         .foregroundStyle(adviceColor(advice.severity))
-                                        .frame(width: 22)
-                                    VStack(alignment: .leading, spacing: 3) {
+                                        .font(.title3)
+                                        .frame(width: 24)
+                                    VStack(alignment: .leading, spacing: 4) {
                                         Text(advice.title)
                                             .font(.subheadline.weight(.semibold))
                                         Text(advice.message)
@@ -138,9 +253,9 @@ private struct OverviewView: View {
                                             .fixedSize(horizontal: false, vertical: true)
                                     }
                                 }
-                                .padding(10)
+                                .padding(12)
                                 .frame(maxWidth: .infinity, alignment: .leading)
-                                .background(.quaternary.opacity(0.35), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                                .background(.quaternary.opacity(0.35), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
                             }
                         }
                     }
@@ -158,18 +273,151 @@ private struct OverviewView: View {
 
     private func adviceColor(_ grade: HealthGrade) -> Color {
         switch grade {
-        case .healthy:
-            return .green
-        case .warning:
-            return .orange
-        case .critical:
-            return .red
-        case .checking:
-            return .secondary
+        case .healthy: return Color(red: 0.2, green: 0.88, blue: 0.5)
+        case .warning: return .orange
+        case .critical: return .red
+        case .checking: return .secondary
         }
     }
 }
 
+// MARK: - Reachability 标签页（含 Swift Charts 延迟图表）
+private struct ReachabilityView: View {
+    @ObservedObject var model: AppModel
+
+    var body: some View {
+        Group {
+            if let report = model.report, !report.reachabilitySummaries.isEmpty {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 18) {
+                        // Swift Charts 延迟图表
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text(model.text("reachability.chart.title"))
+                                .font(.headline)
+
+                            Chart {
+                                ForEach(chartData(report)) { item in
+                                    BarMark(
+                                        x: .value("Endpoint", item.name),
+                                        y: .value("P50 Latency", item.p50)
+                                    )
+                                    .foregroundStyle(item.color.gradient)
+                                    .cornerRadius(6)
+
+                                    if let p90 = item.p90 {
+                                        RuleMark(
+                                            xStart: .value("Endpoint", item.name),
+                                            xEnd: .value("Endpoint", item.name),
+                                            y: .value("P90 Latency", p90)
+                                        )
+                                        .lineStyle(StrokeStyle(lineWidth: 3, lineCap: .round))
+                                        .foregroundStyle(Color.orange.opacity(0.8))
+                                    }
+                                }
+                            }
+                            .chartYAxis {
+                                AxisMarks(position: .leading)
+                            }
+                            .frame(height: 180)
+                            .padding(14)
+                            .background(.ultraThinMaterial)
+                            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                    .stroke(Color.white.opacity(0.08), lineWidth: 1)
+                            )
+                        }
+
+                        // 详细端点列表
+                        VStack(spacing: 10) {
+                            ForEach(report.reachabilitySummaries) { summary in
+                                VStack(alignment: .leading, spacing: 10) {
+                                    HStack {
+                                        Text(summary.endpointName)
+                                            .font(.headline)
+                                        Spacer()
+                                        Text(model.text("reachability.successCount", summary.successCount, summary.attempts))
+                                            .font(.callout)
+                                            .foregroundStyle(summary.failureCount == 0 ? Color.green : Color.orange)
+                                    }
+
+                                    HStack(spacing: 12) {
+                                        MetricLine(title: model.text("reachability.loss"), value: summary.lossRate.formatted(.percent.precision(.fractionLength(0))))
+                                        MetricLine(title: "P50", value: Self.format(summary.percentiles.p50))
+                                        MetricLine(title: "P90", value: Self.format(summary.percentiles.p90))
+                                        MetricLine(title: "P95", value: Self.format(summary.percentiles.p95))
+                                    }
+                                }
+                                .padding(14)
+                                .background(.ultraThinMaterial)
+                                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                        .stroke(Color.white.opacity(0.08), lineWidth: 1)
+                                )
+                            }
+                        }
+                    }
+                    .padding(20)
+                }
+            } else {
+                ContentUnavailableView(
+                    model.text("reachability.empty.title"),
+                    systemImage: "globe",
+                    description: Text(model.text("reachability.empty.message"))
+                )
+            }
+        }
+        .navigationTitle(model.text("detail.tab.reachability"))
+    }
+
+    private struct ChartEndpointItem: Identifiable {
+        let id: String
+        let name: String
+        let p50: Double
+        let p90: Double?
+        let color: Color
+    }
+
+    private func chartData(_ report: DiagnosisReport) -> [ChartEndpointItem] {
+        report.reachabilitySummaries.compactMap { summary in
+            guard let p50 = summary.percentiles.p50 else { return nil }
+            let color: Color = summary.failureCount == 0
+                ? (p50 > 300 ? Color.orange : Color(red: 0.2, green: 0.8, blue: 0.5))
+                : Color.red
+            return ChartEndpointItem(
+                id: summary.endpointID,
+                name: summary.endpointName,
+                p50: p50,
+                p90: summary.percentiles.p90,
+                color: color
+            )
+        }
+    }
+
+    private static func format(_ value: Double?) -> String {
+        guard let value else { return "—" }
+        return "\(Int(value.rounded())) ms"
+    }
+}
+
+private struct MetricLine: View {
+    let title: String
+    let value: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(title)
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+            Text(value)
+                .font(.callout.monospacedDigit())
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+// MARK: - Interfaces 标签页
 private struct InterfacesView: View {
     @ObservedObject var model: AppModel
 
@@ -242,6 +490,7 @@ private struct InterfaceRow: View {
     }
 }
 
+// MARK: - DNS & Route 标签页
 private struct DNSRouteView: View {
     @ObservedObject var model: AppModel
 
@@ -294,65 +543,7 @@ private struct DNSRouteView: View {
     }
 }
 
-private struct ReachabilityView: View {
-    @ObservedObject var model: AppModel
-
-    var body: some View {
-        Group {
-            if let report = model.report, !report.reachabilitySummaries.isEmpty {
-                List(report.reachabilitySummaries) { summary in
-                    VStack(alignment: .leading, spacing: 10) {
-                        HStack {
-                            Text(summary.endpointName)
-                                .font(.headline)
-                            Spacer()
-                            Text(model.text("reachability.successCount", summary.successCount, summary.attempts))
-                                .font(.callout)
-                                .foregroundStyle(summary.failureCount == 0 ? Color.green : Color.orange)
-                        }
-
-                        HStack(spacing: 12) {
-                            MetricLine(title: model.text("reachability.loss"), value: summary.lossRate.formatted(.percent.precision(.fractionLength(0))))
-                            MetricLine(title: "P50", value: Self.format(summary.percentiles.p50))
-                            MetricLine(title: "P90", value: Self.format(summary.percentiles.p90))
-                            MetricLine(title: "P95", value: Self.format(summary.percentiles.p95))
-                        }
-                    }
-                    .padding(.vertical, 4)
-                }
-            } else {
-                ContentUnavailableView(
-                    model.text("reachability.empty.title"),
-                    systemImage: "globe",
-                    description: Text(model.text("reachability.empty.message"))
-                )
-            }
-        }
-        .navigationTitle(model.text("detail.tab.reachability"))
-    }
-
-    private static func format(_ value: Double?) -> String {
-        guard let value else { return "—" }
-        return "\(Int(value.rounded())) ms"
-    }
-}
-
-private struct MetricLine: View {
-    let title: String
-    let value: String
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(title)
-                .font(.caption2)
-                .foregroundStyle(.secondary)
-            Text(value)
-                .font(.callout.monospacedDigit())
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-}
-
+// MARK: - Timeline 标签页
 private struct TimelineView: View {
     @ObservedObject var model: AppModel
 

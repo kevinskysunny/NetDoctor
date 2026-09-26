@@ -56,7 +56,9 @@ public struct SupportPackagePayload: Codable, Equatable, Sendable {
             latency: report.latency,
             advice: report.advice,
             health: report.health,
-            summary: report.summary
+            summary: report.summary,
+            score: report.score,
+            verdict: report.verdict
         )
     }
 }

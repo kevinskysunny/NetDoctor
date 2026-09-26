@@ -105,6 +105,22 @@ public final class DiagnosticEngine: DiagnosticEngineControlling {
             routes: routes,
             reachability: probes
         )
+        let score = grader.score(
+            path: path,
+            interfaces: interfaces,
+            dns: dns,
+            routes: routes,
+            reachability: probes
+        )
+        let verdict = grader.verdict(
+            grade: grade,
+            score: score,
+            path: path,
+            interfaces: interfaces,
+            dns: dns,
+            routes: routes,
+            reachability: probes
+        )
         let summary = grader.summary(
             grade: grade,
             path: path,
@@ -130,7 +146,9 @@ public final class DiagnosticEngine: DiagnosticEngineControlling {
             latency: latency,
             advice: advice,
             health: grade,
-            summary: summary
+            summary: summary,
+            score: score,
+            verdict: verdict
         )
 
         let successCount = probes.filter { $0.status == .success }.count

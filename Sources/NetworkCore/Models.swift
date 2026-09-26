@@ -482,6 +482,8 @@ public struct DiagnosisReport: Identifiable, Codable, Equatable, Sendable {
     public let advice: [DiagnosticAdvice]
     public let health: HealthGrade
     public let summary: String
+    public let score: Int
+    public let verdict: String
 
     public init(
         id: UUID = UUID(),
@@ -494,7 +496,9 @@ public struct DiagnosisReport: Identifiable, Codable, Equatable, Sendable {
         latency: [LatencySample],
         advice: [DiagnosticAdvice],
         health: HealthGrade,
-        summary: String
+        summary: String,
+        score: Int = 100,
+        verdict: String = ""
     ) {
         self.id = id
         self.timestamp = timestamp
@@ -507,6 +511,8 @@ public struct DiagnosisReport: Identifiable, Codable, Equatable, Sendable {
         self.advice = advice
         self.health = health
         self.summary = summary
+        self.score = score
+        self.verdict = verdict
     }
 
     public var reachabilitySummaries: [ReachabilitySummary] {

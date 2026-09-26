@@ -103,6 +103,128 @@ final class HealthGraderTests: XCTestCase {
         XCTAssertEqual(grade, .healthy)
     }
 
+    func testScoreIsZeroWhenPathUnavailable() {
+        let path = NetworkPathInfo(
+            status: .unavailable,
+            isExpensive: false,
+            isConstrained: false,
+            supportsDNS: false,
+            supportsIPv4: false,
+            supportsIPv6: false,
+            interfaces: []
+        )
+        let score = HealthGrader().score(
+            path: path,
+            interfaces: [],
+            dns: .empty,
+            routes: .empty,
+            reachability: []
+        )
+        XCTAssertEqual(score, 0)
+    }
+
+    func testScoreIs100WhenNetworkIsOptimal() {
+        let path = Self.availablePath
+        let interface = Self.activeInterface
+        let dns = DNSSummary(
+            resolverSource: "mock",
+            servers: ["1.1.1.1"],
+            searchDomains: [],
+            timestamp: Date()
+        )
+        let route = RouteSummary(
+            routes: [
+                RouteEntry(
+                    id: "default",
+                    family: "IPv4",
+                    destination: "0.0.0.0/0",
+                    gateway: "192.168.1.1",
+                    interfaceName: "en0",
+                    isDefault: true
+                )
+            ],
+            primaryServiceID: nil,
+            primaryInterfaceName: "en0"
+        )
+        let probes = [
+            Self.probe(endpointID: "a", status: .success, duration: 15),
+            Self.probe(endpointID: "b", status: .success, duration: 25)
+        ]
+
+        let score = HealthGrader().score(
+            path: path,
+            interfaces: [interface],
+            dns: dns,
+            routes: route,
+            reachability: probes
+        )
+        XCTAssertEqual(score, 100)
+
+        let verdict = HealthGrader().verdict(
+            grade: .healthy,
+            score: score,
+            path: path,
+            interfaces: [interface],
+            dns: dns,
+            routes: route,
+            reachability: probes
+        )
+        XCTAssertEqual(verdict, "经络畅通 · 战力全开")
+    }
+
+    func testScoreDeductionWhenHighLatencyAndLoss() {
+        let path = Self.availablePath
+        let interface = Self.activeInterface
+        let dns = DNSSummary(
+            resolverSource: "mock",
+            servers: ["1.1.1.1"],
+            searchDomains: [],
+            timestamp: Date()
+        )
+        let route = RouteSummary(
+            routes: [
+                RouteEntry(
+                    id: "default",
+                    family: "IPv4",
+                    destination: "0.0.0.0/0",
+                    gateway: "192.168.1.1",
+                    interfaceName: "en0",
+                    isDefault: true
+                )
+            ],
+            primaryServiceID: nil,
+            primaryInterfaceName: "en0"
+        )
+        // 1 成功 (高延迟 850ms), 1 失败
+        let probes = [
+            Self.probe(endpointID: "a", status: .success, duration: 850),
+            Self.probe(endpointID: "b", status: .failed, duration: nil)
+        ]
+
+        let score = HealthGrader().score(
+            path: path,
+            interfaces: [interface],
+            dns: dns,
+            routes: route,
+            reachability: probes
+        )
+        // path 30 + dns 25 + route 20 = 75
+        // probe: 25 * 0.5 = 12.5 -> 13, p90 (850) > 800 -> 13 - 10 = 3
+        // total: 75 + 3 = 78
+        XCTAssertTrue(score < 90 && score > 60)
+
+        let verdict = HealthGrader().verdict(
+            grade: .warning,
+            score: score,
+            path: path,
+            interfaces: [interface],
+            dns: dns,
+            routes: route,
+            reachability: probes
+        )
+        XCTAssertEqual(verdict, "心律不齐（网络偶发丢包）")
+    }
+
     func testAdviceExplainsDNSAndExternalFailuresForNoviceUsers() {
         let path = NetworkPathInfo(
             status: .available,

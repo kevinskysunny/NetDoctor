@@ -13,9 +13,11 @@
 		16E936688686B88D3C587178 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 3410927C1887B857AE763505 /* PrivacyInfo.xcprivacy */; };
 		1CCAF28762B657B136C49C62 /* NetworkConsoleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65360E06E233D41D3252C22C /* NetworkConsoleApp.swift */; };
 		28A72F4B64DB9EF28ED2DD53 /* TimelineStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 677907D62661AAE32E8E4920 /* TimelineStore.swift */; };
+		2B7D756B43EC6930671B1065 /* HealthScoreGaugeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92E5AAFC918871FF52EFCFDD /* HealthScoreGaugeView.swift */; };
 		303DA2D98FEC6856E5E6AAC1 /* QuickCheckView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1573ADB4DC5A3D9A12952659 /* QuickCheckView.swift */; };
 		305B9D6F7C05A96540BF3E5A /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8142F83799D0BD5664A1EC1A /* SystemConfiguration.framework */; };
 		3B64BEC5235AD4ADFB1AF794 /* HealthGrader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5BFC8A9ABD338A057A2FFDB /* HealthGrader.swift */; };
+		3F0F3C2175331023DEC3B6B7 /* ECGWaveformView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D62A4295A0D3AD3B4E8313AB /* ECGWaveformView.swift */; };
 		50B9E4131B19FB9ED6615A87 /* CoreWLAN.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 41BF1CEDDDBADF90F2D9F7F1 /* CoreWLAN.framework */; };
 		55B749C5B1B0E18AD26B8BEB /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD4021DC6A77C6D695734088 /* AppDelegate.swift */; };
 		6234E45831A63F7C66C69829 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8B39F9CDEB40DB0E0A8E6EC /* Models.swift */; };
@@ -28,10 +30,12 @@
 		A1959F8043D5CE452A1AFA55 /* Protocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = 442B05E5E1E7C1A2B74AF494 /* Protocols.swift */; };
 		A72E121D208850C829050F36 /* NetworkPathProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31D70E4D277AEF9FB800E065 /* NetworkPathProvider.swift */; };
 		B3427A74FEEEE30A3291D781 /* SupportPackageExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4963FD0CBA6E74091F331AE8 /* SupportPackageExporter.swift */; };
+		B39F5D47F484E83B65F67E43 /* CyberDiagnosisCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BF18426454906B052C15D62 /* CyberDiagnosisCardView.swift */; };
 		D36FC913BAE6AD72A4C954B2 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58607FA4252757A216574B0D /* AppSettings.swift */; };
 		D4922F42605FD637A4EB127B /* Localization.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9373D6F3FA75676DF9A8ECF /* Localization.swift */; };
 		D8A1CE53C5D2B9BDA24CD423 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06498046A6A442401587542F /* SettingsView.swift */; };
 		F1B24F7F62DE043F1D5E97FF /* SystemCollectors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A01F30C6EB3103CD205F0C6 /* SystemCollectors.swift */; };
+		F2F21AD9C87D8348F2E4EAB3 /* NetworkPipelineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C503961740761ACB9DADF46A /* NetworkPipelineView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -74,14 +78,18 @@
 		65360E06E233D41D3252C22C /* NetworkConsoleApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkConsoleApp.swift; sourceTree = "<group>"; };
 		677907D62661AAE32E8E4920 /* TimelineStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineStore.swift; sourceTree = "<group>"; };
 		738C230CB0651C5C48199C5B /* Components.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Components.swift; sourceTree = "<group>"; };
+		7BF18426454906B052C15D62 /* CyberDiagnosisCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CyberDiagnosisCardView.swift; sourceTree = "<group>"; };
 		7E96B3592F679ED7716FEC27 /* NetworkConsoleApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NetworkConsoleApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8142F83799D0BD5664A1EC1A /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		8B4F1F58164AEC1840C20B15 /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
 		91D8F07CE625CD365136A0F3 /* DiagnosticEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticEngine.swift; sourceTree = "<group>"; };
+		92E5AAFC918871FF52EFCFDD /* HealthScoreGaugeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthScoreGaugeView.swift; sourceTree = "<group>"; };
 		A5BFC8A9ABD338A057A2FFDB /* HealthGrader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthGrader.swift; sourceTree = "<group>"; };
 		C01FE1E7E816D6E6F99DD714 /* NetworkCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = NetworkCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		C503961740761ACB9DADF46A /* NetworkPipelineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkPipelineView.swift; sourceTree = "<group>"; };
 		CD4021DC6A77C6D695734088 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		D022C5650EABC3C9B534BC33 /* DetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailView.swift; sourceTree = "<group>"; };
+		D62A4295A0D3AD3B4E8313AB /* ECGWaveformView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ECGWaveformView.swift; sourceTree = "<group>"; };
 		F8B39F9CDEB40DB0E0A8E6EC /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
 		F9373D6F3FA75676DF9A8ECF /* Localization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Localization.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -177,9 +185,13 @@
 				8B4F1F58164AEC1840C20B15 /* AppModel.swift */,
 				58607FA4252757A216574B0D /* AppSettings.swift */,
 				738C230CB0651C5C48199C5B /* Components.swift */,
+				7BF18426454906B052C15D62 /* CyberDiagnosisCardView.swift */,
 				D022C5650EABC3C9B534BC33 /* DetailView.swift */,
+				D62A4295A0D3AD3B4E8313AB /* ECGWaveformView.swift */,
+				92E5AAFC918871FF52EFCFDD /* HealthScoreGaugeView.swift */,
 				F9373D6F3FA75676DF9A8ECF /* Localization.swift */,
 				65360E06E233D41D3252C22C /* NetworkConsoleApp.swift */,
+				C503961740761ACB9DADF46A /* NetworkPipelineView.swift */,
 				1573ADB4DC5A3D9A12952659 /* QuickCheckView.swift */,
 				06498046A6A442401587542F /* SettingsView.swift */,
 				7544D26188E23FD5CAC1F149 /* Resources */,
@@ -284,9 +296,13 @@
 				6C062F2821F7D091366AAAD6 /* AppModel.swift in Sources */,
 				D36FC913BAE6AD72A4C954B2 /* AppSettings.swift in Sources */,
 				7BE29536CF7565AE3A35681D /* Components.swift in Sources */,
+				B39F5D47F484E83B65F67E43 /* CyberDiagnosisCardView.swift in Sources */,
 				0AB43839446A8C0C7B9E47AE /* DetailView.swift in Sources */,
+				3F0F3C2175331023DEC3B6B7 /* ECGWaveformView.swift in Sources */,
+				2B7D756B43EC6930671B1065 /* HealthScoreGaugeView.swift in Sources */,
 				D4922F42605FD637A4EB127B /* Localization.swift in Sources */,
 				1CCAF28762B657B136C49C62 /* NetworkConsoleApp.swift in Sources */,
+				F2F21AD9C87D8348F2E4EAB3 /* NetworkPipelineView.swift in Sources */,
 				303DA2D98FEC6856E5E6AAC1 /* QuickCheckView.swift in Sources */,
 				D8A1CE53C5D2B9BDA24CD423 /* SettingsView.swift in Sources */,
 			);
