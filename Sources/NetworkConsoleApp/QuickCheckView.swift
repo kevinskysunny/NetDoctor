@@ -44,7 +44,9 @@ struct QuickCheckView: View {
                     verdict: "",
                     size: 44,
                     lineWidth: 4.5,
-                    showVerdict: false
+                    showVerdict: false,
+                    gradeTitle: model.text(for: model.report?.health ?? (model.isChecking ? .checking : .healthy)),
+                    scoreSuffix: ""
                 )
             }
 
@@ -92,7 +94,7 @@ struct QuickCheckView: View {
                     MetricCard(
                         title: model.text("quick.bento.interface"),
                         value: activeInterfaceName(report),
-                        detail: "\(report.interfaces.filter { $0.isActive }.count) 个活动接口",
+                        detail: model.text("quick.bento.interfaces.count", report.interfaces.filter { $0.isActive }.count),
                         systemImage: "network",
                         accentColor: .blue
                     )
@@ -100,7 +102,7 @@ struct QuickCheckView: View {
                     MetricCard(
                         title: model.text("quick.bento.dns"),
                         value: report.dns.servers.first ?? model.text("overview.notAvailable"),
-                        detail: report.path.supportsDNS ? "DNS 正常" : "无 DNS",
+                        detail: report.path.supportsDNS ? model.text("card.grid.dns.normal") : model.text("card.grid.dns.missing"),
                         systemImage: "server.rack",
                         accentColor: .purple
                     )
@@ -253,14 +255,14 @@ struct QuickCheckView: View {
 
     private func activeInterfaceName(_ report: DiagnosisReport) -> String {
         let iface = report.interfaces.first(where: { $0.isDefaultRouteInterface }) ?? report.interfaces.first(where: { $0.isActive })
-        return iface?.name ?? "无接口"
+        return iface?.name ?? model.text("card.grid.interfaces.none")
     }
 
     private func lossRateDisplay(_ report: DiagnosisReport) -> String {
-        guard !report.reachability.isEmpty else { return "未探测" }
+        guard !report.reachability.isEmpty else { return model.text("quick.notProbed") }
         let fail = report.reachability.filter { $0.status != .success }.count
         let rate = Double(fail) / Double(report.reachability.count)
-        return String(format: "丢包 %.0f%%", rate * 100)
+        return model.text("reachability.lossFormat", rate * 100)
     }
 
     private func adviceColor(_ grade: HealthGrade) -> Color {

@@ -354,7 +354,7 @@ final class AppModel: ObservableObject {
             timelineStore.append(
                 TimelineEvent(
                     kind: .exportCreated,
-                    message: "已导出脱敏支持包：\(url.lastPathComponent)",
+                    message: text("export.timeline.message", url.lastPathComponent),
                     arguments: [url.lastPathComponent]
                 )
             )

@@ -14,8 +14,13 @@ enum AppLanguage: String, Codable, CaseIterable, Identifiable, Sendable {
     var id: String { rawValue }
 
     var displayName: String {
+        displayName(in: .system)
+    }
+
+    func displayName(in language: AppLanguage) -> String {
         switch self {
-        case .system: return "跟随系统（自动）"
+        case .system:
+            return L10n.string("settings.language.system", language: language)
         case .english: return "English"
         case .chinese: return "中文"
         case .japanese: return "日本語"
@@ -99,10 +104,10 @@ enum L10n {
 
     private static let zh: [String: String] = [
         "app.name": "NetDoctor",
-        "detail.window.title": "NetDoctor 网络体检",
+        "detail.window.title": "NetDoctor 网络诊断",
         "status.checking": "检查中",
         "status.notChecked": "尚未检查",
-        "summary.checking": "正在执行本地网络体检。",
+        "summary.checking": "正在执行本地网络诊断。",
         "summary.notChecked": "点击“立即检查”开始。",
         "summary.healthy": "网络状态正常，互联网连通性检测通过。",
         "summary.warning": "网络可用，但存在需要关注的信号。",
@@ -124,7 +129,7 @@ enum L10n {
         "detail.tab.settings": "设置",
         "detail.checkNow": "立即检查",
         "detail.export": "导出支持包",
-        "overview.title": "网络体检",
+        "overview.title": "网络诊断",
         "overview.path": "网络路径",
         "overview.path.detailConstrained": "网络受限",
         "overview.path.detailNormal": "Network.framework 路径",
@@ -136,7 +141,7 @@ enum L10n {
         "overview.summary": "当前说明",
         "overview.advice": "排查建议",
         "overview.empty.title": "尚未完成检查",
-        "overview.empty.message": "点击“立即检查”开始只读网络体检。",
+        "overview.empty.message": "点击“立即检查”开始只读网络诊断。",
         "interfaces.empty.title": "暂无接口数据",
         "interfaces.empty.message": "无网络时接口列表仍会显示本机只读状态。",
         "interfaces.defaultRoute": "默认路由接口",
@@ -184,20 +189,20 @@ enum L10n {
         "dnsRoute.route.filter.ipv4": "IPv4",
         "dnsRoute.route.filter.ipv6": "IPv6",
         "dnsRoute.route.copied": "已复制",
-        "settings.engine.title": "体检探针引擎",
+        "settings.engine.title": "诊断探针引擎",
         "settings.engine.subtitle": "并发探测公开端点网络延时与丢包",
         "settings.timeout.presetSpeedy": "极速 (1.0s)",
         "settings.timeout.presetBalanced": "稳健 (3.0s)",
         "settings.timeout.presetDeep": "深度 (5.0s)",
         "settings.endpoints.title": "并发探测公开端点",
         "settings.auto.title": "自动化巡检律动",
-        "settings.auto.subtitle": "后台轻量感知链路异动与定期体检",
+        "settings.auto.subtitle": "后台轻量感知链路异动与定期检查",
         "settings.auto.preset1m": "1 分钟",
         "settings.auto.preset5m": "5 分钟",
         "settings.auto.preset15m": "15 分钟",
         "settings.auto.preset1h": "1 小时",
         "settings.privacy.title": "隐私安全透明堡垒",
-        "settings.privacy.subtitle": "面向 Mac App Store 沙盒标准的纯只读网络体检实现",
+        "settings.privacy.subtitle": "面向 Mac App Store 沙盒标准的纯只读网络诊断实现",
         "settings.privacy.item1.title": "100% 只读诊断",
         "settings.privacy.item1.desc": "不修改系统 DNS、代理、VPN 或网络服务",
         "settings.privacy.item2.title": "零遥测与数据隐私",
@@ -215,10 +220,10 @@ enum L10n {
         "timeline.empty.message": "诊断记录只保存在本机。",
         "timeline.filter.all": "全部",
         "timeline.filter.pathChanges": "网络异动",
-        "timeline.filter.checks": "体检记录",
+        "timeline.filter.checks": "检查记录",
         "timeline.filter.exports": "支持包导出",
         "timeline.filterEmpty.title": "该分类下暂无事件",
-        "timeline.filterEmpty.message": "请切换筛选分类或执行一次体检。",
+        "timeline.filterEmpty.message": "请切换筛选分类或执行一次检查。",
         "settings.section.probe": "互联网连通性检测",
         "settings.attempts": "每端点尝试次数",
         "settings.timeout": "超时",
@@ -268,7 +273,7 @@ enum L10n {
         "timeline.detail.pathChanged.statusOnly": "状态：%@",
         "timeline.detail.checkStarted": "正在检查 %@ 个端点",
         "timeline.detail.checkFinished": "状态：%@ · 可达 %@ · 平均延迟 %@",
-        "export.title": "导出网络体检支持包",
+        "export.title": "导出网络诊断支持包",
         "export.prompt": "导出",
         "export.timeline.message": "已导出脱敏支持包：%@",
         "export.error": "导出失败：%@",
@@ -327,7 +332,25 @@ enum L10n {
         "card.grid.dns.normal": "DNS 正常",
         "card.grid.dns.missing": "无 DNS",
         "card.grid.reachability": "公网连通端点",
-        "card.grid.avgLatency": "平均 %.0fms"
+        "card.grid.avgLatency": "平均 %.0fms",
+        "settings.attempts.hint": "端点并发采样次数 (1~10)",
+        "settings.timeout.hint": "单次网络请求连接上限",
+        "settings.timeout.value": "%.1f 秒",
+        "settings.autoRefresh.hint": "网络链路切换或重新连网时即刻触发诊断",
+        "dnsRoute.routesCount": "%d 条规则",
+        "common.copyTarget": "复制 %@",
+        "reachability.lossFormat": "丢包 %.0f%%",
+        "pipeline.node.localMac": "本机 Mac",
+        "pipeline.node.gateway": "本地网关",
+        "pipeline.node.dns": "DNS 解析",
+        "pipeline.node.internet": "互联网",
+        "gauge.scoreSuffix": "分",
+        "settings.language.system": "跟随系统（自动）",
+        "quick.bento.interfaces.count": "%d 个活动接口",
+        "time.justNow": "刚刚",
+        "time.minutesAgo": "%d 分钟前",
+        "time.hoursAgo": "%d 小时前",
+        "time.yesterday": "昨天 "
     ]
 
     private static let en: [String: String] = [
@@ -560,7 +583,25 @@ enum L10n {
         "card.grid.dns.normal": "DNS OK",
         "card.grid.dns.missing": "No DNS",
         "card.grid.reachability": "Public Endpoints",
-        "card.grid.avgLatency": "Avg %.0fms"
+        "card.grid.avgLatency": "Avg %.0fms",
+        "settings.attempts.hint": "Concurrent probe attempts per endpoint (1–10)",
+        "settings.timeout.hint": "Connection timeout cap for each request",
+        "settings.timeout.value": "%.1f sec",
+        "settings.autoRefresh.hint": "Trigger diagnostic check upon network changes or reconnection",
+        "dnsRoute.routesCount": "%d rules",
+        "common.copyTarget": "Copy %@",
+        "reachability.lossFormat": "Loss %.0f%%",
+        "pipeline.node.localMac": "Local Mac",
+        "pipeline.node.gateway": "Local Gateway",
+        "pipeline.node.dns": "DNS Resolver",
+        "pipeline.node.internet": "Internet",
+        "gauge.scoreSuffix": "pts",
+        "settings.language.system": "System Default (Auto)",
+        "quick.bento.interfaces.count": "%d Active",
+        "time.justNow": "Just now",
+        "time.minutesAgo": "%dm ago",
+        "time.hoursAgo": "%dh ago",
+        "time.yesterday": "Yesterday "
     ]
 
     private static let ja: [String: String] = [
@@ -709,7 +750,25 @@ enum L10n {
         "card.grid.dns.normal": "DNS 正常",
         "card.grid.dns.missing": "DNS なし",
         "card.grid.reachability": "公開エンドポイント",
-        "card.grid.avgLatency": "平均 %.0fms"
+        "card.grid.avgLatency": "平均 %.0fms",
+        "settings.attempts.hint": "エンドポイントごとの同時サンプリング回数 (1〜10)",
+        "settings.timeout.hint": "各リクエストのタイムアウト上限",
+        "settings.timeout.value": "%.1f 秒",
+        "settings.autoRefresh.hint": "ネットワーク切り替えまたは再接続時に即時自動診断",
+        "dnsRoute.routesCount": "%d 件のルール",
+        "common.copyTarget": "%@ をコピー",
+        "reachability.lossFormat": "ロス %.0f%%",
+        "pipeline.node.localMac": "この Mac",
+        "pipeline.node.gateway": "ローカルゲートウェイ",
+        "pipeline.node.dns": "DNS 解決",
+        "pipeline.node.internet": "インターネット",
+        "gauge.scoreSuffix": "点",
+        "settings.language.system": "システムに従う（自動）",
+        "quick.bento.interfaces.count": "%d 件のアクティブ",
+        "time.justNow": "たった今",
+        "time.minutesAgo": "%d分前",
+        "time.hoursAgo": "%d時間前",
+        "time.yesterday": "昨日 "
     ]
 
     private static let ko: [String: String] = [
@@ -842,7 +901,8 @@ enum L10n {
         "advice.healthy.title": "네트워크 상태 정상",
         "advice.healthy.message": "문제가 발견되지 않았습니다. 특정 사이트가 열리지 않는다면 해당 사이트의 서비스 문제일 수 있습니다.",
         "probe.error.invalidURL": "유효하지 않은 URL",
-        "probe.error.invalidPort": "유효하지 않은 포트"
+        "probe.error.invalidPort": "유효하지 않은 포트",
+        "settings.language.system": "시스템 기본값 (자동)"
     ]
 
     private static let de: [String: String] = [
@@ -975,7 +1035,8 @@ enum L10n {
         "advice.healthy.title": "Netzwerkstatus normal",
         "advice.healthy.message": "Keine Probleme festgestellt. Falls eine bestimmte Website nicht erreichbar ist, liegt der Fehler meist beim Anbieter.",
         "probe.error.invalidURL": "Ungültige URL",
-        "probe.error.invalidPort": "Ungültiger Port"
+        "probe.error.invalidPort": "Ungültiger Port",
+        "settings.language.system": "Systemstandard (Automatisch)"
     ]
 
     private static let fr: [String: String] = [
@@ -1108,7 +1169,8 @@ enum L10n {
         "advice.healthy.title": "Réseau en bon état",
         "advice.healthy.message": "Aucun problème détecté. Si un site spécifique échoue, il est probablement indisponible de son côté.",
         "probe.error.invalidURL": "URL non valide",
-        "probe.error.invalidPort": "Port non valide"
+        "probe.error.invalidPort": "Port non valide",
+        "settings.language.system": "Système par défaut (Auto)"
     ]
 
     private static let es: [String: String] = [
@@ -1241,7 +1303,8 @@ enum L10n {
         "advice.healthy.title": "La red está sana",
         "advice.healthy.message": "No se encontraron problemas. Si un sitio web falla, suele deberse al propio servicio externo.",
         "probe.error.invalidURL": "URL no válida",
-        "probe.error.invalidPort": "Puerto no válido"
+        "probe.error.invalidPort": "Puerto no válido",
+        "settings.language.system": "Predeterminado del sistema (Auto)"
     ]
 
     private static let pt: [String: String] = [
@@ -1374,7 +1437,8 @@ enum L10n {
         "advice.healthy.title": "Rede em bom estado",
         "advice.healthy.message": "Nenhum problema encontrado. Se um site específico falhar, provavelmente a falha é do próprio site.",
         "probe.error.invalidURL": "URL inválida",
-        "probe.error.invalidPort": "Porta inválida"
+        "probe.error.invalidPort": "Porta inválida",
+        "settings.language.system": "Padrão do Sistema (Automático)"
     ]
 
 }

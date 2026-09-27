@@ -9,6 +9,8 @@ struct HealthScoreGaugeView: View {
     var size: CGFloat = 130
     var lineWidth: CGFloat = 10
     var showVerdict: Bool = true
+    var gradeTitle: String? = nil
+    var scoreSuffix: String? = nil
 
     @State private var animatedScore: Double = 0
 
@@ -37,15 +39,17 @@ struct HealthScoreGaugeView: View {
                             .monospacedDigit()
                             .contentTransition(.numericText())
 
-                        Text("分")
-                            .font(.system(size: size * 0.12, weight: .medium))
-                            .foregroundStyle(.secondary)
+                        if let scoreSuffix, !scoreSuffix.isEmpty {
+                            Text(scoreSuffix)
+                                .font(.system(size: size * 0.12, weight: .medium))
+                                .foregroundStyle(.secondary)
+                        }
                     }
 
                     HStack(spacing: 3) {
                         Image(systemName: grade.symbolName)
                             .font(.system(size: size * 0.09, weight: .bold))
-                        Text(grade.displayName)
+                        Text(gradeTitle ?? grade.displayName)
                             .font(.system(size: size * 0.1, weight: .semibold))
                     }
                     .foregroundStyle(themeColor)

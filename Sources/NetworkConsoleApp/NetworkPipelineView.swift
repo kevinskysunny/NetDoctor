@@ -8,6 +8,7 @@ struct NetworkPipelineView: View {
     let isChecking: Bool
     var isVisible: Bool = true
     var onSelectNode: ((PipelineNodeType) -> Void)? = nil
+    var nodeTitles: [PipelineNodeType: String]? = nil
 
     enum PipelineNodeType: String, CaseIterable, Identifiable {
         case localMac
@@ -166,11 +167,14 @@ struct NetworkPipelineView: View {
     }
 
     private func title(for type: PipelineNodeType) -> String {
+        if let nodeTitles, let title = nodeTitles[type] {
+            return title
+        }
         switch type {
-        case .localMac: return "本机 Mac"
-        case .gateway: return "本地网关"
-        case .dns: return "DNS 解析"
-        case .internet: return "互联网"
+        case .localMac: return "Local Mac"
+        case .gateway: return "Gateway"
+        case .dns: return "DNS"
+        case .internet: return "Internet"
         }
     }
 

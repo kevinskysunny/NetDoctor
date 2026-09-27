@@ -51,7 +51,7 @@ struct SettingsView: View {
                     set: { model.updateLanguage($0) }
                 )) {
                     ForEach(AppLanguage.allCases) { language in
-                        Text(language.displayName).tag(language)
+                        Text(language.displayName(in: model.language)).tag(language)
                     }
                 }
                 .pickerStyle(.menu)
@@ -99,7 +99,7 @@ struct SettingsView: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(model.text("settings.attempts"))
                             .font(.callout.weight(.medium))
-                        Text("端点并发 Ping 次数 (1~10)")
+                        Text(model.text("settings.attempts.hint"))
                             .font(.caption2)
                             .foregroundStyle(.secondary)
                     }
@@ -147,14 +147,14 @@ struct SettingsView: View {
                         VStack(alignment: .leading, spacing: 2) {
                             Text(model.text("settings.timeout"))
                                 .font(.callout.weight(.medium))
-                            Text("单次网络请求连接上限")
+                            Text(model.text("settings.timeout.hint"))
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
                         }
 
                         Spacer()
 
-                        Text(String(format: "%.1f 秒", model.settings.timeoutSeconds))
+                        Text(model.text("settings.timeout.value", model.settings.timeoutSeconds))
                             .font(.system(size: 13, weight: .bold, design: .monospaced))
                             .foregroundStyle(.cyan)
                     }
@@ -273,7 +273,7 @@ struct SettingsView: View {
                         VStack(alignment: .leading, spacing: 2) {
                             Text(model.text("settings.autoRefresh"))
                                 .font(.callout.weight(.medium))
-                            Text("网络链路切换或重新连网时即刻自愈体检")
+                            Text(model.text("settings.autoRefresh.hint"))
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
                         }

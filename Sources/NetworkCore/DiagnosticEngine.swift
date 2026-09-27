@@ -75,7 +75,7 @@ public final class DiagnosticEngine: DiagnosticEngineControlling {
         eventStore.append(
             TimelineEvent(
                 kind: .checkStarted,
-                message: "开始网络体检（\(endpoints.count) 个端点）",
+                message: "开始网络诊断（\(endpoints.count) 个端点）",
                 arguments: ["\(endpoints.count)"]
             )
         )

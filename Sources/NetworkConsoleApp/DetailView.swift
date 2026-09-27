@@ -172,7 +172,9 @@ private struct OverviewView: View {
                         verdict: model.verdictText,
                         size: 136,
                         lineWidth: 10,
-                        showVerdict: true
+                        showVerdict: true,
+                        gradeTitle: model.text(for: model.report?.health ?? (model.isChecking ? .checking : .healthy)),
+                        scoreSuffix: model.text("gauge.scoreSuffix")
                     )
 
                     VStack(alignment: .leading, spacing: 10) {
@@ -190,7 +192,13 @@ private struct OverviewView: View {
                                 report: model.report,
                                 isChecking: model.isChecking,
                                 isVisible: isTabActive,
-                                onSelectNode: onSelectPipelineNode
+                                onSelectNode: onSelectPipelineNode,
+                                nodeTitles: [
+                                    .localMac: model.text("pipeline.node.localMac"),
+                                    .gateway: model.text("pipeline.node.gateway"),
+                                    .dns: model.text("pipeline.node.dns"),
+                                    .internet: model.text("pipeline.node.internet")
+                                ]
                             )
                         }
                     }
@@ -906,7 +914,7 @@ private struct DNSRouteView: View {
 
                 Spacer()
 
-                Text("\(allRoutes.count) 条规则")
+                Text(model.text("dnsRoute.routesCount", allRoutes.count))
                     .font(.caption.monospacedDigit())
                     .foregroundStyle(.tertiary)
             }
@@ -1343,7 +1351,7 @@ private struct RouteExpresswayCard: View {
                     .background(Color.white.opacity(0.06), in: Circle())
             }
             .buttonStyle(.plain)
-            .help("复制 " + (route.gateway ?? route.destination))
+            .help(model.text("common.copyTarget", route.gateway ?? route.destination))
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 10)
@@ -1649,18 +1657,17 @@ private struct TimelineRailwayItem: View {
     private func relativeTimeString(for date: Date) -> String {
         let now = Date()
         let interval = max(0, now.timeIntervalSince(date))
-        let isZh = model.language.resolvedLanguage == .chinese
 
         if interval < 45 {
-            return isZh ? "刚刚" : "Just now"
+            return model.text("time.justNow")
         } else if interval < 3600 {
             let mins = max(1, Int(interval / 60))
-            return isZh ? "\(mins) 分钟前" : "\(mins)m ago"
+            return model.text("time.minutesAgo", mins)
         } else if Calendar.current.isDateInToday(date) {
             let hours = Int(interval / 3600)
-            return isZh ? "\(hours) 小时前" : "\(hours)h ago"
+            return model.text("time.hoursAgo", hours)
         } else if Calendar.current.isDateInYesterday(date) {
-            return (isZh ? "昨天 " : "Yesterday ") + date.formatted(date: .omitted, time: .shortened)
+            return model.text("time.yesterday") + date.formatted(date: .omitted, time: .shortened)
         } else {
             return date.formatted(date: .abbreviated, time: .shortened)
         }
