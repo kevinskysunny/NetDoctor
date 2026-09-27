@@ -2,7 +2,7 @@ import NetworkCore
 import SwiftUI
 
 @main
-struct NetworkConsoleLiteApp: App {
+struct NetDoctorApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @StateObject private var model: AppModel
 

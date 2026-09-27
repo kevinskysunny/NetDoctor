@@ -2,7 +2,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "NetworkConsoleLite",
+    name: "NetDoctor",
     defaultLocalization: "zh-Hans",
     platforms: [
         .macOS(.v14)
@@ -34,6 +34,10 @@ let package = Package(
         .testTarget(
             name: "NetworkCoreTests",
             dependencies: ["NetworkCore"]
+        ),
+        .testTarget(
+            name: "NetworkConsoleAppTests",
+            dependencies: ["NetworkConsoleApp", "NetworkCore"]
         )
     ],
     swiftLanguageModes: [.v5]

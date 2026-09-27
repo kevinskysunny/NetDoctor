@@ -12,6 +12,7 @@ public final class TimelineStore: EventRecording {
     ) {
         self.fileURL = fileURL
         self.maximumStoredEvents = max(1, maximumStoredEvents)
+        Self.migrateLegacyDirectoryIfNeeded()
         load()
     }
 
@@ -53,8 +54,25 @@ public final class TimelineStore: EventRecording {
 
     public static func defaultFileURL() -> URL? {
         let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
-        return base?.appendingPathComponent("NetworkConsoleLite", isDirectory: true)
+        return base?.appendingPathComponent("NetDoctor", isDirectory: true)
             .appendingPathComponent("timeline.jsonl")
+    }
+
+    public static func migrateLegacyDirectoryIfNeeded() {
+        let fm = FileManager.default
+        guard let appSupport = fm.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else { return }
+        let oldDir = appSupport.appendingPathComponent("NetworkConsoleLite")
+        let newDir = appSupport.appendingPathComponent("NetDoctor")
+        guard fm.fileExists(atPath: oldDir.path) else { return }
+        if !fm.fileExists(atPath: newDir.path) {
+            try? fm.moveItem(at: oldDir, to: newDir)
+        } else {
+            let oldFile = oldDir.appendingPathComponent("timeline.jsonl")
+            let newFile = newDir.appendingPathComponent("timeline.jsonl")
+            if fm.fileExists(atPath: oldFile.path) && !fm.fileExists(atPath: newFile.path) {
+                try? fm.moveItem(at: oldFile, to: newFile)
+            }
+        }
     }
 
     private static func appendLine(_ line: Data, to url: URL) {

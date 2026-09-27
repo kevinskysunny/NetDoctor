@@ -137,7 +137,7 @@ public final class SystemInterfaceCollector: InterfaceCollecting {
 public final class SystemDNSCollector: DNSCollecting {
     private let store: SCDynamicStore?
 
-    public init(store: SCDynamicStore? = SCDynamicStoreCreate(nil, "NetworkConsoleLite" as CFString, nil, nil)) {
+    public init(store: SCDynamicStore? = SCDynamicStoreCreate(nil, "NetDoctor" as CFString, nil, nil)) {
         self.store = store
     }
 
@@ -162,7 +162,7 @@ public final class SystemDNSCollector: DNSCollecting {
 public final class SystemRouteCollector: RouteCollecting {
     private let store: SCDynamicStore?
 
-    public init(store: SCDynamicStore? = SCDynamicStoreCreate(nil, "NetworkConsoleLite" as CFString, nil, nil)) {
+    public init(store: SCDynamicStore? = SCDynamicStoreCreate(nil, "NetDoctor" as CFString, nil, nil)) {
         self.store = store
     }
 

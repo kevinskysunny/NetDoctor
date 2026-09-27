@@ -111,6 +111,6 @@ public final class SupportPackageExporter {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.dateFormat = "yyyyMMdd-HHmmss"
-        return "NetworkConsoleLite-Support-\(formatter.string(from: now)).json"
+        return "NetDoctor-Support-\(formatter.string(from: now)).json"
     }
 }

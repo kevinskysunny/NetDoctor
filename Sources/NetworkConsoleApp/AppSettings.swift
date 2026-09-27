@@ -18,8 +18,9 @@ struct AppSettings: Codable, Equatable {
     }
 
     static func load() -> AppSettings {
+        Self.migrateLegacySettingsIfNeeded()
         guard
-            let data = UserDefaults.standard.data(forKey: "networkConsoleLite.settings"),
+            let data = UserDefaults.standard.data(forKey: "netdoctor.settings"),
             let decoded = try? JSONDecoder().decode(AppSettings.self, from: data)
         else {
             return AppSettings()
@@ -29,6 +30,15 @@ struct AppSettings: Codable, Equatable {
 
     func save() {
         guard let data = try? JSONEncoder().encode(self) else { return }
-        UserDefaults.standard.set(data, forKey: "networkConsoleLite.settings")
+        UserDefaults.standard.set(data, forKey: "netdoctor.settings")
+    }
+
+    static func migrateLegacySettingsIfNeeded() {
+        let defaults = UserDefaults.standard
+        let oldKey = "networkConsoleLite.settings"
+        let newKey = "netdoctor.settings"
+        if let oldValue = defaults.object(forKey: oldKey), defaults.object(forKey: newKey) == nil {
+            defaults.set(oldValue, forKey: newKey)
+        }
     }
 }

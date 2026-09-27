@@ -76,22 +76,22 @@
 
 ### M6.2 阶段二：v1.2 架构加固与品牌规范
 
-- [ ] **[H3] 诊断文案类型化重构**：`HealthGrader.verdict/advice/summary` 与 `DiagnosticEngine` 时间线消息改用语言中立枚举编码（`VerdictCode` / `AdviceCode`）；App 层按编码映射 L10n，删除 `AppModel.localizedVerdict / localizedAdvice` 的字符串 switch 匹配；支持包导出 timeline SchemaVersion 维持 1，无破坏性变更（对齐 PRD §9 TC5 决议）。
-- [ ] **[H3] 测试去文案耦合**：调整 `NetworkCoreTests` 依赖中文字面断言的用例（如 `XCTAssertEqual(verdict, "全链路畅通 · 状态极佳")`）改为断言枚举编码。
-- [ ] **[H4] 新增 `NetworkConsoleAppTests` target**：
+- [x] **[H3] 诊断文案类型化重构**：`HealthGrader.verdict/advice/summary` 与 `DiagnosticEngine` 时间线消息改用语言中立枚举编码（`VerdictCode` / `AdviceCode`）；App 层按编码映射 L10n，删除 `AppModel.localizedVerdict / localizedAdvice` 的字符串 switch 匹配；支持包导出 timeline SchemaVersion 维持 1，无破坏性变更（对齐 PRD §9 TC5 决议）。
+- [x] **[H3] 测试去文案耦合**：调整 `NetworkCoreTests` 依赖中文字面断言的用例（如 `XCTAssertEqual(verdict, "全链路畅通 · 状态极佳")`）改为断言枚举编码。
+- [x] **[H4] 新增 `NetworkConsoleAppTests` target**：
   - L10n key 完整性（zh ↔ en 一致，CI 硬门禁；其余语言缺口清单）。
   - `AppLanguage.resolveEffective` / `from(stored:)` 解析。
   - `AppModel` 本地化映射（verdict/advice/status/timeline，mock engine）。
   - 脱敏边界测试（SSID 占位、IP/DNS/网关保留、时间线导出），对齐 PRD §8.3 策略。
-- [ ] **[M1 & L6] 品牌统一 NetDoctor**（保持 Bundle ID / SKU / Apple ID 不可变红线）：
+- [x] **[M1 & L6] 品牌统一 NetDoctor**（保持 Bundle ID / SKU / Apple ID 不可变红线）：
   - 支持包文件名前缀 `NetDoctor-Support-*`。
   - 探测请求 User-Agent 从 `Bundle.main` 读取产品名与版本号，去除硬编码 `1.0`（解决 L6）。
   - 时间线存储目录采用“启动时一次性安全搬迁”迁至 `Application Support/NetDoctor`（对齐 PRD §9 TC6 决议）。
   - 应用内显示名保持短名 `NetDoctor`。
-- [ ] **[H1 第一批] 补齐 ja（日语）缺失 84 个 key + 兜底链修正**：
+- [x] **[H1 第一批] 补齐 ja（日语）缺失 84 个 key + 兜底链修正**：
   - 兜底链固定为 dict → **en**（严禁非中文用户回退中文）。
   - 基线缺口数经核实确认仍为准确的 84 个 key（对齐 PRD §9 TC1 决议）。
-- [ ] **[H1] L10n 完整性框架与测试**：zh/en 与基线完全一致（CI 硬门禁）；其余语言输出缺口清单进 CI 报告，随版本收敛。
+- [x] **[H1] L10n 完整性框架与测试**：zh/en 与基线完全一致（CI 硬门禁）；其余语言输出缺口清单进 CI 报告，随版本收敛。
 
 ### M6.3 阶段三：v1.3 持续完善（不阻塞 v1.2）
 

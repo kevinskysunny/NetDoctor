@@ -82,7 +82,7 @@ public final class URLSessionReachabilityProber: ReachabilityProbing {
 
         var request = URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: timeout)
         request.httpMethod = "GET"
-        request.setValue("NetworkConsoleLite/1.0", forHTTPHeaderField: "User-Agent")
+        request.setValue("NetDoctor/1.2", forHTTPHeaderField: "User-Agent")
 
         do {
             let (_, response) = try await session.data(for: request)
