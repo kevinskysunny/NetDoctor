@@ -4,9 +4,10 @@ import XCTest
 
 final class AppModelLocalizationTests: XCTestCase {
     func testVerdictCodeMapsToCorrectL10nKeyInAllLanguages() {
+        let languages: [AppLanguage] = [.chinese, .english, .japanese, .korean, .german, .french, .spanish, .portuguese]
         for code in VerdictCode.allCases {
             let key = code.l10nKey
-            for lang in [AppLanguage.chinese, .english, .japanese] {
+            for lang in languages {
                 let value = L10n.string(key, language: lang)
                 XCTAssertNotEqual(value, key, "VerdictCode \(code) 缺失 \(lang.rawValue) 文案")
             }
@@ -14,10 +15,11 @@ final class AppModelLocalizationTests: XCTestCase {
     }
 
     func testAdviceCodeMapsToCorrectL10nKeyInAllLanguages() {
+        let languages: [AppLanguage] = [.chinese, .english, .japanese, .korean, .german, .french, .spanish, .portuguese]
         for code in AdviceCode.allCases where code != .unknown {
             let titleKey = code.titleKey
             let messageKey = code.messageKey
-            for lang in [AppLanguage.chinese, .english, .japanese] {
+            for lang in languages {
                 XCTAssertNotEqual(L10n.string(titleKey, language: lang), titleKey, "AdviceCode \(code) title 缺失 \(lang.rawValue) 文案")
                 XCTAssertNotEqual(L10n.string(messageKey, language: lang), messageKey, "AdviceCode \(code) message 缺失 \(lang.rawValue) 文案")
             }

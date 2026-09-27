@@ -19,19 +19,28 @@ final class L10nFallbackTests: XCTestCase {
     }
 
     func testNonChineseLanguageDoesNotFallbackToChinese() {
-        let enValue = L10n.string("verdict.optimal", language: .english)
-        let zhValue = L10n.string("verdict.optimal", language: .chinese)
-        XCTAssertNotEqual(enValue, zhValue, "探针 key 的 en/zh 值应不同")
-        let koResult = L10n.string("verdict.optimal", language: .korean)
-        XCTAssertEqual(koResult, enValue, "ko 缺失 key 应回退 en 而非 zh")
-        XCTAssertNotEqual(koResult, zhValue, "ko 缺失 key 不应回退 zh")
+        let probeKey = "probe.test.untranslated"
+        let enValue = L10n.string(probeKey, language: .english)
+        let zhValue = L10n.string(probeKey, language: .chinese)
+        XCTAssertEqual(enValue, probeKey, "en 缺失 key 应回退 key 本身")
+        XCTAssertEqual(zhValue, probeKey, "zh 缺失 key 应回退 key 本身（不回退中文）")
+        let koResult = L10n.string(probeKey, language: .korean)
+        XCTAssertEqual(koResult, probeKey, "ko 缺失 key 应回退 key 本身（不回退 zh）")
     }
 
     func testFallbackChainIsDictEnKey() {
-        let key = "verdict.offline"
-        let enValue = L10n.string(key, language: .english)
-        let deResult = L10n.string(key, language: .german)
-        XCTAssertEqual(deResult, enValue, "de 缺失 key 应回退 en")
+        let probeKey = "probe.test.untranslated"
+        let result = L10n.string(probeKey, language: .german)
+        XCTAssertEqual(result, probeKey, "de 缺失 key 且 en 缺失时返回 key 本身")
+    }
+
+    func testAll8LanguagesHave248Keys() {
+        let expectedCount = 248
+        let languages: [AppLanguage] = [.chinese, .english, .japanese, .korean, .german, .french, .spanish, .portuguese]
+        for lang in languages {
+            let dict = L10n.dictionary(for: lang)
+            XCTAssertEqual(dict.count, expectedCount, "\(lang.rawValue) 应有 \(expectedCount) key")
+        }
     }
 
     func testJaDictionaryFullCoverage() {
