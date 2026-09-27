@@ -55,7 +55,7 @@ public final class DiagnosticEngine: DiagnosticEngineControlling {
             self.eventStore.append(
                 TimelineEvent(
                     kind: .pathChanged,
-                    message: "网络路径变化：\(path.status.displayName)",
+                    message: "",
                     arguments: [path.status.rawValue, interfaceKinds]
                 )
             )
@@ -75,7 +75,7 @@ public final class DiagnosticEngine: DiagnosticEngineControlling {
         eventStore.append(
             TimelineEvent(
                 kind: .checkStarted,
-                message: "开始网络诊断（\(endpoints.count) 个端点）",
+                message: "",
                 arguments: ["\(endpoints.count)"]
             )
         )
@@ -166,7 +166,7 @@ public final class DiagnosticEngine: DiagnosticEngineControlling {
         eventStore.append(
             TimelineEvent(
                 kind: .checkFinished,
-                message: "检查完成：\(grade.displayName)，\(successCount)/\(probes.count) 可达，平均延迟 \(latencyText)",
+                message: "",
                 arguments: [
                     grade.rawValue,
                     "\(successCount)",

@@ -169,7 +169,7 @@ final class HealthGraderTests: XCTestCase {
             routes: route,
             reachability: probes
         )
-        XCTAssertEqual(verdict, "全链路畅通 · 状态极佳")
+        XCTAssertEqual(verdict, .optimal)
     }
 
     func testScoreDeductionWhenHighLatencyAndLoss() {
@@ -222,7 +222,7 @@ final class HealthGraderTests: XCTestCase {
             routes: route,
             reachability: probes
         )
-        XCTAssertEqual(verdict, "丢包抖动（部分端点探测失败）")
+        XCTAssertEqual(verdict, .jitterLoss)
     }
 
     func testAdviceExplainsDNSAndExternalFailuresForNoviceUsers() {
@@ -248,9 +248,9 @@ final class HealthGraderTests: XCTestCase {
             reachability: probes
         )
 
-        XCTAssertTrue(advice.contains { $0.title == "检查 DNS 设置" })
-        XCTAssertTrue(advice.contains { $0.title == "检查默认路由或 VPN" })
-        XCTAssertTrue(advice.contains { $0.title == "外网不可达" })
+        XCTAssertTrue(advice.contains { $0.code == .checkDNS })
+        XCTAssertTrue(advice.contains { $0.code == .checkRoute })
+        XCTAssertTrue(advice.contains { $0.code == .unreachable })
     }
 
     private static var availablePath: NetworkPathInfo {

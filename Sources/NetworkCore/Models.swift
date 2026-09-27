@@ -6,14 +6,7 @@ public enum NetworkStatus: String, Codable, Sendable {
     case unknown
 
     public var displayName: String {
-        switch self {
-        case .available:
-            return "可用"
-        case .unavailable:
-            return "不可用"
-        case .unknown:
-            return "未知"
-        }
+        rawValue
     }
 }
 
@@ -25,18 +18,7 @@ public enum InterfaceKind: String, Codable, CaseIterable, Sendable {
     case other
 
     public var displayName: String {
-        switch self {
-        case .wifi:
-            return "Wi-Fi"
-        case .wired:
-            return "有线"
-        case .cellular:
-            return "蜂窝"
-        case .loopback:
-            return "回环"
-        case .other:
-            return "其他"
-        }
+        rawValue
     }
 }
 
@@ -46,14 +28,7 @@ public enum LinkState: String, Codable, Sendable {
     case unknown
 
     public var displayName: String {
-        switch self {
-        case .up:
-            return "已连接"
-        case .down:
-            return "未连接"
-        case .unknown:
-            return "未知"
-        }
+        rawValue
     }
 }
 
@@ -295,16 +270,7 @@ public enum ProbeStatus: String, Codable, Sendable {
     case cancelled
 
     public var displayName: String {
-        switch self {
-        case .success:
-            return "成功"
-        case .timeout:
-            return "超时"
-        case .failed:
-            return "失败"
-        case .cancelled:
-            return "已取消"
-        }
+        rawValue
     }
 }
 
@@ -425,16 +391,7 @@ public enum HealthGrade: String, Codable, Sendable {
     case critical
 
     public var displayName: String {
-        switch self {
-        case .checking:
-            return "检查中"
-        case .healthy:
-            return "健康"
-        case .warning:
-            return "警告"
-        case .critical:
-            return "严重"
-        }
+        rawValue
     }
 
     public var symbolName: String {
@@ -453,20 +410,37 @@ public enum HealthGrade: String, Codable, Sendable {
 
 public struct DiagnosticAdvice: Identifiable, Codable, Equatable, Sendable {
     public let id: UUID
+    public let code: AdviceCode
     public let title: String
     public let message: String
     public let severity: HealthGrade
 
     public init(
         id: UUID = UUID(),
-        title: String,
-        message: String,
+        code: AdviceCode,
+        title: String = "",
+        message: String = "",
         severity: HealthGrade
     ) {
         self.id = id
+        self.code = code
         self.title = title
         self.message = message
         self.severity = severity
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id, code, title, message, severity
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        let rawCode = try container.decodeIfPresent(String.self, forKey: .code) ?? AdviceCode.unknown.rawValue
+        code = AdviceCode(rawValue: rawCode) ?? .unknown
+        title = try container.decodeIfPresent(String.self, forKey: .title) ?? ""
+        message = try container.decodeIfPresent(String.self, forKey: .message) ?? ""
+        severity = try container.decode(HealthGrade.self, forKey: .severity)
     }
 }
 
@@ -483,7 +457,7 @@ public struct DiagnosisReport: Identifiable, Codable, Equatable, Sendable {
     public let health: HealthGrade
     public let summary: String
     public let score: Int
-    public let verdict: String
+    public let verdict: VerdictCode
 
     public init(
         id: UUID = UUID(),
@@ -498,7 +472,7 @@ public struct DiagnosisReport: Identifiable, Codable, Equatable, Sendable {
         health: HealthGrade,
         summary: String,
         score: Int = 100,
-        verdict: String = ""
+        verdict: VerdictCode = .checking
     ) {
         self.id = id
         self.timestamp = timestamp
@@ -513,6 +487,28 @@ public struct DiagnosisReport: Identifiable, Codable, Equatable, Sendable {
         self.summary = summary
         self.score = score
         self.verdict = verdict
+    }
+
+    private enum VerdictCodingKeys: String, CodingKey {
+        case id, timestamp, path, interfaces, dns, routes, reachability, latency, advice, health, summary, score, verdict
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: VerdictCodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        timestamp = try container.decode(Date.self, forKey: .timestamp)
+        path = try container.decode(NetworkPathInfo.self, forKey: .path)
+        interfaces = try container.decode([InterfaceInfo].self, forKey: .interfaces)
+        dns = try container.decode(DNSSummary.self, forKey: .dns)
+        routes = try container.decode(RouteSummary.self, forKey: .routes)
+        reachability = try container.decode([ReachabilityProbe].self, forKey: .reachability)
+        latency = try container.decode([LatencySample].self, forKey: .latency)
+        advice = try container.decode([DiagnosticAdvice].self, forKey: .advice)
+        health = try container.decode(HealthGrade.self, forKey: .health)
+        summary = try container.decodeIfPresent(String.self, forKey: .summary) ?? ""
+        score = try container.decodeIfPresent(Int.self, forKey: .score) ?? 100
+        let rawVerdict = try container.decode(String.self, forKey: .verdict)
+        verdict = VerdictCode(rawValue: rawVerdict) ?? .checking
     }
 
     public var reachabilitySummaries: [ReachabilitySummary] {
@@ -536,18 +532,7 @@ public enum TimelineEventKind: String, Codable, Sendable {
     case diagnostic
 
     public var displayName: String {
-        switch self {
-        case .pathChanged:
-            return "网络变化"
-        case .checkStarted:
-            return "检查开始"
-        case .checkFinished:
-            return "检查完成"
-        case .exportCreated:
-            return "支持包导出"
-        case .diagnostic:
-            return "诊断"
-        }
+        rawValue
     }
 }
 
@@ -581,5 +566,44 @@ public struct TimelineEvent: Identifiable, Codable, Equatable, Sendable {
         kind = try container.decode(TimelineEventKind.self, forKey: .kind)
         message = try container.decode(String.self, forKey: .message)
         arguments = try container.decodeIfPresent([String].self, forKey: .arguments) ?? []
+    }
+}
+public enum VerdictCode: String, Codable, Sendable, CaseIterable {
+    case checking
+    case optimal
+    case good
+    case dnsSlow
+    case constrained
+    case jitterLoss
+    case highLatency
+    case warningDefault
+    case offline
+    case noInterface
+    case allProbesFailed
+    case criticalDefault
+
+    public var l10nKey: String {
+        "verdict.\(rawValue)"
+    }
+}
+
+public enum AdviceCode: String, Codable, Sendable, CaseIterable {
+    case confirmConnection
+    case enableInterface
+    case checkDNS
+    case checkRoute
+    case constrained
+    case unreachable
+    case partialUnreachable
+    case highLatency
+    case healthy
+    case unknown
+
+    public var titleKey: String {
+        "advice.\(rawValue).title"
+    }
+
+    public var messageKey: String {
+        "advice.\(rawValue).message"
     }
 }
