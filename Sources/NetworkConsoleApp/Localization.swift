@@ -31,6 +31,20 @@ enum AppLanguage: String, Codable, CaseIterable, Identifiable, Sendable {
         resolveEffective(preferredLanguages: Locale.preferredLanguages)
     }
 
+    var locale: Locale {
+        switch resolvedLanguage {
+        case .system: return Locale.current
+        case .english: return Locale(identifier: "en_US")
+        case .chinese: return Locale(identifier: "zh_Hans_CN")
+        case .japanese: return Locale(identifier: "ja_JP")
+        case .korean: return Locale(identifier: "ko_KR")
+        case .german: return Locale(identifier: "de_DE")
+        case .french: return Locale(identifier: "fr_FR")
+        case .spanish: return Locale(identifier: "es_ES")
+        case .portuguese: return Locale(identifier: "pt_BR")
+        }
+    }
+
     func resolveEffective(preferredLanguages: [String] = Locale.preferredLanguages) -> AppLanguage {
         guard self == .system else { return self }
         for identifier in preferredLanguages {
@@ -296,9 +310,24 @@ enum L10n {
         "quick.bento.dns": "DNS 解析",
         "quick.bento.reachability": "公网质量",
         "detail.copyCard": "复制网络诊断卡片",
-        "detail.copiedCard": "诊断卡已拷贝到剪贴板",
         "reachability.chart.title": "公开端点延迟对比与抖动分布 (ms)",
-        "reachability.chart.latency": "延迟"
+        "reachability.chart.latency": "延迟",
+        "card.header.title": "NETDOCTOR 网络诊断报告",
+        "card.header.badge": "只读安全",
+        "card.verdict.title": "诊断结论",
+        "card.verdict.normal": "网络状态正常",
+        "card.grid.path": "网络路径",
+        "card.grid.path.unconstrained": "畅通",
+        "card.grid.path.constrained": "受限",
+        "card.grid.interfaces": "活动网络接口",
+        "card.grid.interfaces.count": "%d 个",
+        "card.grid.interfaces.none": "无",
+        "card.grid.dns": "主 DNS 解析",
+        "card.grid.dns.notConfigured": "未配置",
+        "card.grid.dns.normal": "DNS 正常",
+        "card.grid.dns.missing": "无 DNS",
+        "card.grid.reachability": "公网连通端点",
+        "card.grid.avgLatency": "平均 %.0fms"
     ]
 
     private static let en: [String: String] = [
@@ -514,9 +543,24 @@ enum L10n {
         "quick.bento.dns": "DNS Resolver",
         "quick.bento.reachability": "Internet Quality",
         "detail.copyCard": "Copy Diagnostic Card",
-        "detail.copiedCard": "Diagnostic card copied to clipboard",
         "reachability.chart.title": "Public Endpoint Latency & Jitter (ms)",
-        "reachability.chart.latency": "Latency"
+        "reachability.chart.latency": "Latency",
+        "card.header.title": "NETDOCTOR DIAGNOSTIC REPORT",
+        "card.header.badge": "READ-ONLY SAFE",
+        "card.verdict.title": "Diagnostic Verdict",
+        "card.verdict.normal": "Network operating normally",
+        "card.grid.path": "Network Path",
+        "card.grid.path.unconstrained": "Unconstrained",
+        "card.grid.path.constrained": "Constrained",
+        "card.grid.interfaces": "Active Interfaces",
+        "card.grid.interfaces.count": "%d Active",
+        "card.grid.interfaces.none": "None",
+        "card.grid.dns": "Primary DNS",
+        "card.grid.dns.notConfigured": "Not configured",
+        "card.grid.dns.normal": "DNS OK",
+        "card.grid.dns.missing": "No DNS",
+        "card.grid.reachability": "Public Endpoints",
+        "card.grid.avgLatency": "Avg %.0fms"
     ]
 
     private static let ja: [String: String] = [
@@ -649,7 +693,23 @@ enum L10n {
         "advice.healthy.title": "ネットワーク状態は正常です",
         "advice.healthy.message": "異常は検出されませんでした。特定サイトにアクセスできない場合は相手側サーバーの問題の可能性があります。",
         "probe.error.invalidURL": "無効なURL",
-        "probe.error.invalidPort": "無効なポート"
+        "probe.error.invalidPort": "無効なポート",
+        "card.header.title": "NETDOCTOR ネットワーク診断レポート",
+        "card.header.badge": "読み取り専用（安全）",
+        "card.verdict.title": "診断結果",
+        "card.verdict.normal": "ネットワークは正常に稼働しています",
+        "card.grid.path": "ネットワークパス",
+        "card.grid.path.unconstrained": "制限なし",
+        "card.grid.path.constrained": "制限あり",
+        "card.grid.interfaces": "アクティブインターフェース",
+        "card.grid.interfaces.count": "%d 件",
+        "card.grid.interfaces.none": "なし",
+        "card.grid.dns": "プライマリ DNS",
+        "card.grid.dns.notConfigured": "未設定",
+        "card.grid.dns.normal": "DNS 正常",
+        "card.grid.dns.missing": "DNS なし",
+        "card.grid.reachability": "公開エンドポイント",
+        "card.grid.avgLatency": "平均 %.0fms"
     ]
 
     private static let ko: [String: String] = [

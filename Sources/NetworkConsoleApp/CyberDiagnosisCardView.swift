@@ -7,6 +7,13 @@ struct CyberDiagnosisCardView: View {
     let report: DiagnosisReport
     let appVersion: String
     let appBuild: String
+    let language: AppLanguage
+
+    private func text(_ key: String, _ arguments: CVarArg...) -> String {
+        let template = L10n.string(key, language: language)
+        guard !arguments.isEmpty else { return template }
+        return String(format: template, locale: language.locale, arguments: arguments)
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -17,7 +24,7 @@ struct CyberDiagnosisCardView: View {
                         Image(systemName: "network")
                             .font(.system(size: 14, weight: .bold))
                             .foregroundStyle(themeColor)
-                        Text("NETDOCTOR DIAGNOSTIC REPORT")
+                        Text(text("card.header.title"))
                             .font(.system(size: 12, weight: .black, design: .monospaced))
                             .foregroundStyle(Color.white)
                     }
@@ -27,7 +34,7 @@ struct CyberDiagnosisCardView: View {
                 }
                 Spacer()
                 VStack(alignment: .trailing, spacing: 2) {
-                    Text("READ-ONLY SAFE")
+                    Text(text("card.header.badge"))
                         .font(.system(size: 9, weight: .black, design: .monospaced))
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)
@@ -51,17 +58,17 @@ struct CyberDiagnosisCardView: View {
                         Text("\(report.score)")
                             .font(.system(size: 24, weight: .heavy, design: .rounded))
                             .foregroundStyle(themeColor)
-                        Text(report.health.displayName)
+                        Text(text("grade.\(report.health.rawValue)"))
                             .font(.system(size: 9, weight: .bold))
                             .foregroundStyle(Color.white.opacity(0.8))
                     }
                 }
 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("诊断结论 (VERDICT)")
+                    Text(text("card.verdict.title"))
                         .font(.system(size: 10, weight: .bold, design: .monospaced))
                         .foregroundStyle(Color.white.opacity(0.6))
-                    Text(report.verdict.isEmpty ? "网络状态正常" : report.verdict)
+                    Text(report.verdict.isEmpty ? text("card.verdict.normal") : report.verdict)
                         .font(.system(size: 14, weight: .bold))
                         .foregroundStyle(Color.white)
                     Text(report.summary)
@@ -75,10 +82,26 @@ struct CyberDiagnosisCardView: View {
 
             // 关键物理链路参数 (2x2)
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
-                vitalItem(title: "网络路径", value: report.path.status.displayName, sub: report.path.isConstrained ? "受限" : "畅通")
-                vitalItem(title: "活动网络接口", value: "\(report.interfaces.filter { $0.isActive }.count) 个", sub: report.interfaces.first(where: { $0.isActive })?.name ?? "无")
-                vitalItem(title: "主 DNS 解析", value: report.dns.servers.first ?? "未配置", sub: report.path.supportsDNS ? "DNS 正常" : "无 DNS")
-                vitalItem(title: "公网连通端点", value: "\(report.reachability.filter { $0.status == .success }.count)/\(report.reachability.count)", sub: avgLatencyText)
+                vitalItem(
+                    title: text("card.grid.path"),
+                    value: text("network.\(report.path.status.rawValue)"),
+                    sub: report.path.isConstrained ? text("card.grid.path.constrained") : text("card.grid.path.unconstrained")
+                )
+                vitalItem(
+                    title: text("card.grid.interfaces"),
+                    value: text("card.grid.interfaces.count", report.interfaces.filter { $0.isActive }.count),
+                    sub: report.interfaces.first(where: { $0.isActive })?.name ?? text("card.grid.interfaces.none")
+                )
+                vitalItem(
+                    title: text("card.grid.dns"),
+                    value: report.dns.servers.first ?? text("card.grid.dns.notConfigured"),
+                    sub: report.path.supportsDNS ? text("card.grid.dns.normal") : text("card.grid.dns.missing")
+                )
+                vitalItem(
+                    title: text("card.grid.reachability"),
+                    value: "\(report.reachability.filter { $0.status == .success }.count)/\(report.reachability.count)",
+                    sub: avgLatencyText
+                )
             }
 
             dashedDivider
@@ -122,7 +145,7 @@ struct CyberDiagnosisCardView: View {
         let samples = report.latency.filter { $0.success }.map(\.durationMilliseconds)
         guard !samples.isEmpty else { return "—" }
         let avg = samples.reduce(0, +) / Double(samples.count)
-        return String(format: "Avg %.0fms", avg)
+        return text("card.grid.avgLatency", avg)
     }
 
     @ViewBuilder
@@ -149,13 +172,20 @@ struct CyberDiagnosisCardView: View {
 
     // MARK: - 复制到剪贴板静态方法
     @MainActor
-    static func copyToPasteboard(report: DiagnosisReport, appVersion: String, appBuild: String) -> Bool {
+    static func copyToPasteboard(
+        report: DiagnosisReport,
+        appVersion: String,
+        appBuild: String,
+        language: AppLanguage
+    ) -> Bool {
         let view = CyberDiagnosisCardView(
             report: report,
             appVersion: appVersion,
-            appBuild: appBuild
+            appBuild: appBuild,
+            language: language
         )
         .environment(\.colorScheme, .dark)
+        .environment(\.locale, language.locale)
 
         let renderer = ImageRenderer(content: view)
         renderer.scale = 2.0 // 高清 Retina

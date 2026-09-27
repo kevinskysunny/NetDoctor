@@ -134,7 +134,8 @@ final class AppModel: ObservableObject {
         return CyberDiagnosisCardView.copyToPasteboard(
             report: report,
             appVersion: Self.appVersion,
-            appBuild: Self.appBuild
+            appBuild: Self.appBuild,
+            language: effectiveLanguage
         )
     }
 
@@ -369,8 +370,6 @@ final class AppModel: ObservableObject {
     }
 
     private func localizedReport(_ report: DiagnosisReport) -> DiagnosisReport {
-        guard language == .english else { return report }
-
         let dns = DNSSummary(
             resolverSource: localizedResolverSource(report.dns.resolverSource),
             servers: report.dns.servers,
