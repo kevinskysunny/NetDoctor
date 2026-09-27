@@ -425,15 +425,29 @@ private struct MetricLine: View {
     }
 }
 
-// MARK: - Interfaces 标签页
+// MARK: - Interfaces 标签页（赛博物理网卡机架）
 private struct InterfacesView: View {
     @ObservedObject var model: AppModel
 
     var body: some View {
         Group {
             if let report = model.report, !report.interfaces.isEmpty {
-                List(report.interfaces) { interface in
-                    InterfaceRow(interface: interface, model: model)
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 20) {
+                        // 1. 顶部遥测指示舱 (Interface Telemetry Pod)
+                        InterfaceTelemetryPod(report: report, model: model)
+
+                        // 2. 刀片机架卡片网格 (Blade Rack Cards)
+                        LazyVGrid(
+                            columns: [GridItem(.adaptive(minimum: 380), spacing: 16)],
+                            spacing: 16
+                        ) {
+                            ForEach(report.interfaces) { iface in
+                                InterfaceBladeCard(interface: iface, model: model)
+                            }
+                        }
+                    }
+                    .padding(20)
                 }
             } else {
                 ContentUnavailableView(
@@ -447,54 +461,308 @@ private struct InterfacesView: View {
     }
 }
 
-private struct InterfaceRow: View {
-    let interface: InterfaceInfo
+// MARK: - 接口遥测指标舱
+private struct InterfaceTelemetryPod: View {
+    let report: DiagnosisReport
     @ObservedObject var model: AppModel
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Label(interface.name, systemImage: interface.kind == .wifi ? "wifi" : "cable.connector")
-                    .font(.headline)
-                Spacer()
-                Text(model.text(for: interface.kind))
-                    .font(.caption)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 3)
-                    .background(.quaternary.opacity(0.6), in: Capsule())
-                Text(model.text(for: interface.linkState))
-                    .font(.caption)
-                    .foregroundStyle(interface.linkState == .up ? Color.green : Color.secondary)
+        let activeCount = report.interfaces.filter { $0.isActive }.count
+        let totalCount = report.interfaces.count
+        let primaryUplink = report.interfaces.first(where: { $0.isDefaultRouteInterface })
+        let hasIPv4 = report.interfaces.contains { $0.addresses.contains { $0.family == "IPv4" } }
+        let hasIPv6 = report.interfaces.contains { $0.addresses.contains { $0.family == "IPv6" } }
+
+        HStack(spacing: 14) {
+            // 活动网卡
+            telemetryItem(
+                title: model.text("interfaces.telemetry.activeTitle"),
+                value: "\(activeCount) / \(totalCount)",
+                detail: model.text("interfaces.telemetry.activeDetail"),
+                systemImage: "network",
+                accentColor: .blue
+            )
+
+            Divider().frame(height: 32).opacity(0.3)
+
+            // 主干出口
+            telemetryItem(
+                title: model.text("interfaces.telemetry.primaryTitle"),
+                value: primaryUplink?.name ?? "—",
+                detail: primaryUplink != nil ? model.text(for: primaryUplink!.kind) : model.text("interfaces.telemetry.none"),
+                systemImage: "arrow.up.forward.circle.fill",
+                accentColor: .cyan
+            )
+
+            Divider().frame(height: 32).opacity(0.3)
+
+            // 双栈协议
+            telemetryItem(
+                title: model.text("interfaces.telemetry.dualStackTitle"),
+                value: (hasIPv4 && hasIPv6) ? "IPv4 + IPv6" : (hasIPv4 ? "IPv4" : (hasIPv6 ? "IPv6" : "—")),
+                detail: (hasIPv4 && hasIPv6) ? model.text("interfaces.telemetry.dualReady") : model.text("interfaces.telemetry.singleReady"),
+                systemImage: "bolt.horizontal.fill",
+                accentColor: .purple
+            )
+        }
+        .padding(14)
+        .background(.ultraThinMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .stroke(Color.white.opacity(0.12), lineWidth: 1)
+        )
+    }
+
+    private func telemetryItem(
+        title: String,
+        value: String,
+        detail: String,
+        systemImage: String,
+        accentColor: Color
+    ) -> some View {
+        HStack(spacing: 12) {
+            ZStack {
+                Circle()
+                    .fill(accentColor.opacity(0.15))
+                    .frame(width: 38, height: 38)
+                Image(systemName: systemImage)
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(accentColor)
             }
 
-            if interface.isDefaultRouteInterface {
-                Label(model.text("interfaces.defaultRoute"), systemImage: "arrow.up.forward.circle")
-                    .font(.caption)
-                    .foregroundStyle(.blue)
-            }
-
-            if let ssid = interface.ssid {
-                Label(ssid, systemImage: "wifi")
-                    .font(.callout)
-            }
-
-            if interface.addresses.isEmpty {
-                Text(model.text("interfaces.noAddress"))
-                    .font(.caption)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.caption2)
                     .foregroundStyle(.secondary)
-            } else {
-                ForEach(interface.addresses, id: \.address) { address in
-                    HStack {
-                        Text(address.family)
-                            .foregroundStyle(.secondary)
-                        Text(address.address)
-                            .textSelection(.enabled)
+                Text(value)
+                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                    .lineLimit(1)
+                Text(detail)
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+            }
+
+            Spacer()
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+// MARK: - 刀片网卡硬件模块卡片
+private struct InterfaceBladeCard: View {
+    let interface: InterfaceInfo
+    @ObservedObject var model: AppModel
+
+    @State private var isHovered = false
+    @State private var copiedAddress: String? = nil
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            // 顶部 Header：硬件图标 + 名称 + 芯片类型 + 主干徽章 + 物理 Link LED
+            HStack(alignment: .center, spacing: 10) {
+                // 硬件图标
+                ZStack {
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .fill(hardwareAccentColor.opacity(0.15))
+                        .frame(width: 40, height: 40)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                .stroke(hardwareAccentColor.opacity(0.35), lineWidth: 1)
+                        )
+
+                    Image(systemName: hardwareIconName)
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundStyle(hardwareAccentColor)
+                }
+
+                VStack(alignment: .leading, spacing: 3) {
+                    HStack(spacing: 6) {
+                        Text(interface.name)
+                            .font(.system(size: 16, weight: .bold, design: .monospaced))
+
+                        // 接口类型胶囊
+                        Text(model.text(for: interface.kind))
+                            .font(.caption2.weight(.medium))
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(.quaternary.opacity(0.6), in: Capsule())
+
+                        // 主干链路徽章 (Primary Uplink)
+                        if interface.isDefaultRouteInterface {
+                            HStack(spacing: 3) {
+                                Image(systemName: "star.fill")
+                                    .font(.system(size: 8))
+                                Text("PRIMARY")
+                                    .font(.system(size: 9, weight: .heavy))
+                            }
+                            .foregroundStyle(Color.cyan)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(Color.cyan.opacity(0.15), in: Capsule())
+                            .overlay(
+                                Capsule().stroke(Color.cyan.opacity(0.4), lineWidth: 1)
+                            )
+                        }
                     }
-                    .font(.caption.monospaced())
+                }
+
+                Spacer()
+
+                // 物理链路状态指示灯 (Hardware Link LED)
+                HStack(spacing: 5) {
+                    Circle()
+                        .fill(interface.linkState == .up ? Color(red: 0.2, green: 0.88, blue: 0.5) : Color.secondary.opacity(0.4))
+                        .frame(width: 7, height: 7)
+                        .shadow(
+                            color: interface.linkState == .up ? Color.green.opacity(0.7) : .clear,
+                            radius: 3
+                        )
+
+                    Text(model.text(for: interface.linkState))
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(interface.linkState == .up ? Color.green : Color.secondary)
+                }
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(
+                    (interface.linkState == .up ? Color.green : Color.secondary).opacity(0.1),
+                    in: Capsule()
+                )
+            }
+
+            Divider()
+                .opacity(0.5)
+
+            // Wi-Fi 专属无线电舱 (SSID + 天线)
+            if let ssid = interface.ssid {
+                HStack(spacing: 8) {
+                    Image(systemName: "wifi")
+                        .font(.caption)
+                        .foregroundStyle(.cyan)
+                    Text("SSID:")
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(.secondary)
+                    Text(ssid)
+                        .font(.callout.weight(.semibold))
+                        .textSelection(.enabled)
+                    Spacer()
+                    Text("802.11 Wi-Fi")
+                        .font(.caption2.monospaced())
+                        .foregroundStyle(.tertiary)
+                }
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(Color.cyan.opacity(0.08), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+            }
+
+            // IP 地址芯片列表 (IPv4 / IPv6 Chip Tags with instant copy)
+            VStack(alignment: .leading, spacing: 8) {
+                if interface.addresses.isEmpty {
+                    Text(model.text("interfaces.noAddress"))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .padding(.vertical, 4)
+                } else {
+                    ForEach(interface.addresses, id: \.address) { addr in
+                        ipAddressChip(addr: addr)
+                    }
                 }
             }
         }
-        .padding(.vertical, 4)
+        .padding(16)
+        .background(.ultraThinMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .scaleEffect(isHovered ? 1.01 : 1.0)
+        .overlay(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .stroke(
+                    isHovered ? hardwareAccentColor.opacity(0.4) : Color.white.opacity(0.1),
+                    lineWidth: isHovered ? 1.5 : 1
+                )
+        )
+        .animation(.spring(response: 0.25, dampingFraction: 0.8), value: isHovered)
+        .onHover { isHovered = $0 }
+    }
+
+    private func ipAddressChip(addr: IPAddressInfo) -> some View {
+        let isIPv4 = addr.family == "IPv4"
+        let chipColor = isIPv4 ? Color.blue : Color.purple
+        let isCopied = copiedAddress == addr.address
+
+        return HStack(spacing: 8) {
+            // 协议版本徽章
+            Text(addr.family)
+                .font(.system(size: 10, weight: .bold, design: .monospaced))
+                .foregroundStyle(chipColor)
+                .padding(.horizontal, 6)
+                .padding(.vertical, 3)
+                .background(chipColor.opacity(0.15), in: RoundedRectangle(cornerRadius: 5, style: .continuous))
+
+            // IP 地址文本
+            Text(addr.address)
+                .font(.system(size: 12, weight: .medium, design: .monospaced))
+                .textSelection(.enabled)
+
+            Spacer()
+
+            // 快捷复制按钮（带反馈）
+            Button {
+                NSPasteboard.general.clearContents()
+                NSPasteboard.general.setString(addr.address, forType: .string)
+                withAnimation(.spring(response: 0.2, dampingFraction: 0.7)) {
+                    copiedAddress = addr.address
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                    withAnimation {
+                        if copiedAddress == addr.address {
+                            copiedAddress = nil
+                        }
+                    }
+                }
+            } label: {
+                HStack(spacing: 3) {
+                    Image(systemName: isCopied ? "checkmark" : "doc.on.clipboard")
+                        .font(.system(size: 10))
+                    if isCopied {
+                        Text(model.text("interfaces.copied"))
+                            .font(.system(size: 10, weight: .bold))
+                    }
+                }
+                .foregroundStyle(isCopied ? Color.green : Color.secondary)
+                .padding(.horizontal, 6)
+                .padding(.vertical, 3)
+                .background((isCopied ? Color.green : Color.secondary).opacity(0.12), in: Capsule())
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .background(Color.black.opacity(0.15), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+    }
+
+    private var hardwareIconName: String {
+        switch interface.kind {
+        case .wifi: return "wifi"
+        case .wired: return "cable.connector"
+        case .cellular: return "antenna.radiowaves.left.and.right"
+        case .loopback: return "arrow.triangle.2.circlepath"
+        case .other: return "network"
+        }
+    }
+
+    private var hardwareAccentColor: Color {
+        if interface.isDefaultRouteInterface {
+            return .cyan
+        }
+        switch interface.kind {
+        case .wifi: return .cyan
+        case .wired: return .blue
+        case .cellular: return .orange
+        case .loopback: return .secondary
+        case .other: return .indigo
+        }
     }
 }
 
@@ -551,82 +819,310 @@ private struct DNSRouteView: View {
     }
 }
 
-// MARK: - Timeline 标签页
+// MARK: - Timeline 标签页（赛博飞行记录仪）
 private struct TimelineView: View {
     @ObservedObject var model: AppModel
+    @State private var selectedFilter: TimelineFilter = .all
+
+    enum TimelineFilter: String, CaseIterable, Identifiable {
+        case all
+        case pathChanges
+        case checks
+        case exports
+
+        var id: String { rawValue }
+    }
+
+    private var filteredEvents: [TimelineEvent] {
+        let events = model.timelineEvents.reversed()
+        switch selectedFilter {
+        case .all:
+            return Array(events)
+        case .pathChanges:
+            return events.filter { $0.kind == .pathChanged }
+        case .checks:
+            return events.filter { $0.kind == .checkStarted || $0.kind == .checkFinished }
+        case .exports:
+            return events.filter { $0.kind == .exportCreated || $0.kind == .diagnostic }
+        }
+    }
 
     var body: some View {
         Group {
             if model.timelineEvents.isEmpty {
                 ContentUnavailableView(
                     model.text("timeline.empty.title"),
-                    systemImage: "clock",
+                    systemImage: "clock.arrow.circlepath",
                     description: Text(model.text("timeline.empty.message"))
                 )
             } else {
-                List(model.timelineEvents.reversed()) { event in
-                    HStack(alignment: .top, spacing: 10) {
-                        Image(systemName: symbolName(for: event.kind))
-                            .foregroundStyle(tint(for: event.kind))
-                            .frame(width: 18)
-                        VStack(alignment: .leading, spacing: 4) {
-                            HStack {
-                                Text(model.text(for: event.kind))
-                                    .font(.callout.weight(.semibold))
-                                Spacer()
-                                Text(event.timestamp, format: timestampFormat(for: event.timestamp))
-                                    .font(.caption.monospacedDigit())
-                                    .foregroundStyle(.secondary)
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 18) {
+                        // 1. 顶部事件过滤胶囊栏 (Filter Chips)
+                        filterBar
+
+                        // 2. 垂直时空铁轨事件流 (Chronological Railway)
+                        if filteredEvents.isEmpty {
+                            ContentUnavailableView(
+                                model.text("timeline.filterEmpty.title"),
+                                systemImage: "line.3.horizontal.decrease.circle",
+                                description: Text(model.text("timeline.filterEmpty.message"))
+                            )
+                            .frame(maxWidth: .infinity, minHeight: 240)
+                        } else {
+                            VStack(spacing: 0) {
+                                ForEach(Array(filteredEvents.enumerated()), id: \.element.id) { index, event in
+                                    TimelineRailwayItem(
+                                        event: event,
+                                        isLast: index == filteredEvents.count - 1,
+                                        model: model
+                                    )
+                                }
                             }
-                            if !event.message.isEmpty {
-                                Text(event.message)
-                                    .font(.callout)
-                                    .foregroundStyle(.secondary)
-                                    .textSelection(.enabled)
-                            }
+                            .padding(.top, 4)
                         }
                     }
-                    .padding(.vertical, 2)
+                    .padding(20)
                 }
             }
         }
         .navigationTitle(model.text("detail.tab.timeline"))
     }
 
+    private var filterBar: some View {
+        HStack(spacing: 8) {
+            ForEach(TimelineFilter.allCases) { filter in
+                let count = count(for: filter)
+                let isSelected = selectedFilter == filter
+
+                Button {
+                    withAnimation(.spring(response: 0.25, dampingFraction: 0.8)) {
+                        selectedFilter = filter
+                    }
+                } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: filterIcon(filter))
+                            .font(.system(size: 11, weight: .bold))
+
+                        Text(filterTitle(filter))
+                            .font(.caption.weight(.medium))
+
+                        Text("\(count)")
+                            .font(.system(size: 10, weight: .bold, design: .monospaced))
+                            .padding(.horizontal, 5)
+                            .padding(.vertical, 1)
+                            .background(
+                                (isSelected ? Color.white.opacity(0.2) : Color.secondary.opacity(0.15)),
+                                in: Capsule()
+                            )
+                    }
+                    .foregroundStyle(isSelected ? Color.white : Color.secondary)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .background(
+                        isSelected ? filterColor(filter) : Color.white.opacity(0.06),
+                        in: Capsule()
+                    )
+                    .overlay(
+                        Capsule()
+                            .stroke(
+                                isSelected ? filterColor(filter).opacity(0.6) : Color.white.opacity(0.1),
+                                lineWidth: 1
+                            )
+                    )
+                }
+                .buttonStyle(.plain)
+            }
+
+            Spacer()
+        }
+    }
+
+    private func count(for filter: TimelineFilter) -> Int {
+        switch filter {
+        case .all:
+            return model.timelineEvents.count
+        case .pathChanges:
+            return model.timelineEvents.filter { $0.kind == .pathChanged }.count
+        case .checks:
+            return model.timelineEvents.filter { $0.kind == .checkStarted || $0.kind == .checkFinished }.count
+        case .exports:
+            return model.timelineEvents.filter { $0.kind == .exportCreated || $0.kind == .diagnostic }.count
+        }
+    }
+
+    private func filterTitle(_ filter: TimelineFilter) -> String {
+        switch filter {
+        case .all: return model.text("timeline.filter.all")
+        case .pathChanges: return model.text("timeline.filter.pathChanges")
+        case .checks: return model.text("timeline.filter.checks")
+        case .exports: return model.text("timeline.filter.exports")
+        }
+    }
+
+    private func filterIcon(_ filter: TimelineFilter) -> String {
+        switch filter {
+        case .all: return "tray.full.fill"
+        case .pathChanges: return "arrow.triangle.swap"
+        case .checks: return "stethoscope"
+        case .exports: return "square.and.arrow.up.fill"
+        }
+    }
+
+    private func filterColor(_ filter: TimelineFilter) -> Color {
+        switch filter {
+        case .all: return .blue
+        case .pathChanges: return .orange
+        case .checks: return Color(red: 0.2, green: 0.88, blue: 0.5)
+        case .exports: return .purple
+        }
+    }
+}
+
+// MARK: - 垂直发光时间轨道节点与事件卡片
+private struct TimelineRailwayItem: View {
+    let event: TimelineEvent
+    let isLast: Bool
+    @ObservedObject var model: AppModel
+
+    @State private var isHovered = false
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 14) {
+            // 左侧：时空节点光圈 (Glowing Pip) + 垂直轨道 (Connecting Rail)
+            VStack(spacing: 0) {
+                // 节点发光圆环
+                ZStack {
+                    Circle()
+                        .fill(nodeColor.opacity(0.18))
+                        .frame(width: 30, height: 30)
+
+                    Circle()
+                        .stroke(nodeColor.opacity(0.6), lineWidth: 1.5)
+                        .frame(width: 30, height: 30)
+
+                    Image(systemName: symbolName(for: event.kind))
+                        .font(.system(size: 13, weight: .bold))
+                        .foregroundStyle(nodeColor)
+                }
+                .shadow(color: nodeColor.opacity(0.5), radius: 4)
+
+                // 垂直连线导轨
+                if !isLast {
+                    Rectangle()
+                        .fill(
+                            LinearGradient(
+                                colors: [nodeColor.opacity(0.4), Color.white.opacity(0.1)],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        )
+                        .frame(width: 2)
+                        .frame(minHeight: 36)
+                }
+            }
+            .frame(width: 30)
+
+            // 右侧：时空胶囊卡片 (Event Capsule Card)
+            VStack(alignment: .leading, spacing: 8) {
+                // 卡片头部：分类徽标 + 相对时间 + 绝对时间戳
+                HStack(alignment: .center, spacing: 8) {
+                    Text(model.text(for: event.kind))
+                        .font(.caption2.weight(.bold))
+                        .foregroundStyle(nodeColor)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(nodeColor.opacity(0.12), in: Capsule())
+
+                    Text(relativeTimeString(for: event.timestamp))
+                        .font(.caption2.weight(.medium))
+                        .foregroundStyle(.secondary)
+
+                    Spacer()
+
+                    Text(event.timestamp.formatted(date: .omitted, time: .standard))
+                        .font(.caption2.monospacedDigit())
+                        .foregroundStyle(.tertiary)
+                }
+
+                // 核心事件描述
+                if !event.message.isEmpty {
+                    Text(event.message)
+                        .font(.callout)
+                        .foregroundStyle(.primary)
+                        .textSelection(.enabled)
+                }
+
+                // 结构化黑匣子解密详情 (Arguments Inspection)
+                if !event.arguments.isEmpty {
+                    HStack(spacing: 6) {
+                        ForEach(Array(event.arguments.enumerated()), id: \.offset) { _, arg in
+                            Text(arg)
+                                .font(.system(size: 10, weight: .medium, design: .monospaced))
+                                .foregroundStyle(.secondary)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 4, style: .continuous))
+                        }
+                    }
+                    .padding(.top, 2)
+                }
+            }
+            .padding(14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(.ultraThinMaterial)
+            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .scaleEffect(isHovered ? 1.008 : 1.0)
+            .overlay(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .stroke(
+                        isHovered ? nodeColor.opacity(0.35) : Color.white.opacity(0.08),
+                        lineWidth: isHovered ? 1.5 : 1
+                    )
+            )
+            .animation(.spring(response: 0.25, dampingFraction: 0.8), value: isHovered)
+            .onHover { isHovered = $0 }
+            .padding(.bottom, isLast ? 0 : 10)
+        }
+    }
+
+    private var nodeColor: Color {
+        switch event.kind {
+        case .pathChanged: return .orange
+        case .checkStarted: return .blue
+        case .checkFinished: return Color(red: 0.2, green: 0.88, blue: 0.5)
+        case .exportCreated: return .purple
+        case .diagnostic: return .cyan
+        }
+    }
+
     private func symbolName(for kind: TimelineEventKind) -> String {
         switch kind {
-        case .pathChanged:
-            return "arrow.triangle.swap"
-        case .checkStarted:
-            return "play.circle"
-        case .checkFinished:
-            return "checkmark.circle"
-        case .exportCreated:
-            return "square.and.arrow.up"
-        case .diagnostic:
-            return "stethoscope"
+        case .pathChanged: return "arrow.triangle.swap"
+        case .checkStarted: return "play.fill"
+        case .checkFinished: return "checkmark"
+        case .exportCreated: return "square.and.arrow.up"
+        case .diagnostic: return "stethoscope"
         }
     }
 
-    private func tint(for kind: TimelineEventKind) -> Color {
-        switch kind {
-        case .pathChanged:
-            return .orange
-        case .checkStarted:
-            return .blue
-        case .checkFinished:
-            return .green
-        case .exportCreated:
-            return .purple
-        case .diagnostic:
-            return .secondary
-        }
-    }
+    private func relativeTimeString(for date: Date) -> String {
+        let now = Date()
+        let interval = max(0, now.timeIntervalSince(date))
+        let isZh = model.language.resolvedLanguage == .chinese
 
-    private func timestampFormat(for date: Date) -> Date.FormatStyle {
-        if Calendar.current.isDateInToday(date) {
-            return .dateTime.hour().minute()
+        if interval < 45 {
+            return isZh ? "刚刚" : "Just now"
+        } else if interval < 3600 {
+            let mins = max(1, Int(interval / 60))
+            return isZh ? "\(mins) 分钟前" : "\(mins)m ago"
+        } else if Calendar.current.isDateInToday(date) {
+            let hours = Int(interval / 3600)
+            return isZh ? "\(hours) 小时前" : "\(hours)h ago"
+        } else if Calendar.current.isDateInYesterday(date) {
+            return (isZh ? "昨天 " : "Yesterday ") + date.formatted(date: .omitted, time: .shortened)
+        } else {
+            return date.formatted(date: .abbreviated, time: .shortened)
         }
-        return .dateTime.month(.abbreviated).day().hour().minute()
     }
 }
