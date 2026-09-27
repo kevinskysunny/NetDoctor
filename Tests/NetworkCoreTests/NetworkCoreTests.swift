@@ -169,7 +169,7 @@ final class HealthGraderTests: XCTestCase {
             routes: route,
             reachability: probes
         )
-        XCTAssertEqual(verdict, "经络畅通 · 战力全开")
+        XCTAssertEqual(verdict, "全链路畅通 · 状态极佳")
     }
 
     func testScoreDeductionWhenHighLatencyAndLoss() {
@@ -222,7 +222,7 @@ final class HealthGraderTests: XCTestCase {
             routes: route,
             reachability: probes
         )
-        XCTAssertEqual(verdict, "心律不齐（网络偶发丢包）")
+        XCTAssertEqual(verdict, "丢包抖动（部分端点探测失败）")
     }
 
     func testAdviceExplainsDNSAndExternalFailuresForNoviceUsers() {

@@ -2,7 +2,7 @@ import AppKit
 import NetworkCore
 import SwiftUI
 
-/// 赛博体检病历卡视图与图片导出工具
+/// 网络诊断卡片视图与图片导出工具
 struct CyberDiagnosisCardView: View {
     let report: DiagnosisReport
     let appVersion: String
@@ -10,20 +10,20 @@ struct CyberDiagnosisCardView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            // 头部：赛博诊室抬头与编号
+            // 头部：网络诊断卡抬头与编号
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 4) {
                     HStack(spacing: 6) {
-                        Image(systemName: "stethoscope")
-                            .font(.headline)
+                        Image(systemName: "network")
+                            .font(.system(size: 14, weight: .bold))
                             .foregroundStyle(themeColor)
-                        Text("NETDOCTOR CYBER CLINIC")
-                            .font(.system(size: 13, weight: .black, design: .monospaced))
-                            .foregroundStyle(.primary)
+                        Text("NETDOCTOR DIAGNOSTIC REPORT")
+                            .font(.system(size: 12, weight: .black, design: .monospaced))
+                            .foregroundStyle(Color.white)
                     }
                     Text("NO. \(report.id.uuidString.prefix(12).uppercased())")
                         .font(.system(size: 10, weight: .bold, design: .monospaced))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.white.opacity(0.6))
                 }
                 Spacer()
                 VStack(alignment: .trailing, spacing: 2) {
@@ -31,21 +31,21 @@ struct CyberDiagnosisCardView: View {
                         .font(.system(size: 9, weight: .black, design: .monospaced))
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)
-                        .background(themeColor.opacity(0.15), in: RoundedRectangle(cornerRadius: 4))
+                        .background(themeColor.opacity(0.18), in: RoundedRectangle(cornerRadius: 4))
                         .foregroundStyle(themeColor)
                     Text(report.timestamp, format: .dateTime.year().month().day().hour().minute().second())
                         .font(.system(size: 9, design: .monospaced))
-                        .foregroundStyle(.tertiary)
+                        .foregroundStyle(Color.white.opacity(0.45))
                 }
             }
 
             dashedDivider
 
-            // 核心评分与拟人化定性评语
+            // 核心评分与定性诊断结论
             HStack(spacing: 16) {
                 ZStack {
                     Circle()
-                        .stroke(themeColor.opacity(0.3), lineWidth: 4)
+                        .stroke(themeColor.opacity(0.35), lineWidth: 4)
                         .frame(width: 64, height: 64)
                     VStack(spacing: 0) {
                         Text("\(report.score)")
@@ -53,27 +53,27 @@ struct CyberDiagnosisCardView: View {
                             .foregroundStyle(themeColor)
                         Text(report.health.displayName)
                             .font(.system(size: 9, weight: .bold))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Color.white.opacity(0.8))
                     }
                 }
 
                 VStack(alignment: .leading, spacing: 4) {
                     Text("诊断结论 (VERDICT)")
                         .font(.system(size: 10, weight: .bold, design: .monospaced))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.white.opacity(0.6))
                     Text(report.verdict.isEmpty ? "网络状态正常" : report.verdict)
-                        .font(.system(size: 15, weight: .bold))
-                        .foregroundStyle(.primary)
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundStyle(Color.white)
                     Text(report.summary)
                         .font(.caption2)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.white.opacity(0.7))
                         .lineLimit(2)
                 }
             }
 
             dashedDivider
 
-            // 关键物理链路体征参数 (2x2)
+            // 关键物理链路参数 (2x2)
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
                 vitalItem(title: "网络路径", value: report.path.status.displayName, sub: report.path.isConstrained ? "受限" : "畅通")
                 vitalItem(title: "活动网络接口", value: "\(report.interfaces.filter { $0.isActive }.count) 个", sub: report.interfaces.first(where: { $0.isActive })?.name ?? "无")
@@ -85,7 +85,7 @@ struct CyberDiagnosisCardView: View {
 
             // 底部条形码装饰与开发者版权信息
             HStack {
-                // 伪条形码装饰
+                // 科技感条形码装饰
                 HStack(spacing: 2) {
                     ForEach(0..<28) { i in
                         Rectangle()
@@ -96,7 +96,7 @@ struct CyberDiagnosisCardView: View {
                 Spacer()
                 Text("NetDoctor v\(appVersion) (\(appBuild)) · Kevin Labs")
                     .font(.system(size: 9, design: .monospaced))
-                    .foregroundStyle(.tertiary)
+                    .foregroundStyle(Color.white.opacity(0.45))
             }
         }
         .padding(18)
@@ -130,14 +130,14 @@ struct CyberDiagnosisCardView: View {
         VStack(alignment: .leading, spacing: 2) {
             Text(title)
                 .font(.system(size: 9, weight: .medium, design: .monospaced))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.white.opacity(0.6))
             Text(value)
                 .font(.system(size: 13, weight: .bold))
-                .foregroundStyle(.primary)
+                .foregroundStyle(Color.white)
                 .lineLimit(1)
             Text(sub)
                 .font(.system(size: 9))
-                .foregroundStyle(.tertiary)
+                .foregroundStyle(Color.white.opacity(0.45))
         }
     }
 
@@ -155,8 +155,11 @@ struct CyberDiagnosisCardView: View {
             appVersion: appVersion,
             appBuild: appBuild
         )
+        .environment(\.colorScheme, .dark)
+
         let renderer = ImageRenderer(content: view)
         renderer.scale = 2.0 // 高清 Retina
+        renderer.isOpaque = true
         guard let nsImage = renderer.nsImage else { return false }
 
         let pasteboard = NSPasteboard.general

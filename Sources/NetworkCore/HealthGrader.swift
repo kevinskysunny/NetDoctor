@@ -120,42 +120,42 @@ public struct HealthGrader {
     ) -> String {
         switch grade {
         case .checking:
-            return "正在诊脉（网络体检中…）"
+            return "链路探测中（网络诊断中…）"
         case .critical:
             if path.status != .available {
-                return "休克急救（网络彻底断开）"
+                return "链路中断（网络已彻底断开）"
             }
             let active = interfaces.filter { $0.isActive && $0.kind != .loopback }
             if active.isEmpty {
-                return "经脉阻滞（无活动网络接口）"
+                return "物理断开（无活动网络接口）"
             }
             if !reachability.isEmpty && reachability.filter({ $0.status == .success }).isEmpty {
-                return "生命体征微弱（公网全线失联）"
+                return "出口受阻（公网全线探测失败）"
             }
-            return "严重失衡（网络异常中断）"
+            return "严重异常（网络服务中断）"
         case .warning:
             if dns.servers.isEmpty || !path.supportsDNS {
-                return "轻微咽喉炎（DNS响应迟钝）"
+                return "解析异常（DNS响应超时或未配置）"
             }
             if path.isConstrained {
-                return "气血受限（网络策略受限）"
+                return "带宽受限（低数据模式或策略受限）"
             }
             if !reachability.isEmpty {
                 let successCount = reachability.filter { $0.status == .success }.count
                 if successCount < reachability.count {
-                    return "心律不齐（网络偶发丢包）"
+                    return "丢包抖动（部分端点探测失败）"
                 }
                 let samples = reachability.compactMap(\.durationMilliseconds)
                 if let p90 = LatencyPercentiles(samples: samples).p90, p90 > 500 {
-                    return "轻度低血糖（网络延迟偏高）"
+                    return "延迟偏高（响应时间较长）"
                 }
             }
-            return "经络微滞（需关注局部信号）"
+            return "局部异常（需关注网络配置）"
         case .healthy:
             if score >= 95 {
-                return "经络畅通 · 战力全开"
+                return "全链路畅通 · 状态极佳"
             } else {
-                return "机能良好 · 运行平稳"
+                return "连接稳定 · 运行正常"
             }
         }
     }

@@ -399,29 +399,29 @@ final class AppModel: ObservableObject {
 
     func localizedVerdict(_ rawVerdict: String) -> String {
         switch rawVerdict {
-        case "经络畅通 · 战力全开":
+        case "全链路畅通 · 状态极佳":
             return text("verdict.optimal")
-        case "机能良好 · 运行平稳":
+        case "连接稳定 · 运行正常":
             return text("verdict.good")
-        case "轻微咽喉炎（DNS响应迟钝）":
+        case "解析异常（DNS响应超时或未配置）":
             return text("verdict.dnsSlow")
-        case "气血受限（网络策略受限）":
+        case "带宽受限（低数据模式或策略受限）":
             return text("verdict.constrained")
-        case "心律不齐（网络偶发丢包）":
+        case "丢包抖动（部分端点探测失败）":
             return text("verdict.jitterLoss")
-        case "轻度低血糖（网络延迟偏高）":
+        case "延迟偏高（响应时间较长）":
             return text("verdict.highLatency")
-        case "经络微滞（需关注局部信号）":
+        case "局部异常（需关注网络配置）":
             return text("verdict.warningDefault")
-        case "休克急救（网络彻底断开）":
+        case "链路中断（网络已彻底断开）":
             return text("verdict.offline")
-        case "经脉阻滞（无活动网络接口）":
+        case "物理断开（无活动网络接口）":
             return text("verdict.noInterface")
-        case "生命体征微弱（公网全线失联）":
+        case "出口受阻（公网全线探测失败）":
             return text("verdict.allProbesFailed")
-        case "严重失衡（网络异常中断）":
+        case "严重异常（网络服务中断）":
             return text("verdict.criticalDefault")
-        case "正在诊脉（网络体检中…）":
+        case "链路探测中（网络诊断中…）":
             return text("verdict.checking")
         default:
             return rawVerdict
