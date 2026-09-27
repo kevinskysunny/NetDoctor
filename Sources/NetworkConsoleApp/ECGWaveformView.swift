@@ -9,23 +9,33 @@ struct ECGWaveformView: View {
     var isVisible: Bool = true
     var height: CGFloat = 52
 
+    @State private var isBreathing: Bool = false
+
     var body: some View {
         ZStack {
             // 静态暗网格背景
             StaticECGGrid(step: 16)
 
-            if isVisible {
-                // 仅在前台窗口可见时运行 20fps 赛博心电波（体检时脉冲加速，平时平缓律动）
-                TimelineView(.animation(minimumInterval: 1.0 / 20.0)) { timeline in
+            if isChecking && isVisible {
+                // 仅在体检中且前台窗口可见时运行 24fps 赛博心电波脉冲扫描
+                TimelineView(.animation(minimumInterval: 1.0 / 24.0)) { timeline in
                     Canvas { context, size in
                         let time = timeline.date.timeIntervalSinceReferenceDate
                         drawDynamicWave(in: &context, size: size, time: time)
                     }
                 }
             } else {
-                // 窗口隐藏时彻底断开渲染循环，稳态 0 CPU 开销
+                // 稳态下：静态波形 + 65bpm 弹性呼吸律动（CoreAnimation GPU 渲染，0% CPU 开销）
                 Canvas { context, size in
                     drawStaticWave(in: &context, size: size)
+                }
+                .opacity(isBreathing ? 1.0 : 0.72)
+                .animation(
+                    isVisible ? .easeInOut(duration: 1.1).repeatForever(autoreverses: true) : .default,
+                    value: isBreathing
+                )
+                .onAppear {
+                    isBreathing = true
                 }
             }
         }

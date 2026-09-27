@@ -1,7 +1,8 @@
+import AppKit
 import NetworkCore
 import SwiftUI
 
-/// 4 节点网络拓扑链路管线（静默零 CPU 功耗）
+/// 4 节点网络拓扑链路管线（CoreAnimation GPU 硬件加速，稳态 0% CPU 功耗）
 struct NetworkPipelineView: View {
     let report: DiagnosisReport?
     let isChecking: Bool
@@ -34,14 +35,56 @@ struct NetworkPipelineView: View {
     }
 
     var body: some View {
-        Group {
-            if isVisible {
-                TimelineView(.animation(minimumInterval: 1.0 / 20.0)) { timeline in
-                    pipelineContent(time: timeline.date.timeIntervalSinceReferenceDate)
-                }
-            } else {
-                pipelineContent(time: 0)
-            }
+        HStack(spacing: 0) {
+            PipelineNodeView(
+                type: .localMac,
+                health: macHealth,
+                title: title(for: .localMac),
+                subtitle: subtitle(for: .localMac),
+                onSelect: { onSelectNode?(.localMac) }
+            )
+
+            pipelineSegment(
+                isActive: isLink1Active,
+                health: isLink1Active ? .normal : (macHealth == .critical ? .critical : .warning),
+                phaseOffset: 0.0
+            )
+
+            PipelineNodeView(
+                type: .gateway,
+                health: gatewayHealth,
+                title: title(for: .gateway),
+                subtitle: subtitle(for: .gateway),
+                onSelect: { onSelectNode?(.gateway) }
+            )
+
+            pipelineSegment(
+                isActive: isLink2Active,
+                health: isLink2Active ? .normal : (gatewayHealth == .critical ? .critical : .warning),
+                phaseOffset: 0.33
+            )
+
+            PipelineNodeView(
+                type: .dns,
+                health: dnsHealth,
+                title: title(for: .dns),
+                subtitle: subtitle(for: .dns),
+                onSelect: { onSelectNode?(.dns) }
+            )
+
+            pipelineSegment(
+                isActive: isLink3Active,
+                health: isLink3Active ? .normal : (dnsHealth == .critical ? .critical : .warning),
+                phaseOffset: 0.66
+            )
+
+            PipelineNodeView(
+                type: .internet,
+                health: internetHealth,
+                title: title(for: .internet),
+                subtitle: subtitle(for: .internet),
+                onSelect: { onSelectNode?(.internet) }
+            )
         }
         .padding(.vertical, 14)
         .padding(.horizontal, 16)
@@ -53,64 +96,22 @@ struct NetworkPipelineView: View {
         )
     }
 
-    private func pipelineContent(time: TimeInterval) -> some View {
-        let cycleDuration: Double = isChecking ? 1.0 : 2.2
-        let baseProgress = isVisible ? CGFloat((time.truncatingRemainder(dividingBy: cycleDuration)) / cycleDuration) : 0
+    private func pipelineSegment(isActive: Bool, health: NodeHealth, phaseOffset: Double) -> some View {
+        VStack(spacing: 0) {
+            Spacer().frame(height: 21)
 
-        return HStack(spacing: 0) {
-            PipelineNodeView(
-                type: .localMac,
-                health: macHealth,
-                title: title(for: .localMac),
-                subtitle: subtitle(for: .localMac),
-                onSelect: { onSelectNode?(.localMac) }
-            )
-
-            PipelineSegmentCanvas(
-                isActive: isLink1Active,
-                health: isLink1Active ? .normal : (macHealth == .critical ? .critical : .warning),
-                progress: baseProgress,
+            PipelineSegmentRepresentable(
+                isActive: isActive,
+                health: health,
+                phaseOffset: phaseOffset,
+                isChecking: isChecking,
                 isVisible: isVisible
             )
+            .frame(height: 10)
 
-            PipelineNodeView(
-                type: .gateway,
-                health: gatewayHealth,
-                title: title(for: .gateway),
-                subtitle: subtitle(for: .gateway),
-                onSelect: { onSelectNode?(.gateway) }
-            )
-
-            PipelineSegmentCanvas(
-                isActive: isLink2Active,
-                health: isLink2Active ? .normal : (gatewayHealth == .critical ? .critical : .warning),
-                progress: (baseProgress + 0.33).truncatingRemainder(dividingBy: 1.0),
-                isVisible: isVisible
-            )
-
-            PipelineNodeView(
-                type: .dns,
-                health: dnsHealth,
-                title: title(for: .dns),
-                subtitle: subtitle(for: .dns),
-                onSelect: { onSelectNode?(.dns) }
-            )
-
-            PipelineSegmentCanvas(
-                isActive: isLink3Active,
-                health: isLink3Active ? .normal : (dnsHealth == .critical ? .critical : .warning),
-                progress: (baseProgress + 0.66).truncatingRemainder(dividingBy: 1.0),
-                isVisible: isVisible
-            )
-
-            PipelineNodeView(
-                type: .internet,
-                health: internetHealth,
-                title: title(for: .internet),
-                subtitle: subtitle(for: .internet),
-                onSelect: { onSelectNode?(.internet) }
-            )
+            Spacer()
         }
+        .frame(minWidth: 32, maxWidth: .infinity)
     }
 
     // MARK: - 节点状态逻辑
@@ -191,68 +192,178 @@ struct NetworkPipelineView: View {
     }
 }
 
-// MARK: - 节点连接管道 Canvas 硬件加速视图（免除 GeometryReader 与布局计算）
-private struct PipelineSegmentCanvas: View {
+// MARK: - 节点连接管道 CoreAnimation 硬件加速视图（GPU 离屏调度，0% CPU 开销）
+private struct PipelineSegmentRepresentable: NSViewRepresentable {
     let isActive: Bool
     let health: NetworkPipelineView.NodeHealth
-    let progress: CGFloat
+    let phaseOffset: Double
+    let isChecking: Bool
     let isVisible: Bool
 
-    var body: some View {
-        VStack(spacing: 0) {
-            Spacer().frame(height: 21)
+    func makeNSView(context: Context) -> PipelineSegmentNSView {
+        let view = PipelineSegmentNSView()
+        view.update(
+            isActive: isActive,
+            health: health,
+            phaseOffset: phaseOffset,
+            isChecking: isChecking,
+            isVisible: isVisible
+        )
+        return view
+    }
 
-            Canvas { context, size in
-                let w = size.width
-                let h = size.height
-                guard w > 0, h > 0 else { return }
-                let midY = h / 2
-
-                // 底层管道轨道
-                let trackRect = CGRect(x: 0, y: midY - 1.25, width: w, height: 2.5)
-                context.fill(Path(roundedRect: trackRect, cornerRadius: 1.25), with: .color(health.color.opacity(isActive ? 0.35 : 0.15)))
-
-                // 穿梭微光能量粒子与彗星尾焰
-                if isActive && isVisible && w > 8 {
-                    let tailWidth: CGFloat = min(28, w * 0.45)
-                    let travelDist = max(0, w - 8)
-                    let currentX = progress * travelDist
-
-                    let tailX = max(0, currentX - tailWidth + 4)
-                    let actualTailWidth = min(tailWidth, currentX + 4)
-                    if actualTailWidth > 1 {
-                        let tailRect = CGRect(x: tailX, y: midY - 1.25, width: actualTailWidth, height: 2.5)
-                        let gradient = Gradient(colors: [
-                            health.color.opacity(0.0),
-                            health.color.opacity(0.45),
-                            Color.white.opacity(0.9)
-                        ])
-                        context.fill(
-                            Path(roundedRect: tailRect, cornerRadius: 1.25),
-                            with: .linearGradient(
-                                gradient,
-                                startPoint: CGPoint(x: tailRect.minX, y: midY),
-                                endPoint: CGPoint(x: tailRect.maxX, y: midY)
-                            )
-                        )
-                    }
-
-                    // 核心高亮发光光子（Photon Bead）
-                    let photonRect = CGRect(x: currentX, y: midY - 3.5, width: 7, height: 7)
-                    var photonContext = context
-                    photonContext.addFilter(.shadow(color: health.color, radius: 4, x: 0, y: 0))
-                    photonContext.fill(Path(ellipseIn: photonRect), with: .color(.white))
-                }
-            }
-            .frame(height: 10)
-
-            Spacer()
-        }
-        .frame(minWidth: 32, maxWidth: .infinity)
+    func updateNSView(_ nsView: PipelineSegmentNSView, context: Context) {
+        nsView.update(
+            isActive: isActive,
+            health: health,
+            phaseOffset: phaseOffset,
+            isChecking: isChecking,
+            isVisible: isVisible
+        )
     }
 }
 
-// MARK: - 静态节点视图（遵循 Equatable，避免在 20fps 渲染时重复 Diff 与求值）
+private final class PipelineSegmentNSView: NSView {
+    private let trackLayer = CALayer()
+    private let particleContainerLayer = CALayer()
+    private let tailLayer = CAGradientLayer()
+    private let photonLayer = CALayer()
+
+    private var currentIsActive: Bool = false
+    private var currentHealth: NetworkPipelineView.NodeHealth = .normal
+    private var currentPhaseOffset: Double = 0
+    private var currentIsChecking: Bool = false
+    private var currentIsVisible: Bool = true
+    private var lastBounds: NSRect = .zero
+
+    override init(frame frameRect: NSRect) {
+        super.init(frame: frameRect)
+        wantsLayer = true
+        setupLayers()
+    }
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        wantsLayer = true
+        setupLayers()
+    }
+
+    private func setupLayers() {
+        guard let layer else { return }
+
+        // Track
+        trackLayer.cornerRadius = 1.25
+        layer.addSublayer(trackLayer)
+
+        // Particle container
+        particleContainerLayer.opacity = 0
+        layer.addSublayer(particleContainerLayer)
+
+        // Tail
+        tailLayer.startPoint = CGPoint(x: 0, y: 0.5)
+        tailLayer.endPoint = CGPoint(x: 1, y: 0.5)
+        tailLayer.cornerRadius = 1.25
+        particleContainerLayer.addSublayer(tailLayer)
+
+        // Photon bead
+        photonLayer.cornerRadius = 3.5
+        photonLayer.backgroundColor = NSColor.white.cgColor
+        photonLayer.shadowColor = NSColor.white.cgColor
+        photonLayer.shadowOpacity = 0.95
+        photonLayer.shadowRadius = 4
+        photonLayer.shadowOffset = .zero
+        particleContainerLayer.addSublayer(photonLayer)
+    }
+
+    func update(
+        isActive: Bool,
+        health: NetworkPipelineView.NodeHealth,
+        phaseOffset: Double,
+        isChecking: Bool,
+        isVisible: Bool
+    ) {
+        let needsRestart = (self.currentIsActive != isActive ||
+                            self.currentHealth != health ||
+                            self.currentIsChecking != isChecking ||
+                            self.currentIsVisible != isVisible)
+
+        self.currentIsActive = isActive
+        self.currentHealth = health
+        self.currentPhaseOffset = phaseOffset
+        self.currentIsChecking = isChecking
+        self.currentIsVisible = isVisible
+
+        applyColors()
+        if needsRestart {
+            layoutAndAnimate()
+        }
+    }
+
+    override func layout() {
+        super.layout()
+        if bounds != lastBounds {
+            lastBounds = bounds
+            layoutAndAnimate()
+        }
+    }
+
+    private func applyColors() {
+        let nsColor = NSColor(currentHealth.color)
+        trackLayer.backgroundColor = nsColor.withAlphaComponent(currentIsActive ? 0.35 : 0.15).cgColor
+        photonLayer.shadowColor = nsColor.cgColor
+
+        tailLayer.colors = [
+            nsColor.withAlphaComponent(0.0).cgColor,
+            nsColor.withAlphaComponent(0.45).cgColor,
+            NSColor.white.withAlphaComponent(0.9).cgColor
+        ]
+    }
+
+    private func layoutAndAnimate() {
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+
+        let w = bounds.width
+        let h = bounds.height
+        guard w > 0, h > 0 else {
+            CATransaction.commit()
+            return
+        }
+
+        let midY = h / 2
+        trackLayer.frame = CGRect(x: 0, y: midY - 1.25, width: w, height: 2.5)
+
+        particleContainerLayer.removeAnimation(forKey: "flow")
+
+        guard currentIsActive && currentIsVisible && w > 10 else {
+            particleContainerLayer.opacity = 0
+            CATransaction.commit()
+            return
+        }
+
+        let tailWidth: CGFloat = min(28, w * 0.45)
+        let travelDist = max(0, w - 8)
+
+        particleContainerLayer.frame = CGRect(x: 0, y: midY - 3.5, width: tailWidth + 7, height: 7)
+        tailLayer.frame = CGRect(x: 0, y: 3.5 - 1.25, width: tailWidth, height: 2.5)
+        photonLayer.frame = CGRect(x: tailWidth, y: 0, width: 7, height: 7)
+        particleContainerLayer.opacity = 1
+
+        let cycleDuration: Double = currentIsChecking ? 1.0 : 2.2
+        let anim = CABasicAnimation(keyPath: "transform.translation.x")
+        anim.fromValue = -tailWidth
+        anim.toValue = travelDist
+        anim.duration = cycleDuration
+        anim.repeatCount = .infinity
+        anim.timingFunction = CAMediaTimingFunction(name: .linear)
+        anim.timeOffset = CACurrentMediaTime() + (currentPhaseOffset * cycleDuration)
+
+        particleContainerLayer.add(anim, forKey: "flow")
+        CATransaction.commit()
+    }
+}
+
+// MARK: - 静态节点视图（遵循 Equatable，避免在渲染时重复 Diff 与求值）
 private struct PipelineNodeView: View, Equatable {
     let type: NetworkPipelineView.PipelineNodeType
     let health: NetworkPipelineView.NodeHealth

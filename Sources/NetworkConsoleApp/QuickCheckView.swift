@@ -24,7 +24,7 @@ struct QuickCheckView: View {
                     HStack(spacing: 4) {
                         Image(systemName: model.statusSymbolName)
                             .font(.system(size: 10, weight: .bold))
-                            .symbolEffect(.variableColor.iterative.reversing, isActive: isVisible)
+                            .symbolEffect(.variableColor.iterative.reversing, isActive: model.isChecking)
 
                         Text(model.statusTitle)
                             .font(.caption.weight(.medium))
