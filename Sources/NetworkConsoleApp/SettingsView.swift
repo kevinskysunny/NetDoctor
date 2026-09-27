@@ -419,6 +419,14 @@ struct SettingsView: View {
 
             VStack(spacing: 10) {
                 ecosystemCard(
+                    title: model.text("settings.presenterdeck.title"),
+                    desc: model.text("settings.presenterdeck.desc"),
+                    icon: "sparkles.tv",
+                    gradient: Color.purple.gradient,
+                    url: "macappstore://apps.apple.com/app/id6805086319?mt=12"
+                )
+
+                ecosystemCard(
                     title: model.text("settings.volmix.title"),
                     desc: model.text("settings.volmix.desc"),
                     icon: "slider.vertical.3",
