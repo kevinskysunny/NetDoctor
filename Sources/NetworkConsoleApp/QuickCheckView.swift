@@ -205,6 +205,12 @@ struct QuickCheckView: View {
         .onDisappear {
             isVisible = false
         }
+        .onReceive(NotificationCenter.default.publisher(for: NSWindow.didResignKeyNotification)) { _ in
+            isVisible = false
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSWindow.didBecomeKeyNotification)) { _ in
+            isVisible = true
+        }
     }
 
     // MARK: - 辅助计算属性
