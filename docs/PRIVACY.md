@@ -1,6 +1,6 @@
 # NetDoctor Privacy Policy
 
-Last updated: August 15, 2026
+Last updated: September 27, 2026
 
 NetDoctor is a read-only network diagnostic app for macOS.
 
@@ -16,7 +16,11 @@ Diagnostic events are stored locally on your Mac in the app's local data directo
 
 ## Support Package Export
 
-When you choose to export a support package, a redacted JSON file is written to the location you select. Wi-Fi SSID values are redacted, and the export does not include usernames, cookies, passwords, or private keys.
+When you choose to export a support package, a JSON file is written to the location you select. The export applies the following redaction policy:
+
+- **Masked fields**: Wi-Fi SSID is replaced with a placeholder. When the SSID cannot be read in the sandbox, it is shown as "Not available".
+- **Retained fields**: interface IP addresses (IPv4/IPv6), DNS servers, default gateway, and connectivity probe results are kept as diagnostic data.
+- **Excluded fields**: usernames, cookies, passwords, private keys, and local file paths are never included.
 
 ## Internet Connectivity Checks
 
@@ -30,7 +34,7 @@ For privacy questions, contact kevinskysunny@gmail.com.
 
 # NetDoctor 隐私政策
 
-更新日期：2026年8月15日
+更新日期：2026年9月27日
 
 NetDoctor 是一款面向 macOS 的只读网络诊断应用。
 
@@ -46,7 +50,11 @@ NetDoctor 不会收集、上传或出售个人数据。诊断数据仅保存在�
 
 ## 支持包导出
 
-当你主动选择导出支持包时，脱敏后的 JSON 文件会写入你选择的位置。Wi-Fi SSID 会被脱敏，导出内容不包含用户名、Cookie、密码或私钥。
+当你主动选择导出支持包时，JSON 文件会写入你选择的位置。导出遵循以下脱敏策略：
+
+- **占位字段**：Wi-Fi SSID 替换为占位符。沙盒下无法读取 SSID 时显示「未获取」。
+- **保留字段**：接口 IP 地址（IPv4/IPv6）、DNS 服务器、默认网关、连通性探测结果作为网络诊断的必要数据保留。
+- **排除字段**：用户名、Cookie、密码、私钥、本地文件路径一律不包含。
 
 ## 互联网连通性检测
 

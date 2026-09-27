@@ -105,10 +105,7 @@ final class AppModel: ObservableObject {
     }
 
     var score: Int {
-        if isChecking {
-            return report?.score ?? 100
-        }
-        return report?.score ?? 100
+        report?.score ?? 100
     }
 
     var verdictText: String {
