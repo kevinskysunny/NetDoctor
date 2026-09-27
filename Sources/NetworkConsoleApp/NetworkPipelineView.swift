@@ -5,7 +5,10 @@ import SwiftUI
 struct NetworkPipelineView: View {
     let report: DiagnosisReport?
     let isChecking: Bool
+    var isVisible: Bool = true
     var onSelectNode: ((PipelineNodeType) -> Void)? = nil
+
+    @State private var particleFlow: Bool = false
 
     enum PipelineNodeType: String, CaseIterable, Identifiable {
         case localMac
@@ -65,6 +68,23 @@ struct NetworkPipelineView: View {
             RoundedRectangle(cornerRadius: 12, style: .continuous)
                 .stroke(Color.white.opacity(0.12), lineWidth: 1)
         )
+        .onAppear {
+            if isVisible {
+                withAnimation(.linear(duration: isChecking ? 1.0 : 2.0).repeatForever(autoreverses: false)) {
+                    particleFlow = true
+                }
+            }
+        }
+        .onChange(of: isVisible) { _, visible in
+            if visible {
+                particleFlow = false
+                withAnimation(.linear(duration: isChecking ? 1.0 : 2.0).repeatForever(autoreverses: false)) {
+                    particleFlow = true
+                }
+            } else {
+                particleFlow = false
+            }
+        }
     }
 
     // MARK: - 节点状态逻辑
@@ -150,28 +170,34 @@ struct NetworkPipelineView: View {
         .buttonStyle(.plain)
     }
 
-    // MARK: - 节点连接管道（静默稳态零 CPU 开销）
+    // MARK: - 节点连接管道
     @ViewBuilder
     private func pipelineSegment(isActive: Bool, health: NodeHealth) -> some View {
         VStack(spacing: 0) {
             Spacer()
                 .frame(height: 21)
 
-            ZStack {
+            ZStack(alignment: .leading) {
                 Rectangle()
-                    .fill(health.color.opacity(isActive ? 0.35 : 0.2))
+                    .fill(health.color.opacity(isActive ? 0.35 : 0.15))
                     .frame(height: 2)
 
-                if isActive {
-                    Circle()
-                        .fill(health.color)
-                        .frame(width: 4, height: 4)
+                if isActive && isVisible {
+                    GeometryReader { geo in
+                        let w = geo.size.width
+                        Circle()
+                            .fill(Color.white)
+                            .frame(width: 5, height: 5)
+                            .shadow(color: health.color, radius: 3)
+                            .offset(x: particleFlow ? max(0, w - 5) : 0, y: -1.5)
+                    }
+                    .frame(height: 2)
                 }
             }
 
             Spacer()
         }
-        .frame(minWidth: 20, maxWidth: .infinity)
+        .frame(minWidth: 24, maxWidth: .infinity)
     }
 
     private func iconName(for type: PipelineNodeType) -> String {

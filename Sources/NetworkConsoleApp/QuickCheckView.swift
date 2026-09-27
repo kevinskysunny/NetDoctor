@@ -22,14 +22,9 @@ struct QuickCheckView: View {
                         .font(.headline.weight(.semibold))
 
                     HStack(spacing: 4) {
-                        if model.isChecking {
-                            Image(systemName: model.statusSymbolName)
-                                .font(.system(size: 10, weight: .bold))
-                                .symbolEffect(.variableColor.iterative.reversing)
-                        } else {
-                            Image(systemName: model.statusSymbolName)
-                                .font(.system(size: 10, weight: .bold))
-                        }
+                        Image(systemName: model.statusSymbolName)
+                            .font(.system(size: 10, weight: .bold))
+                            .symbolEffect(.variableColor.iterative.reversing, isActive: isVisible)
 
                         Text(model.statusTitle)
                             .font(.caption.weight(.medium))
@@ -53,11 +48,12 @@ struct QuickCheckView: View {
                 )
             }
 
-            // 2. 赛博心电波形视窗 (ECG Waveform，稳态零 CPU 开销)
+            // 2. 赛博心电波形视窗 (ECG Waveform，前台灵动波纹，后台休眠)
             ECGWaveformView(
                 grade: model.report?.health ?? .checking,
                 isChecking: model.isChecking,
                 latestRTT: model.latestRTT,
+                isVisible: isVisible,
                 height: 52
             )
 

@@ -72,7 +72,8 @@ struct HealthScoreGaugeView: View {
             }
         }
         .onAppear {
-            withAnimation(.spring(response: 0.8, dampingFraction: 0.75)) {
+            animatedScore = 0
+            withAnimation(.spring(response: 0.9, dampingFraction: 0.8)) {
                 animatedScore = Double(score)
             }
         }

@@ -189,6 +189,7 @@ private struct OverviewView: View {
                             NetworkPipelineView(
                                 report: model.report,
                                 isChecking: model.isChecking,
+                                isVisible: isTabActive,
                                 onSelectNode: onSelectPipelineNode
                             )
                         }

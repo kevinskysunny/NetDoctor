@@ -6,25 +6,24 @@ struct ECGWaveformView: View {
     let grade: HealthGrade
     let isChecking: Bool
     let latestRTT: Double?
+    var isVisible: Bool = true
     var height: CGFloat = 52
-
-    @State private var scanPhase: CGFloat = 0
 
     var body: some View {
         ZStack {
             // 静态暗网格背景
             StaticECGGrid(step: 16)
 
-            if isChecking {
-                // 仅在体检探测期间运行轻量级 15fps 扫描动效（通常持续 1~2 秒）
-                TimelineView(.animation(minimumInterval: 1.0 / 15.0)) { timeline in
+            if isVisible {
+                // 仅在前台窗口可见时运行 20fps 赛博心电波（体检时脉冲加速，平时平缓律动）
+                TimelineView(.animation(minimumInterval: 1.0 / 20.0)) { timeline in
                     Canvas { context, size in
                         let time = timeline.date.timeIntervalSinceReferenceDate
                         drawDynamicWave(in: &context, size: size, time: time)
                     }
                 }
             } else {
-                // 稳态下纯静态绘制一条精致抗锯齿心电波形，完全零 CPU/GPU 循环开销
+                // 窗口隐藏时彻底断开渲染循环，稳态 0 CPU 开销
                 Canvas { context, size in
                     drawStaticWave(in: &context, size: size)
                 }
@@ -98,14 +97,15 @@ struct ECGWaveformView: View {
         guard width > 0, height > 0 else { return }
         let midY = height * 0.5
 
-        let phase = CGFloat(time * 100.0)
+        let speed: Double = isChecking ? 160.0 : 65.0
+        let phase = CGFloat(time * speed)
         var path = Path()
         let step: CGFloat = 3.0
         var x: CGFloat = 0
         var lastPt = CGPoint.zero
 
         while x <= width {
-            let y = calculateWaveHeight(at: x + phase, midY: midY, height: height, isChecking: true)
+            let y = calculateWaveHeight(at: x + phase, midY: midY, height: height, isChecking: isChecking)
             let pt = CGPoint(x: x, y: y)
             if x == 0 {
                 path.move(to: pt)

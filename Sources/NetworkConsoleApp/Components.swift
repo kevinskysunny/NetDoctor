@@ -64,14 +64,15 @@ struct MetricCard: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(.ultraThinMaterial)
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .scaleEffect(isHovered ? 1.02 : 1.0)
         .overlay(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
                 .stroke(
-                    isHovered ? (accentColor ?? Color.white).opacity(0.4) : Color.white.opacity(0.09),
-                    lineWidth: 1
+                    isHovered ? (accentColor ?? Color.white).opacity(0.45) : Color.white.opacity(0.09),
+                    lineWidth: isHovered ? 1.5 : 1
                 )
         )
-        .animation(.easeInOut(duration: 0.15), value: isHovered)
+        .animation(.spring(response: 0.25, dampingFraction: 0.75), value: isHovered)
         .onHover { hovering in
             isHovered = hovering
         }
