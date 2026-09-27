@@ -208,7 +208,7 @@ final class AppModel: ObservableObject {
 
     func updateLanguage(_ value: AppLanguage) {
         language = value
-        UserDefaults.standard.set(value.rawValue, forKey: "networkConsoleLite.language")
+        UserDefaults.standard.set(value.rawValue, forKey: "netdoctor.language")
         if let lastRawReport {
             report = localizedReport(lastRawReport)
         }
@@ -389,39 +389,12 @@ final class AppModel: ObservableObject {
             health: report.health,
             summary: localizedSummary(report.health),
             score: report.score,
-            verdict: localizedVerdict(report.verdict)
+            verdict: report.verdict
         )
     }
 
-    func localizedVerdict(_ rawVerdict: String) -> String {
-        switch rawVerdict {
-        case "全链路畅通 · 状态极佳":
-            return text("verdict.optimal")
-        case "连接稳定 · 运行正常":
-            return text("verdict.good")
-        case "解析异常（DNS响应超时或未配置）":
-            return text("verdict.dnsSlow")
-        case "带宽受限（低数据模式或策略受限）":
-            return text("verdict.constrained")
-        case "丢包抖动（部分端点探测失败）":
-            return text("verdict.jitterLoss")
-        case "延迟偏高（响应时间较长）":
-            return text("verdict.highLatency")
-        case "局部异常（需关注网络配置）":
-            return text("verdict.warningDefault")
-        case "链路中断（网络已彻底断开）":
-            return text("verdict.offline")
-        case "物理断开（无活动网络接口）":
-            return text("verdict.noInterface")
-        case "出口受阻（公网全线探测失败）":
-            return text("verdict.allProbesFailed")
-        case "严重异常（网络服务中断）":
-            return text("verdict.criticalDefault")
-        case "链路探测中（网络诊断中…）":
-            return text("verdict.checking")
-        default:
-            return rawVerdict
-        }
+    func localizedVerdict(_ verdict: VerdictCode) -> String {
+        text(verdict.l10nKey)
     }
 
     private func localizedSummary(_ health: HealthGrade) -> String {
@@ -470,43 +443,11 @@ final class AppModel: ObservableObject {
     }
 
     private func localizedAdvice(_ advice: DiagnosticAdvice) -> DiagnosticAdvice {
-        let titleKey: String
-        let messageKey: String
-        switch advice.title {
-        case "确认网络已连接", "Confirm your network connection":
-            titleKey = "advice.confirmConnection.title"
-            messageKey = "advice.confirmConnection.message"
-        case "启用网络接口", "Enable a network interface":
-            titleKey = "advice.enableInterface.title"
-            messageKey = "advice.enableInterface.message"
-        case "检查 DNS 设置", "Check DNS settings":
-            titleKey = "advice.checkDNS.title"
-            messageKey = "advice.checkDNS.message"
-        case "检查默认路由或 VPN", "Check the default route or VPN":
-            titleKey = "advice.checkRoute.title"
-            messageKey = "advice.checkRoute.message"
-        case "网络处于受限状态", "The network is constrained":
-            titleKey = "advice.constrained.title"
-            messageKey = "advice.constrained.message"
-        case "外网不可达", "The internet is unreachable":
-            titleKey = "advice.unreachable.title"
-            messageKey = "advice.unreachable.message"
-        case "部分外网站点不可达", "Some internet endpoints are unreachable":
-            titleKey = "advice.partialUnreachable.title"
-            messageKey = "advice.partialUnreachable.message"
-        case "延迟偏高", "Latency is high":
-            titleKey = "advice.highLatency.title"
-            messageKey = "advice.highLatency.message"
-        case "网络状态正常", "Your network looks healthy":
-            titleKey = "advice.healthy.title"
-            messageKey = "advice.healthy.message"
-        default:
-            return advice
-        }
-        return DiagnosticAdvice(
+        DiagnosticAdvice(
             id: advice.id,
-            title: text(titleKey),
-            message: text(messageKey),
+            code: advice.code,
+            title: text(advice.code.titleKey),
+            message: text(advice.code.messageKey),
             severity: advice.severity
         )
     }
@@ -565,8 +506,18 @@ final class AppModel: ObservableObject {
     }
 
     private static func loadLanguage() -> AppLanguage {
-        let stored = UserDefaults.standard.string(forKey: "networkConsoleLite.language")
+        Self.migrateLegacyLanguageIfNeeded()
+        let stored = UserDefaults.standard.string(forKey: "netdoctor.language")
         return AppLanguage.from(stored: stored)
+    }
+
+    private static func migrateLegacyLanguageIfNeeded() {
+        let defaults = UserDefaults.standard
+        let oldKey = "networkConsoleLite.language"
+        let newKey = "netdoctor.language"
+        if let oldValue = defaults.string(forKey: oldKey), defaults.string(forKey: newKey) == nil {
+            defaults.set(oldValue, forKey: newKey)
+        }
     }
 
     private static var appVersion: String {

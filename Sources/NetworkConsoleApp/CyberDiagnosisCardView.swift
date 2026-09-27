@@ -68,7 +68,7 @@ struct CyberDiagnosisCardView: View {
                     Text(text("card.verdict.title"))
                         .font(.system(size: 10, weight: .bold, design: .monospaced))
                         .foregroundStyle(Color.white.opacity(0.6))
-                    Text(report.verdict.isEmpty ? text("card.verdict.normal") : report.verdict)
+                    Text(text(report.verdict.l10nKey))
                         .font(.system(size: 14, weight: .bold))
                         .foregroundStyle(Color.white)
                     Text(report.summary)
