@@ -1,9 +1,9 @@
 # NetDoctor（Network Console Lite）实施计划
 
 > v1.2 起产品名统一为 `NetDoctor`；M0~M5 的历史任务沿用原项目名。
-> 计划状态同步依据：`docs/project-review-2026-09-27.md`（2026-09-27）与上架事实复核（2026-09-27）。
+> 计划状态同步依据：`docs/project-review-2026-09-27.md`（§6 Antigravity 复核结论）、`docs/ai-review-handoff-summary.md`（§7）、`docs/PRD.md`（§8.8~§8.9 与 §9）。
 >
-> **上架基线（v1.1 已上架，可分发）**：App 显示名 `NetDoctor: Network Diagnostics`；Bundle ID `com.networkconsole.lite`；Apple ID `6801707344`；SKU `networkconsole-lite-0001`；Team ID `J84LGFK7GY`；构建 5。以上标识符**禁止修改**（见 PRD §8.7）。
+> **上架基线（v1.1 已上架，可分发）**：App 显示名 `NetDoctor: Network Diagnostics`；Bundle ID `com.networkconsole.lite`；Apple ID `6801707344`；SKU `networkconsole-lite-0001`；Team ID `J84LGFK7GY`；构建 5。以上标识符为**不可触碰合规红线**（见 PRD §8.7）。
 
 ## M0：项目准备
 
@@ -61,74 +61,63 @@
 - [ ] 验证支持包导出可读、可脱敏、无日志泄漏。
 - [ ] 完成 App Store Connect v1.2 元数据与版本提交（保留上架标识符，构建号 ≥ 6）。
 
-## M6：v1.2 质量加固（依据 2026-09-27 系统检查）
+## M6：v1.2 质量加固与三阶段排期（对齐 Antigravity 复核共识）
 
-> 对应 `docs/PRD.md` §8 需求。**优先级已按"项目已上架 v1.1"事实重新评估**：凡涉及签名/权限/商店元数据变更的项一律降级或取消；编号沿用审查报告（H1~H4、M1~M4、L1~L8）。凡涉及不可变标识符的修改项由 M6.0 红线约束。
+> 对应 `docs/PRD.md` §8.1~§8.7 需求与 §9 待确认事项。**排期与复核共识完全对齐**（`docs/project-review-2026-09-27.md` §6.4 三阶段路线图）。
+> 待确认项（TC1~TC6）明确列入 M6.4 前置管理，不阻塞排期开端。
 
-### M6.0 上架基线确认（先行，任何修改前完成）
+### M6.1 阶段一：即刻发版防线（无审核风险，先行处置）
 
-- [ ] **[红线]** 在 `Config/` 与工程配置中核对不可变标识符一致：Bundle ID、Apple ID、SKU、Team ID（见 PRD §8.7），不在任何代码/配置变更中触碰。
-- [ ] **[版本]** 规划 v1.2 版本号递增：`MARKETING_VERSION = 1.2`、`CURRENT_PROJECT_VERSION = 6`（高于已上架构建 5），并在提交前校验。
-- [ ] **[隐私]** 预演 App Store Connect「App 隐私」问答与 `PrivacyInfo.xcprivacy` 一致性；确认 v1.2 未新增数据收集类别。
+- [ ] **[M2] 移除本地签名配置泄漏**：将 `Config/ExportOptions.local.plist` 加入 `.gitignore` 并从 git 索引移除（`git rm --cached`；含实名 xukuo huang / Team ID J84LGFK7GY / 证书与 profile 名），仅保留不含个人信息的模板 `Config/ExportOptions.plist`。本地签名能力不受影响。
+- [ ] **[M4] 修正隐私与脱敏文案**：剔除"物理 MAC 脱敏"虚假承诺；明确"SSID 优雅占位 + IP/DNS/网关作为诊断字段保留"策略；同步 `docs/PRIVACY.md`、设置页 `settings.privacy.*` 文案与支持包导出说明（见 PRD §8.3）。
+- [ ] **[L3] 清理 `AppModel.score` 冗余分支**：两分支完全相同的冗余代码删除；无行为变更，`swift build && swift test` 通过即完成。
+- [ ] **[M3] 文档状态同步**：同步各文档完成状态（对齐 PRD §9 TC4 决议）。
+- [x] **[TC3·决议] 阶段一合并入 v1.2 发布**：阶段一任务不独立发 hotfix，随 v1.2（构建号 6）统一打包提交，避免版本碎片化。
 
-### M6.1 发布前修复（高优先级，无审核风险）
+### M6.2 阶段二：v1.2 架构加固与品牌规范
 
-- [ ] **[M1] 品牌统一 NetDoctor（仅代码内部标识与导出内容）**：
-  - 支持包文件名前缀改为 `NetDoctor-Support-*`。
-  - 探测请求 User-Agent 从 Bundle 读取产品名与版本号，去除硬编码 `NetworkConsoleLite/1.0`。
-  - 时间线存储目录/userDefaults 键名改用新标识（兼容读取旧目录后切换新目录）。
-  - **边界**：不改 Bundle ID / Apple ID / SKU；应用内显示名保持短名 `NetDoctor`，不改为商店全名。
-- [ ] **[M2] 移除本地签名配置泄漏**：将 `Config/ExportOptions.local.plist` 加入 `.gitignore` 并从 git 移除（含实名/Team ID/证书名），仅保留不含个人信息的模板 `Config/ExportOptions.plist`。本地签名能力不受影响（文件仅从版本库移除）。
-- [ ] **[M3] 文档状态同步**：核对 `docs/appstore-checklist.md` 勾选状态与 M4/M5 实际产出一致。
-
-### M6.2 本地化与 i18n（目标：8 语言全覆盖，不因已上架降级）
-
-> 说明：应用内语言与 App Store Connect 元数据语言是两套独立体系；补齐翻译为纯增量变更，不影响升级审核（详见 PRD §8.1）。
-
-- [ ] **[H1] 8 语言全覆盖（目标）**：以中文 key 基线（248）为基准，补齐 ja（缺 84）、ko/de/fr/es/pt（各缺 117）的全部缺失 key，目标为缺口清零。按语言分批推进：第一批 zh/en（已齐，补测试兜底），第二批 ja，第三批 ko/de/fr/es/pt。
-  - **v1.2 发布门槛（过渡态）**：zh/en 与基线 100% 一致；其余语言缺失 key 回退英文、**严禁回退中文**；无中文泄漏。
-  - **目标态（v1.2 或延续 v1.3）**：8 语言缺口收敛至零。
-- [ ] **[H1] L10n 完整性框架与测试**：新增测试断言 zh/en 与中文基线完全一致（CI 硬门禁）；其余语言输出缺口清单进 CI 报告，随版本收敛。
-- [ ] **[H1] 兜底链修正**：固定非中文语言缺失 key 时的回退目标为英文（当前 fallback 链为 dict → en → zh，需调整为绝对英文兜底，杜绝中文泄漏）。
-- [ ] **[H3] 诊断文案类型化**（内部重构，行为一致，无审核影响）：`HealthGrader.verdict/advice/summary` 与 `DiagnosticEngine` 时间线消息改为语言中立枚举编码；App 层按编码走 L10n，移除中文字符串 switch 匹配（`AppModel.localizedVerdict / localizedAdvice`）。**目的：杜绝任何语言界面泄漏中文原文（§8.1 验收）**。
-- [ ] **[H3] 测试去文案耦合**：调整 `NetworkCoreTests` 中依赖中文字面断言的用例（如 `XCTAssertEqual(verdict, "全链路畅通 · 状态极佳")`），改为断言枚举编码。
-
-### M6.3 测试加固（高优先级，纯质量项）
-
-- [ ] **[H4] 新增 App 层测试 target**（`NetworkConsoleAppTests`）：
-  - L10n key 完整性（zh ↔ en 一致；其余语言缺口清单）。
+- [ ] **[H3] 诊断文案类型化重构**：`HealthGrader.verdict/advice/summary` 与 `DiagnosticEngine` 时间线消息改用语言中立枚举编码（`VerdictCode` / `AdviceCode`）；App 层按编码映射 L10n，删除 `AppModel.localizedVerdict / localizedAdvice` 的字符串 switch 匹配；支持包导出 timeline SchemaVersion 维持 1，无破坏性变更（对齐 PRD §9 TC5 决议）。
+- [ ] **[H3] 测试去文案耦合**：调整 `NetworkCoreTests` 依赖中文字面断言的用例（如 `XCTAssertEqual(verdict, "全链路畅通 · 状态极佳")`）改为断言枚举编码。
+- [ ] **[H4] 新增 `NetworkConsoleAppTests` target**：
+  - L10n key 完整性（zh ↔ en 一致，CI 硬门禁；其余语言缺口清单）。
   - `AppLanguage.resolveEffective` / `from(stored:)` 解析。
-  - `AppModel` 本地化映射（verdict/advice/status/timeline，使用 mock engine）。
-- [ ] **[H4] 脱敏边界测试**：按 PRD §8.3 策略文档化支持包保留/脱敏字段，并补充 SSID、IP、DNS、网关、时间线导出测试。
+  - `AppModel` 本地化映射（verdict/advice/status/timeline，mock engine）。
+  - 脱敏边界测试（SSID 占位、IP/DNS/网关保留、时间线导出），对齐 PRD §8.3 策略。
+- [ ] **[M1 & L6] 品牌统一 NetDoctor**（保持 Bundle ID / SKU / Apple ID 不可变红线）：
+  - 支持包文件名前缀 `NetDoctor-Support-*`。
+  - 探测请求 User-Agent 从 `Bundle.main` 读取产品名与版本号，去除硬编码 `1.0`（解决 L6）。
+  - 时间线存储目录采用“启动时一次性安全搬迁”迁至 `Application Support/NetDoctor`（对齐 PRD §9 TC6 决议）。
+  - 应用内显示名保持短名 `NetDoctor`。
+- [ ] **[H1 第一批] 补齐 ja（日语）缺失 84 个 key + 兜底链修正**：
+  - 兜底链固定为 dict → **en**（严禁非中文用户回退中文）。
+  - 基线缺口数经核实确认仍为准确的 84 个 key（对齐 PRD §9 TC1 决议）。
+- [ ] **[H1] L10n 完整性框架与测试**：zh/en 与基线完全一致（CI 硬门禁）；其余语言输出缺口清单进 CI 报告，随版本收敛。
 
-### M6.4 体验与文档一致性（中优先级）
+### M6.3 阶段三：v1.3 持续完善（不阻塞 v1.2）
 
-- [ ] **[SSID 体验] 空值文案优化**（替代原 H2 方案 A）：不新增 entitlement；界面与导出中 "SSID" 为空时显示"未获取"占位，清理伪空白与误导性文案（见 PRD §8.4）。
-- [ ] **[M4] 脱敏策略文档化并核对**：`docs/PRIVACY.md` 与界面文案按 PRD §8.3 精确表述（保留 IP/DNS/网关为诊断信息，SSID 不可用时不承诺能力）；核对 App Store「App 隐私」问答一致性。
-
-### M6.5 工程债清理（低优先级，不阻塞 v1.2）
-
+- [ ] **[H1 第二批] 补齐 ko/de/fr/es/pt 缺失 key**：各 117 个 key，8 语言缺口收敛清零。
 - [ ] **[L1] 拆分超大文件**：`DetailView.swift`（1675 行）与 `Localization.swift`（1444 行）按模块拆分。
-- [ ] **[L2] 简化 `DetailView.detectProvider`**：合并 172.16.0.0/12 私有网段判断。
-- [ ] **[L3] 清理 `AppModel.score` 冗余分支**。
-- [ ] **[L4] `SystemInterfaceCollector` 降级**：`getifaddrs` 失败时返回 path 接口摘要，而非空列表。
+- [ ] **[L2] 简化 `DetailView.detectProvider`**：合并 172.16.0.0/12 私有网段判断（位运算/掩码）。
+- [ ] **[L4] `SystemInterfaceCollector` 容错降级**：`getifaddrs` 失败时降级返回 path 接口摘要（对齐 PRD §9 TC4 决议）。
 - [ ] **[L5] `TimelineStore` 写序加固**：文件追加写移入锁内或串行队列。
-- [ ] **[L7] 接入 CI**：GitHub Actions 执行 `swift build && swift test`，zh/en 本地化测试作为门禁。
-- [ ] **[L8] 文档归档**：`docs/new-session-prompt.md`、`docs/ui-dynamic-revamp-plan.md` 等过程性文档归档或标注历史。
+- [ ] **[L7] 接入 CI**：GitHub Actions 执行 `swift build && swift test`，zh/en 完整性测试作为门禁。
+- [ ] **[L8] 过程文档归档**：历史过程文档归档至 `docs/archive/`（对齐 PRD §9 TC4 决议）。
+- [ ] **[后续可选] 迁移 String Catalogs（`.xcstrings`）**：改善翻译工作流与缺 key 告警。
 
-### M6.6 v1.3+ 增强候选（明确不阻塞 v1.2）
+### M6.4 Antigravity 确认事项全数结项归档（TC1~TC6）
 
-> 注：8 语言全覆盖目标已纳入 M6.2 主线；若 v1.2 未清零缺口，以下为延续项。
-
-- [ ] **[H1·延续]** v1.2 未完成的剩余语言翻译持续补齐（目标不变，仅排期延后）。
-- [ ] **[H2·候选]** 评估申请 `com.apple.developer.networking.wifi-info` entitlement 的产品价值（需单独版本发布并评估签名/审核影响）。
-- [ ] **[技术] 迁移 String Catalogs（`.xcstrings`）**，改善翻译工作流与缺 key 告警。
-- [ ] **[L6] 版本号来源统一**（User-Agent/支持包自描述与构建配置对齐）。
+- [x] **[TC1] H1 缺口统计**：已核实 100% 精确（zh 248, en 248, ja 缺 84, 其余 5 语各缺 117）。
+- [x] **[TC2] L3 阶段归属**：确认保留在阶段一顺手处置。
+- [x] **[TC3] 阶段一发布形态**：确认合并入 v1.2 统一发布，避免版本号碎片化。
+- [x] **[TC4] 未排期项归位**：M3 并入阶段一；L6 并入 M1（阶段二）；L4 与 L8 归入阶段三。
+- [x] **[TC5] 支持包 SchemaVersion**：确认无破坏性结构变更，SchemaVersion 维持 1。
+- [x] **[TC6] 时间线目录迁移策略**：确认采用“启动时一次性安全搬迁（One-time Move）”。
 
 ## 每步完成定义
 
 - 代码通过 `swift build` 和 `swift test`。
 - 新行为/新文案有对应测试，不依赖真实网络；本地化变更必须通过 zh/en 完整性测试。
-- 归档前校验：构建号 ≥ 6、Bundle ID 与上架记录一致、无新增 entitlements。
+- 阶段一任务完成后：`Config/ExportOptions.local.plist` 不在 git 索引中；`swift build && swift test` 通过。
+- 归档前校验：构建号 ≥ 6、Bundle ID 与上架记录一致、**无新增 entitlements**（尤其绝无 WiFi 信息权限）。
 - README 同步更新。
 - 变更提交并推送到 `origin/main`。
