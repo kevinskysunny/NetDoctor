@@ -18,15 +18,16 @@ public final class TimelineStore: EventRecording {
 
     public func append(_ event: TimelineEvent) {
         lock.lock()
+        defer { lock.unlock() }
         events.append(event)
         if events.count > maximumStoredEvents {
             events.removeFirst(events.count - maximumStoredEvents)
         }
-        let line = try? Self.encoder.encode(event)
-        lock.unlock()
-
-        if let line, let fileURL {
-            Self.appendLine(line, to: fileURL)
+        if let fileURL {
+            let line = try? Self.encoder.encode(event)
+            if let line {
+                Self.appendLine(line, to: fileURL)
+            }
         }
     }
 
