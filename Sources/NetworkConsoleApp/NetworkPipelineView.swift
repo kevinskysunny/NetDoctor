@@ -272,6 +272,7 @@ private final class PipelineSegmentNSView: NSView {
         photonLayer.shadowOpacity = 0.95
         photonLayer.shadowRadius = 4
         photonLayer.shadowOffset = .zero
+        photonLayer.shadowPath = CGPath(ellipseIn: CGRect(x: 0, y: 0, width: 7, height: 7), transform: nil)
         particleContainerLayer.addSublayer(photonLayer)
     }
 
@@ -293,8 +294,8 @@ private final class PipelineSegmentNSView: NSView {
         self.currentIsChecking = isChecking
         self.currentIsVisible = isVisible
 
-        applyColors()
         if needsRestart {
+            applyColors()
             layoutAndAnimate()
         }
     }

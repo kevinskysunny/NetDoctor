@@ -9,8 +9,6 @@ struct ECGWaveformView: View {
     var isVisible: Bool = true
     var height: CGFloat = 52
 
-    @State private var isBreathing: Bool = false
-
     var body: some View {
         ZStack {
             // 静态暗网格背景
@@ -25,18 +23,11 @@ struct ECGWaveformView: View {
                     }
                 }
             } else {
-                // 稳态下：静态波形 + 65bpm 弹性呼吸律动（CoreAnimation GPU 渲染，0% CPU 开销）
+                // 稳态下：静态精细波形，零 CPU 开销
                 Canvas { context, size in
                     drawStaticWave(in: &context, size: size)
                 }
-                .opacity(isBreathing ? 1.0 : 0.72)
-                .animation(
-                    isVisible ? .easeInOut(duration: 1.1).repeatForever(autoreverses: true) : .default,
-                    value: isBreathing
-                )
-                .onAppear {
-                    isBreathing = true
-                }
+                .opacity(0.88)
             }
         }
         .frame(height: height)
