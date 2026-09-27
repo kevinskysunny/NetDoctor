@@ -53,10 +53,10 @@
 
 ### 阶段一：即刻发版防线（先于任何版本归档）
 
-- [ ] **[M2]** `Config/ExportOptions.local.plist` 已从 git 索引移除并加入 `.gitignore`。
-- [ ] **[M4]** 脱敏/隐私文案已修正（无"物理 MAC"表述，SSID 占位一致）。
-- [ ] **[L3]** `AppModel.score` 冗余分支已清理，`swift build && swift test` 通过。
-- [ ] **[TC3]** 阶段一是否独立 hotfix（v1.1.1，构建 6）或并入 v1.2 已确认。
+- [x] **[M2]** `Config/ExportOptions.local.plist` 已从 git 索引移除并加入 `.gitignore`。
+- [x] **[M4]** 脱敏/隐私文案已修正（无"物理 MAC"表述，SSID 占位一致）。
+- [x] **[L3]** `AppModel.score` 冗余分支已清理，`swift build && swift test` 通过。
+- [x] **[TC3]** 阶段一是否独立 hotfix（v1.1.1，构建 6）或并入 v1.2 已确认。
 
 ### v1.2 发布前附加自检（阶段二交付物）
 

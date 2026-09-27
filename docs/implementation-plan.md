@@ -68,10 +68,10 @@
 
 ### M6.1 阶段一：即刻发版防线（无审核风险，先行处置）
 
-- [ ] **[M2] 移除本地签名配置泄漏**：将 `Config/ExportOptions.local.plist` 加入 `.gitignore` 并从 git 索引移除（`git rm --cached`；含实名 xukuo huang / Team ID J84LGFK7GY / 证书与 profile 名），仅保留不含个人信息的模板 `Config/ExportOptions.plist`。本地签名能力不受影响。
-- [ ] **[M4] 修正隐私与脱敏文案**：剔除"物理 MAC 脱敏"虚假承诺；明确"SSID 优雅占位 + IP/DNS/网关作为诊断字段保留"策略；同步 `docs/PRIVACY.md`、设置页 `settings.privacy.*` 文案与支持包导出说明（见 PRD §8.3）。
-- [ ] **[L3] 清理 `AppModel.score` 冗余分支**：两分支完全相同的冗余代码删除；无行为变更，`swift build && swift test` 通过即完成。
-- [ ] **[M3] 文档状态同步**：同步各文档完成状态（对齐 PRD §9 TC4 决议）。
+- [x] **[M2] 移除本地签名配置泄漏**：将 `Config/ExportOptions.local.plist` 加入 `.gitignore` 并从 git 索引移除（`git rm --cached`；含实名 xukuo huang / Team ID J84LGFK7GY / 证书与 profile 名），仅保留不含个人信息的模板 `Config/ExportOptions.plist`。本地签名能力不受影响。
+- [x] **[M4] 修正隐私与脱敏文案**：剔除"物理 MAC 脱敏"虚假承诺；明确"SSID 优雅占位 + IP/DNS/网关作为诊断字段保留"策略；同步 `docs/PRIVACY.md`、设置页 `settings.privacy.*` 文案与支持包导出说明（见 PRD §8.3）。
+- [x] **[L3] 清理 `AppModel.score` 冗余分支**：两分支完全相同的冗余代码删除；无行为变更，`swift build && swift test` 通过即完成。
+- [x] **[M3] 文档状态同步**：同步各文档完成状态（对齐 PRD §9 TC4 决议）。
 - [x] **[TC3·决议] 阶段一合并入 v1.2 发布**：阶段一任务不独立发 hotfix，随 v1.2（构建号 6）统一打包提交，避免版本碎片化。
 
 ### M6.2 阶段二：v1.2 架构加固与品牌规范
