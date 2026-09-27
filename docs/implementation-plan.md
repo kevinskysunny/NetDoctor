@@ -95,12 +95,12 @@
 
 ### M6.3 阶段三：v1.3 持续完善（不阻塞 v1.2）
 
-- [ ] **[H1 第二批] 补齐 ko/de/fr/es/pt 缺失 key**：各 117 个 key，8 语言缺口收敛清零。
-- [ ] **[L1] 拆分超大文件**：`DetailView.swift`（1675 行）与 `Localization.swift`（1444 行）按模块拆分。
-- [ ] **[L2] 简化 `DetailView.detectProvider`**：合并 172.16.0.0/12 私有网段判断（位运算/掩码）。
+- [x] **[H1 第二批] 补齐 ko/de/fr/es/pt 缺失 key**：各 117 个 key，8 语言缺口收敛清零。
+- [x] **[L1] 拆分超大文件**：`DetailView.swift`（1675 行）与 `Localization.swift`（1444 行）按模块拆分。
+- [x] **[L2] 简化 `DetailView.detectProvider`**：合并 172.16.0.0/12 私有网段判断（位运算/掩码）。
 - [ ] **[L4] `SystemInterfaceCollector` 容错降级**：`getifaddrs` 失败时降级返回 path 接口摘要（对齐 PRD §9 TC4 决议）。
-- [ ] **[L5] `TimelineStore` 写序加固**：文件追加写移入锁内或串行队列。
-- [ ] **[L7] 接入 CI**：GitHub Actions 执行 `swift build && swift test`，zh/en 完整性测试作为门禁。
+- [x] **[L5] `TimelineStore` 写序加固**：文件追加写移入锁内或串行队列。
+- [x] **[L7] 接入 CI**：GitHub Actions 执行 `swift build && swift test`，zh/en 完整性测试作为门禁。
 - [ ] **[L8] 过程文档归档**：历史过程文档归档至 `docs/archive/`（对齐 PRD §9 TC4 决议）。
 - [ ] **[后续可选] 迁移 String Catalogs（`.xcstrings`）**：改善翻译工作流与缺 key 告警。
 
