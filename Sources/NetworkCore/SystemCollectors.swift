@@ -6,6 +6,7 @@ import SystemConfiguration
 public final class SystemInterfaceCollector: InterfaceCollecting {
     private let rawSource: InterfaceRawDataProviding
     private let portSource: HardwarePortProviding
+    private let linkCarrierSource: LinkCarrierProviding
     private let pathProvider: NetworkPathProviding?
     private let wifiClient: CWWiFiClient?
     private let injectedDefaultRouteNames: Set<String>?
@@ -16,6 +17,7 @@ public final class SystemInterfaceCollector: InterfaceCollecting {
     ) {
         self.rawSource = GetifaddrsRawDataSource()
         self.portSource = SystemConfigHardwarePortSource()
+        self.linkCarrierSource = SCDynamicStoreLinkCarrierSource()
         self.pathProvider = pathProvider
         self.wifiClient = wifiClient
         self.injectedDefaultRouteNames = nil
@@ -24,12 +26,14 @@ public final class SystemInterfaceCollector: InterfaceCollecting {
     init(
         rawSource: InterfaceRawDataProviding,
         portSource: HardwarePortProviding,
+        linkCarrierSource: LinkCarrierProviding = SCDynamicStoreLinkCarrierSource(),
         pathProvider: NetworkPathProviding? = nil,
         wifiClient: CWWiFiClient? = CWWiFiClient.shared(),
         defaultRouteNames: Set<String>? = nil
     ) {
         self.rawSource = rawSource
         self.portSource = portSource
+        self.linkCarrierSource = linkCarrierSource
         self.pathProvider = pathProvider
         self.wifiClient = wifiClient
         self.injectedDefaultRouteNames = defaultRouteNames
@@ -92,7 +96,18 @@ public final class SystemInterfaceCollector: InterfaceCollecting {
             }
         }
 
-        // ③ 输出全部聚合键，三源 kind 融合，占位记录直置 .down
+        // ③.5 对物理网卡批量查询 SCDynamicStore Link Active（占位记录不查询）
+        let physicalNames = byName.compactMap { (name, entry) -> String? in
+            guard !entry.isSCPlaceholder else { return nil }
+            let kind = pathInterfaces[name] ?? portKindLookup[name] ?? Self.inferKind(from: name)
+            return (kind == .wired || kind == .wifi || kind == .cellular) ? name : nil
+        }
+        let carrierByName: [String: Bool?] = Dictionary(
+            linkCarrierSource.fetch(interfaceNames: physicalNames).map { ($0.interfaceName, $0.active) },
+            uniquingKeysWith: { first, _ in first }
+        )
+
+        // ④ 输出全部聚合键，三源 kind 融合，占位记录直置 .down
         return byName.keys
             .sorted { Self.interfaceSortValue($0) < Self.interfaceSortValue($1) }
             .map { name in
@@ -102,7 +117,12 @@ public final class SystemInterfaceCollector: InterfaceCollecting {
                 if entry.isSCPlaceholder {
                     linkState = .down
                 } else {
-                    linkState = resolveLinkState(flags: entry.flags, kind: kind)
+                    linkState = resolveLinkState(
+                        flags: entry.flags,
+                        kind: kind,
+                        carrierActive: carrierByName[name] ?? nil,
+                        hasValidIP: !entry.addresses.isEmpty
+                    )
                 }
                 let isActive = kind != .loopback && linkState == .up
 
