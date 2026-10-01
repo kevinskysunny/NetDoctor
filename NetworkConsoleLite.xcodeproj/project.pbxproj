@@ -18,12 +18,14 @@
 		2B7D756B43EC6930671B1065 /* HealthScoreGaugeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92E5AAFC918871FF52EFCFDD /* HealthScoreGaugeView.swift */; };
 		303DA2D98FEC6856E5E6AAC1 /* QuickCheckView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1573ADB4DC5A3D9A12952659 /* QuickCheckView.swift */; };
 		305B9D6F7C05A96540BF3E5A /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8142F83799D0BD5664A1EC1A /* SystemConfiguration.framework */; };
+		33031E6592264BDF0CDC10F7 /* InterfaceRawDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEC245657E0594CCDC9922BE /* InterfaceRawDataSource.swift */; };
 		35441494ACA693896184B8B5 /* L10n_ko.swift in Sources */ = {isa = PBXBuildFile; fileRef = 970B545AF4D34815B2037215 /* L10n_ko.swift */; };
 		3B64BEC5235AD4ADFB1AF794 /* HealthGrader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5BFC8A9ABD338A057A2FFDB /* HealthGrader.swift */; };
 		3F0F3C2175331023DEC3B6B7 /* ECGWaveformView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D62A4295A0D3AD3B4E8313AB /* ECGWaveformView.swift */; };
 		4486160C488957225467C01C /* DetailOverviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A9D839BBA39723EF515E797 /* DetailOverviewView.swift */; };
 		50B9E4131B19FB9ED6615A87 /* CoreWLAN.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 41BF1CEDDDBADF90F2D9F7F1 /* CoreWLAN.framework */; };
 		55B749C5B1B0E18AD26B8BEB /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD4021DC6A77C6D695734088 /* AppDelegate.swift */; };
+		5B841D7649FD7FEFD15254CF /* LocalMacSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DFE8FF6FC1078F0B1B8FC87 /* LocalMacSelector.swift */; };
 		5F362BB4690E8F6FDBAB8511 /* DetailReachabilityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2759C2BBD508DF3FC63CF08E /* DetailReachabilityView.swift */; };
 		6234E45831A63F7C66C69829 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8B39F9CDEB40DB0E0A8E6EC /* Models.swift */; };
 		6499108B618F1866563359FC /* L10n_de.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9D699A35ECE4494D836C357 /* L10n_de.swift */; };
@@ -35,6 +37,7 @@
 		83D9CC1AE32D33695B535810 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 615B03199005852A52DCFE99 /* Assets.xcassets */; };
 		85D027EC22D1635EC912AFFE /* L10n_fr.swift in Sources */ = {isa = PBXBuildFile; fileRef = C539DA734657B143EF4D97FF /* L10n_fr.swift */; };
 		8A4B6D50FC59BB0BA0769496 /* NetworkCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = C01FE1E7E816D6E6F99DD714 /* NetworkCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		9DBB47B6395EC28CAC51E008 /* LinkStateResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54B5EC7695167EA62D38C878 /* LinkStateResolver.swift */; };
 		9DE6F956C3C6270C1E8A4C7C /* L10n_en.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31A626D1B9A8D7DCE0BDE524 /* L10n_en.swift */; };
 		A1959F8043D5CE452A1AFA55 /* Protocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = 442B05E5E1E7C1A2B74AF494 /* Protocols.swift */; };
 		A1BE9F66FDDE2A681A18433C /* L10n_es.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7138CC6CA2A09C80CF89D45 /* L10n_es.swift */; };
@@ -42,6 +45,7 @@
 		B3427A74FEEEE30A3291D781 /* SupportPackageExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4963FD0CBA6E74091F331AE8 /* SupportPackageExporter.swift */; };
 		B39F5D47F484E83B65F67E43 /* CyberDiagnosisCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BF18426454906B052C15D62 /* CyberDiagnosisCardView.swift */; };
 		BD49FAD4A6364EBDF811E774 /* L10n_pt.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC64CA3A647CC904DB14175C /* L10n_pt.swift */; };
+		CB5B6FA7F054945ECEC9A23F /* HardwarePortDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB006EE8A396B9BFA5958DB /* HardwarePortDataSource.swift */; };
 		D36FC913BAE6AD72A4C954B2 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58607FA4252757A216574B0D /* AppSettings.swift */; };
 		D4922F42605FD637A4EB127B /* Localization.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9373D6F3FA75676DF9A8ECF /* Localization.swift */; };
 		D523AA492F05F3D072394FDD /* DetailDNSRouteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0B4CB9921F0E27207317A1D /* DetailDNSRouteView.swift */; };
@@ -90,6 +94,7 @@
 		442B05E5E1E7C1A2B74AF494 /* Protocols.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Protocols.swift; sourceTree = "<group>"; };
 		4963FD0CBA6E74091F331AE8 /* SupportPackageExporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupportPackageExporter.swift; sourceTree = "<group>"; };
 		49F06FAAB3A5804138BCEC62 /* Network.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Network.framework; path = System/Library/Frameworks/Network.framework; sourceTree = SDKROOT; };
+		54B5EC7695167EA62D38C878 /* LinkStateResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinkStateResolver.swift; sourceTree = "<group>"; };
 		58607FA4252757A216574B0D /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
 		615B03199005852A52DCFE99 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		65360E06E233D41D3252C22C /* NetworkConsoleApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkConsoleApp.swift; sourceTree = "<group>"; };
@@ -104,7 +109,9 @@
 		91D8F07CE625CD365136A0F3 /* DiagnosticEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticEngine.swift; sourceTree = "<group>"; };
 		92E5AAFC918871FF52EFCFDD /* HealthScoreGaugeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthScoreGaugeView.swift; sourceTree = "<group>"; };
 		970B545AF4D34815B2037215 /* L10n_ko.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = L10n_ko.swift; sourceTree = "<group>"; };
+		9DFE8FF6FC1078F0B1B8FC87 /* LocalMacSelector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalMacSelector.swift; sourceTree = "<group>"; };
 		A5BFC8A9ABD338A057A2FFDB /* HealthGrader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthGrader.swift; sourceTree = "<group>"; };
+		BEC245657E0594CCDC9922BE /* InterfaceRawDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InterfaceRawDataSource.swift; sourceTree = "<group>"; };
 		C01FE1E7E816D6E6F99DD714 /* NetworkCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = NetworkCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		C503961740761ACB9DADF46A /* NetworkPipelineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkPipelineView.swift; sourceTree = "<group>"; };
 		C539DA734657B143EF4D97FF /* L10n_fr.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = L10n_fr.swift; sourceTree = "<group>"; };
@@ -114,6 +121,7 @@
 		D62A4295A0D3AD3B4E8313AB /* ECGWaveformView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ECGWaveformView.swift; sourceTree = "<group>"; };
 		D86B41456BEBA4A6A083F58E /* DetailTimelineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailTimelineView.swift; sourceTree = "<group>"; };
 		DC64CA3A647CC904DB14175C /* L10n_pt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = L10n_pt.swift; sourceTree = "<group>"; };
+		DDB006EE8A396B9BFA5958DB /* HardwarePortDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HardwarePortDataSource.swift; sourceTree = "<group>"; };
 		F0B4CB9921F0E27207317A1D /* DetailDNSRouteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailDNSRouteView.swift; sourceTree = "<group>"; };
 		F8B39F9CDEB40DB0E0A8E6EC /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
 		F9373D6F3FA75676DF9A8ECF /* Localization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Localization.swift; sourceTree = "<group>"; };
@@ -183,7 +191,10 @@
 			isa = PBXGroup;
 			children = (
 				91D8F07CE625CD365136A0F3 /* DiagnosticEngine.swift */,
+				DDB006EE8A396B9BFA5958DB /* HardwarePortDataSource.swift */,
 				A5BFC8A9ABD338A057A2FFDB /* HealthGrader.swift */,
+				BEC245657E0594CCDC9922BE /* InterfaceRawDataSource.swift */,
+				54B5EC7695167EA62D38C878 /* LinkStateResolver.swift */,
 				F8B39F9CDEB40DB0E0A8E6EC /* Models.swift */,
 				31D70E4D277AEF9FB800E065 /* NetworkPathProvider.swift */,
 				442B05E5E1E7C1A2B74AF494 /* Protocols.swift */,
@@ -229,6 +240,7 @@
 				DC64CA3A647CC904DB14175C /* L10n_pt.swift */,
 				8AA98F74DAA925EBF0207F4A /* L10n_zh.swift */,
 				F9373D6F3FA75676DF9A8ECF /* Localization.swift */,
+				9DFE8FF6FC1078F0B1B8FC87 /* LocalMacSelector.swift */,
 				65360E06E233D41D3252C22C /* NetworkConsoleApp.swift */,
 				C503961740761ACB9DADF46A /* NetworkPipelineView.swift */,
 				1573ADB4DC5A3D9A12952659 /* QuickCheckView.swift */,
@@ -352,6 +364,7 @@
 				35441494ACA693896184B8B5 /* L10n_ko.swift in Sources */,
 				BD49FAD4A6364EBDF811E774 /* L10n_pt.swift in Sources */,
 				824D4F4B5186997D3C86DB8D /* L10n_zh.swift in Sources */,
+				5B841D7649FD7FEFD15254CF /* LocalMacSelector.swift in Sources */,
 				D4922F42605FD637A4EB127B /* Localization.swift in Sources */,
 				1CCAF28762B657B136C49C62 /* NetworkConsoleApp.swift in Sources */,
 				F2F21AD9C87D8348F2E4EAB3 /* NetworkPipelineView.swift in Sources */,
@@ -365,7 +378,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				09788454B182C57153CBC1F5 /* DiagnosticEngine.swift in Sources */,
+				CB5B6FA7F054945ECEC9A23F /* HardwarePortDataSource.swift in Sources */,
 				3B64BEC5235AD4ADFB1AF794 /* HealthGrader.swift in Sources */,
+				33031E6592264BDF0CDC10F7 /* InterfaceRawDataSource.swift in Sources */,
+				9DBB47B6395EC28CAC51E008 /* LinkStateResolver.swift in Sources */,
 				6234E45831A63F7C66C69829 /* Models.swift in Sources */,
 				A72E121D208850C829050F36 /* NetworkPathProvider.swift in Sources */,
 				A1959F8043D5CE452A1AFA55 /* Protocols.swift in Sources */,

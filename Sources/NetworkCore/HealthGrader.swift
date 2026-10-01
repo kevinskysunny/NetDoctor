@@ -3,6 +3,22 @@ import Foundation
 public struct HealthGrader {
     public init() {}
 
+    /// 物理活跃网卡（kind ∈ {wired, wifi, cellular} ∧ isActive ∧ linkState == .up）
+    static func physicalActiveInterfaces(_ interfaces: [InterfaceInfo]) -> [InterfaceInfo] {
+        interfaces.filter { interface in
+            Self.isPhysicalKind(interface.kind) && interface.isActive && interface.linkState == .up
+        }
+    }
+
+    /// 是否存在物理硬件网卡
+    static func hasPhysicalInterface(_ interfaces: [InterfaceInfo]) -> Bool {
+        interfaces.contains { Self.isPhysicalKind($0.kind) }
+    }
+
+    private static func isPhysicalKind(_ kind: InterfaceKind) -> Bool {
+        kind == .wired || kind == .wifi || kind == .cellular
+    }
+
     public func grade(
         path: NetworkPathInfo,
         interfaces: [InterfaceInfo],
@@ -14,8 +30,7 @@ public struct HealthGrader {
             return .critical
         }
 
-        let activeInterfaces = interfaces.filter { $0.isActive && $0.kind != .loopback }
-        if activeInterfaces.isEmpty {
+        if Self.physicalActiveInterfaces(interfaces).isEmpty {
             return .critical
         }
 
@@ -56,8 +71,7 @@ public struct HealthGrader {
             return 0
         }
 
-        let activeInterfaces = interfaces.filter { $0.isActive && $0.kind != .loopback }
-        if activeInterfaces.isEmpty {
+        if Self.physicalActiveInterfaces(interfaces).isEmpty {
             return 0
         }
 
@@ -122,12 +136,11 @@ public struct HealthGrader {
         case .checking:
             return .checking
         case .critical:
+            if Self.physicalActiveInterfaces(interfaces).isEmpty {
+                return .noInterface
+            }
             if path.status != .available {
                 return .offline
-            }
-            let active = interfaces.filter { $0.isActive && $0.kind != .loopback }
-            if active.isEmpty {
-                return .noInterface
             }
             if !reachability.isEmpty && reachability.filter({ $0.status == .success }).isEmpty {
                 return .allProbesFailed
@@ -189,8 +202,8 @@ public struct HealthGrader {
             )
         }
 
-        let activeInterfaces = interfaces.filter { $0.isActive && $0.kind != .loopback }
-        if activeInterfaces.isEmpty {
+        let physicalActive = Self.physicalActiveInterfaces(interfaces)
+        if physicalActive.isEmpty {
             result.append(
                 DiagnosticAdvice(
                     code: .enableInterface,

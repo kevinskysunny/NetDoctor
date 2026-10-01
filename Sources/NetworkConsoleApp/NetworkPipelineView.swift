@@ -120,7 +120,7 @@ struct NetworkPipelineView: View {
         if isChecking { return .checking }
         guard let report else { return .checking }
         if report.path.status != .available { return .critical }
-        let active = report.interfaces.filter { $0.isActive && $0.kind != .loopback }
+        let active = LocalMacSelector.physicalActive(report.interfaces)
         return active.isEmpty ? .critical : .normal
     }
 
@@ -182,7 +182,7 @@ struct NetworkPipelineView: View {
         guard let report else { return "—" }
         switch type {
         case .localMac:
-            let iface = report.interfaces.first(where: { $0.isDefaultRouteInterface }) ?? report.interfaces.first(where: { $0.isActive })
+            let iface = LocalMacSelector.preferredInterface(in: report.interfaces)
             return iface?.name ?? "en0"
         case .gateway:
             let gw = report.routes.routes.first(where: { $0.isDefault })?.gateway

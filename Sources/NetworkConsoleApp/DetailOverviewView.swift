@@ -2,6 +2,15 @@ import Charts
 import NetworkCore
 import SwiftUI
 
+/// 活动接口卡片口径计算（internal 纯函数，无视图依赖，可无渲染直测）。
+enum OverviewActivity {
+    static func compute(_ interfaces: [InterfaceInfo]) -> (count: Int, names: [String], degraded: Bool) {
+        let physical = LocalMacSelector.physicalActive(interfaces)
+        let degraded = physical.isEmpty && interfaces.contains { $0.kind == .other }
+        return (physical.count, physical.map(\.name), degraded)
+    }
+}
+
 struct OverviewView: View {
     @ObservedObject var model: AppModel
     var isTabActive: Bool = true
@@ -71,12 +80,13 @@ struct OverviewView: View {
                             systemImage: "point.3.connected.trianglepath.dotted",
                             accentColor: report.path.status == .available ? Color.green : Color.red
                         )
+                        let activity = OverviewActivity.compute(report.interfaces)
                         MetricCard(
                             title: model.text("overview.activeInterfaces"),
-                            value: "\(report.interfaces.filter { $0.isActive }.count)",
-                            detail: report.interfaces.filter { $0.isActive }.map(\.name).joined(separator: ", "),
+                            value: "\(activity.count)",
+                            detail: activity.names.joined(separator: ", "),
                             systemImage: "network",
-                            accentColor: .blue
+                            accentColor: activity.degraded ? .orange : .blue
                         )
                         MetricCard(
                             title: model.text("overview.dnsServers"),

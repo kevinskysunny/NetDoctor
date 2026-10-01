@@ -4,84 +4,114 @@ import Network
 import SystemConfiguration
 
 public final class SystemInterfaceCollector: InterfaceCollecting {
+    private let rawSource: InterfaceRawDataProviding
+    private let portSource: HardwarePortProviding
     private let pathProvider: NetworkPathProviding?
     private let wifiClient: CWWiFiClient?
+    private let injectedDefaultRouteNames: Set<String>?
 
     public init(
         pathProvider: NetworkPathProviding? = nil,
         wifiClient: CWWiFiClient? = CWWiFiClient.shared()
     ) {
+        self.rawSource = GetifaddrsRawDataSource()
+        self.portSource = SystemConfigHardwarePortSource()
         self.pathProvider = pathProvider
         self.wifiClient = wifiClient
+        self.injectedDefaultRouteNames = nil
+    }
+
+    init(
+        rawSource: InterfaceRawDataProviding,
+        portSource: HardwarePortProviding,
+        pathProvider: NetworkPathProviding? = nil,
+        wifiClient: CWWiFiClient? = CWWiFiClient.shared(),
+        defaultRouteNames: Set<String>? = nil
+    ) {
+        self.rawSource = rawSource
+        self.portSource = portSource
+        self.pathProvider = pathProvider
+        self.wifiClient = wifiClient
+        self.injectedDefaultRouteNames = defaultRouteNames
+    }
+
+    /// 模块内部聚合记录：以接口名为键合并 flags / 地址；isSCPlaceholder 标记 SC 硬件端口补全占位。
+    private struct AggregatedRecord {
+        var flags: UInt32?
+        var addresses: [IPAddressInfo] = []
+        var isSCPlaceholder = false
     }
 
     public func collect() -> [InterfaceInfo] {
+        guard rawSource.isAvailable else { return [] }
+
         let pathInterfaces = Dictionary(
             (pathProvider?.currentPath.interfaces ?? []).map { ($0.name, $0.kind) },
             uniquingKeysWith: { first, _ in first }
         )
         let wifiSSID = wifiClient?.interface()?.ssid()
-        let defaultNames = Set(SystemRouteCollector().collect().routes.compactMap(\.interfaceName))
+        let defaultNames = injectedDefaultRouteNames
+            ?? Set(SystemRouteCollector().collect().routes.compactMap(\.interfaceName))
 
-        var addressesByName: [String: [(family: String, address: String)]] = [:]
-        var flagsByName: [String: UInt32] = [:]
-
-        var ifaddrPointer: UnsafeMutablePointer<ifaddrs>?
-        guard getifaddrs(&ifaddrPointer) == 0 else {
-            return []
-        }
-        defer { freeifaddrs(ifaddrPointer) }
-
-        var current = ifaddrPointer
-        while let interface = current?.pointee {
-            defer { current = interface.ifa_next }
-            guard let namePointer = interface.ifa_name else { continue }
-            let name = String(cString: namePointer)
-            flagsByName[name] = interface.ifa_flags
-
-            guard let addressPointer = interface.ifa_addr else { continue }
-            let family = addressPointer.pointee.sa_family
-            let familyName: String
-            let addressString: String?
-
-            if family == UInt8(AF_INET) {
-                familyName = "IPv4"
-                addressString = Self.ipv4String(addressPointer)
-            } else if family == UInt8(AF_INET6) {
-                familyName = "IPv6"
-                addressString = Self.ipv6String(addressPointer)
+        let hardwarePorts = portSource.fetch()
+        var portKindLookup: [String: InterfaceKind] = [:]
+        for port in hardwarePorts {
+            if let bsdName = port.bsdName {
+                portKindLookup[bsdName] = port.kind
             } else {
-                continue
+                portKindLookup[port.displayName] = port.kind
             }
-
-            guard let addressString else { continue }
-            addressesByName[name, default: []].append((familyName, addressString))
         }
 
-        return addressesByName.keys
+        // ① 聚合原始记录：登记全部出现过的接口名，AF_LINK 仅保留 name+flags，INET/INET6 追加地址
+        var byName: [String: AggregatedRecord] = [:]
+        for record in rawSource.fetch() {
+            var entry = byName[record.name] ?? AggregatedRecord()
+            if record.flags != nil {
+                entry.flags = record.flags
+            }
+            if record.family == Int32(AF_INET) || record.family == Int32(AF_INET6),
+               let addressString = record.addressString {
+                let familyName = record.family == Int32(AF_INET) ? "IPv4" : "IPv6"
+                entry.addresses.append(IPAddressInfo(family: familyName, address: addressString))
+            }
+            byName[record.name] = entry
+        }
+
+        // ② SC 硬件端口补全与类型确认
+        for port in hardwarePorts {
+            if let bsdName = port.bsdName {
+                if byName[bsdName] == nil && port.kind != .loopback && port.kind != .other {
+                    byName[bsdName] = AggregatedRecord(flags: nil, addresses: [], isSCPlaceholder: true)
+                }
+            } else if port.kind == .wired || port.kind == .wifi || port.kind == .cellular {
+                let name = port.displayName
+                if byName[name] == nil {
+                    byName[name] = AggregatedRecord(flags: nil, addresses: [], isSCPlaceholder: true)
+                }
+            }
+        }
+
+        // ③ 输出全部聚合键，三源 kind 融合，占位记录直置 .down
+        return byName.keys
             .sorted { Self.interfaceSortValue($0) < Self.interfaceSortValue($1) }
             .map { name in
-                let kind = pathInterfaces[name] ?? Self.inferKind(from: name)
-        let flags = Int32(bitPattern: flagsByName[name] ?? 0)
-                let isUp = (flags & IFF_UP) != 0
-                let isRunning = (flags & IFF_RUNNING) != 0
+                let entry = byName[name] ?? AggregatedRecord()
+                let kind = pathInterfaces[name] ?? portKindLookup[name] ?? Self.inferKind(from: name)
                 let linkState: LinkState
-                if isUp && isRunning {
-                    linkState = .up
-                } else if isUp || isRunning {
-                    linkState = .unknown
-                } else {
+                if entry.isSCPlaceholder {
                     linkState = .down
+                } else {
+                    linkState = resolveLinkState(flags: entry.flags, kind: kind)
                 }
+                let isActive = kind != .loopback && linkState == .up
 
                 return InterfaceInfo(
                     id: name,
                     name: name,
                     kind: kind,
-                    isActive: isUp,
-                    addresses: addressesByName[name, default: []].map {
-                        IPAddressInfo(family: $0.family, address: $0.address)
-                    },
+                    isActive: isActive,
+                    addresses: entry.addresses,
                     ssid: kind == .wifi ? wifiSSID : nil,
                     linkState: linkState,
                     isDefaultRouteInterface: defaultNames.contains(name)
@@ -113,25 +143,6 @@ public final class SystemInterfaceCollector: InterfaceCollecting {
         return "500-\(name)"
     }
 
-    private static func ipv4String(_ pointer: UnsafePointer<sockaddr>) -> String? {
-        let addr = pointer.withMemoryRebound(to: sockaddr_in.self, capacity: 1) { $0.pointee }
-        var buffer = [CChar](repeating: 0, count: Int(INET_ADDRSTRLEN))
-        var address = addr.sin_addr
-        guard inet_ntop(AF_INET, &address, &buffer, socklen_t(buffer.count)) != nil else {
-            return nil
-        }
-        return String(cString: buffer)
-    }
-
-    private static func ipv6String(_ pointer: UnsafePointer<sockaddr>) -> String? {
-        let addr = pointer.withMemoryRebound(to: sockaddr_in6.self, capacity: 1) { $0.pointee }
-        var buffer = [CChar](repeating: 0, count: Int(INET6_ADDRSTRLEN))
-        var address = addr.sin6_addr
-        guard inet_ntop(AF_INET6, &address, &buffer, socklen_t(buffer.count)) != nil else {
-            return nil
-        }
-        return String(cString: buffer)
-    }
 }
 
 public final class SystemDNSCollector: DNSCollecting {

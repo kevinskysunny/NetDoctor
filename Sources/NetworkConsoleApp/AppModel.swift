@@ -5,6 +5,9 @@ import NetworkCore
 
 @MainActor
 final class AppModel: ObservableObject {
+    /// 路径刷新防抖时长（纳秒），默认 5 秒；测试置 0 以零等待触发自动刷新。
+    static var pathRefreshDebounceNanoseconds: UInt64 = 5_000_000_000
+
     @Published private(set) var report: DiagnosisReport?
     @Published private(set) var isChecking = false
     @Published private(set) var statusSymbolName: String = HealthGrade.checking.symbolName
@@ -311,14 +314,19 @@ final class AppModel: ObservableObject {
     private var lastPathUpdate: NetworkPathInfo?
 
     private func handlePathUpdate(_ path: NetworkPathInfo) {
-        let changed = lastPathUpdate.map { $0 != path } ?? (lastPathUpdate != nil)
+        let changed: Bool
+        if let lastPathUpdate {
+            changed = lastPathUpdate != path
+        } else {
+            changed = true
+        }
         guard changed else { return }
         lastPathUpdate = path
         refreshTimeline()
         guard settings.autoRefreshEnabled else { return }
         pathRefreshTask?.cancel()
         pathRefreshTask = Task { [weak self] in
-            try? await Task.sleep(nanoseconds: 5_000_000_000)
+            try? await Task.sleep(nanoseconds: Self.pathRefreshDebounceNanoseconds)
             guard !Task.isCancelled else { return }
             await self?.runCheck(manual: false)
         }
