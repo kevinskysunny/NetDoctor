@@ -521,7 +521,11 @@ final class AppModel: ObservableObject {
     private static func loadLanguage() -> AppLanguage {
         Self.migrateLegacyLanguageIfNeeded()
         let stored = UserDefaults.standard.string(forKey: "netdoctor.language")
-        return AppLanguage.from(stored: stored)
+        let lang = AppLanguage.from(stored: stored)
+        if lang != .system {
+            UserDefaults.standard.set([lang.rawValue], forKey: "AppleLanguages")
+        }
+        return lang
     }
 
     private static func migrateLegacyLanguageIfNeeded() {

@@ -29,10 +29,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 self?.updateAllMenus()
             }
 
-        // 定时轮询，保障系统动态插入项（如 Services、输入法等）也被本地化
-        menuTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
+        // 高频定时器并加入 common/eventTracking 模式，杜绝在菜单展开时定时器挂起导致的闪烁
+        let timer = Timer(timeInterval: 0.2, repeats: true) { [weak self] _ in
             self?.updateAllMenus()
         }
+        RunLoop.main.add(timer, forMode: .common)
+        RunLoop.main.add(timer, forMode: .eventTracking)
+        menuTimer = timer
     }
 
     func applicationShouldHandleReopen(
@@ -84,9 +87,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     func menuWillOpen(_ menu: NSMenu) {
         updateAllMenus()
+        DispatchQueue.main.async { [weak self] in
+            self?.updateAllMenus()
+        }
     }
 
     func menuNeedsUpdate(_ menu: NSMenu) {
+        updateAllMenus()
+    }
+
+    func menu(_ menu: NSMenu, willHighlight item: NSMenuItem?) {
         updateAllMenus()
     }
 
