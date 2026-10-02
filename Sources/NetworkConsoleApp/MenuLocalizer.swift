@@ -123,6 +123,8 @@ enum MenuLocalizer {
             let title = item.title
 
             if isEditMenu(title: title, index: index, count: count) {
+                // 网络诊断工具无需富文本编辑，直接隐藏顶栏的“编辑”菜单，保持界面极简
+                item.isHidden = true
                 item.title = editText
                 item.submenu?.title = editText
             }

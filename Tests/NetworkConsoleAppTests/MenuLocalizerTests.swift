@@ -82,6 +82,7 @@ final class MenuLocalizerTests: XCTestCase {
         // 验证顶层菜单栏全部变为英文
         XCTAssertEqual(mainMenu.items[0].title, "NetDoctor")
         XCTAssertEqual(mainMenu.items[1].title, "Edit")
+        XCTAssertTrue(mainMenu.items[1].isHidden) // 编辑菜单已被隐藏
         XCTAssertEqual(mainMenu.items[2].title, "View")
         XCTAssertEqual(mainMenu.items[3].title, "Window")
         XCTAssertEqual(mainMenu.items[4].title, "Help")
