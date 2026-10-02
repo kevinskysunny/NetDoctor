@@ -7,20 +7,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     var model: AppModel?
     private var detailWindow: NSWindow?
     private var languageCancellable: AnyCancellable?
+    private var menuTimer: Timer?
 
     override init() {
         super.init()
         Self.shared = self
     }
-
-    private static let knownSettingsTitles: Set<String> = [
-        "设置...", "设置…", "Settings...", "Settings…",
-        "設定...", "設定…", "설정...", "설정…",
-        "Einstellungen...", "Einstellungen…",
-        "Réglages...", "Réglages…",
-        "Configuración...", "Configuración…",
-        "Configurações...", "Configurações…"
-    ]
 
     private static let knownEditTitles: Set<String> = [
         "Edit", "编辑", "編集", "편집", "Bearbeiten", "Édition", "Edición", "Edição"
@@ -40,8 +32,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         showDetailWindow()
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
-            self?.updateMainMenu()
+        menuTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
+            self?.updateMenuTitles()
         }
     }
 
@@ -82,7 +74,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 .sink { [weak self] _ in
                     guard let self, let window = self.detailWindow, let model = self.model ?? Self.shared?.model else { return }
                     window.title = model.text("detail.window.title")
-                    self.updateMainMenu()
+                    self.updateMenuTitles()
                 }
             window.orderFrontRegardless()
             window.makeKeyAndOrderFront(nil)
@@ -90,30 +82,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
-    private func updateMainMenu() {
+    private func updateMenuTitles() {
         MainActor.assumeIsolated {
             guard let model, let mainMenu = NSApp.mainMenu else { return }
-            let appName = model.text("app.name")
-
-            if let appMenuItem = mainMenu.item(at: 0), let submenu = appMenuItem.submenu {
-                appMenuItem.title = appName
-                submenu.title = appName
-
-                for item in submenu.items {
-                    if item.isSeparatorItem { continue }
-                    let title = item.title
-
-                    if title.contains("关于") || title.hasPrefix("About ") || title.contains("について") || title.contains("정보") || title.contains("Über") || title.contains("À propos") || title.contains("Acerca") || title.contains("Sobre") {
-                        item.title = model.text("menu.about", appName)
-                    }
-                    else if title.contains("设置") || title.contains("Setting") || title.contains("設定") || title.contains("설정") || title.contains("Einstellung") || title.contains("Réglage") || title.contains("Configur") {
-                        item.title = model.text("menu.settings")
-                    }
-                    else if title.contains("退出") || title.hasPrefix("Quit ") || title.contains("終了") || title.contains("종료") || title.contains("beenden") || title.contains("Quitter") || title.contains("Salir") || title.contains("Sair") {
-                        item.title = model.text("menu.quit", appName)
-                    }
-                }
-            }
 
             for menuItem in mainMenu.items.dropFirst() {
                 if Self.knownEditTitles.contains(menuItem.title) {
