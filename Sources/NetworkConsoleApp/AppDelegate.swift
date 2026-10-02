@@ -83,22 +83,28 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func updateMenuTitles() {
-        MainActor.assumeIsolated {
-            guard let model, let mainMenu = NSApp.mainMenu else { return }
+        guard let mainMenu = NSApp.mainMenu else { return }
 
-            for menuItem in mainMenu.items.dropFirst() {
-                if Self.knownEditTitles.contains(menuItem.title) {
-                    menuItem.title = model.text("menu.edit")
-                }
-                if Self.knownViewTitles.contains(menuItem.title) {
-                    menuItem.title = model.text("menu.view")
-                }
-                if Self.knownWindowTitles.contains(menuItem.title) {
-                    menuItem.title = model.text("menu.window")
-                }
-                if Self.knownHelpTitles.contains(menuItem.title) {
-                    menuItem.title = model.text("menu.help")
-                }
+        let raw = UserDefaults.standard.string(forKey: "netdoctor.language") ?? "system"
+        let lang = (AppLanguage(rawValue: raw) ?? .system).resolvedLanguage
+
+        let editText = L10n.string("menu.edit", language: lang)
+        let viewText = L10n.string("menu.view", language: lang)
+        let windowText = L10n.string("menu.window", language: lang)
+        let helpText = L10n.string("menu.help", language: lang)
+
+        for menuItem in mainMenu.items.dropFirst() {
+            if Self.knownEditTitles.contains(menuItem.title) {
+                menuItem.title = editText
+            }
+            if Self.knownViewTitles.contains(menuItem.title) {
+                menuItem.title = viewText
+            }
+            if Self.knownWindowTitles.contains(menuItem.title) {
+                menuItem.title = windowText
+            }
+            if Self.knownHelpTitles.contains(menuItem.title) {
+                menuItem.title = helpText
             }
         }
     }
