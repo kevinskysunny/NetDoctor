@@ -119,7 +119,9 @@ final class MenuLocalizerTests: XCTestCase {
         let appItems = appSubmenu.items
         XCTAssertEqual(appItems[0].title, "About NetDoctor")
         XCTAssertEqual(appItems[1].title, "Settings...")
+        XCTAssertEqual(appItems[1].action, #selector(AppDelegate.openSettingsWindow(_:)))
         XCTAssertEqual(appItems[2].title, "Services")
+        XCTAssertTrue(appItems[2].isHidden) // 服务菜单属于冗余项，已被隐藏
         XCTAssertEqual(appItems[3].title, "Hide NetDoctor")
         XCTAssertEqual(appItems[4].title, "Hide Others")
         XCTAssertEqual(appItems[5].title, "Show All")

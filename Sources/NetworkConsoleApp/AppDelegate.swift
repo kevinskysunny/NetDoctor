@@ -126,6 +126,50 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
     }
 
+    // MARK: - Settings Handlers
+
+    private var settingsWindow: NSWindow?
+
+    @objc func showSettingsWindow(_ sender: Any?) {
+        openSettingsWindow(sender)
+    }
+
+    @objc func showPreferencesWindow(_ sender: Any?) {
+        openSettingsWindow(sender)
+    }
+
+    @objc func openSettingsWindow(_ sender: Any? = nil) {
+        MainActor.assumeIsolated {
+            guard let model = model ?? Self.shared?.model else { return }
+
+            if let window = settingsWindow {
+                if window.isMiniaturized {
+                    window.deminiaturize(nil)
+                }
+                window.orderFrontRegardless()
+                window.makeKeyAndOrderFront(nil)
+                NSApp.activate(ignoringOtherApps: true)
+                return
+            }
+
+            let hostingController = NSHostingController(
+                rootView: SettingsView(model: model)
+                    .frame(width: 500, height: 420)
+            )
+            let window = NSWindow(contentViewController: hostingController)
+            window.title = model.text("menu.settings").replacingOccurrences(of: "...", with: "")
+            window.setContentSize(NSSize(width: 500, height: 420))
+            window.minSize = NSSize(width: 480, height: 380)
+            window.styleMask = [.titled, .closable, .miniaturizable]
+            window.center()
+            window.isReleasedWhenClosed = false
+            settingsWindow = window
+            window.orderFrontRegardless()
+            window.makeKeyAndOrderFront(nil)
+            NSApp.activate(ignoringOtherApps: true)
+        }
+    }
+
     // MARK: - Help Handlers
 
     private var helpWindow: NSWindow?

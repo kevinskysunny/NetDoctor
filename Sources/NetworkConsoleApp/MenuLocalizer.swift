@@ -63,6 +63,10 @@ enum MenuLocalizer {
     /// 判断是否属于当前 NetDoctor 实用工具应用不需要的冗余项
     static func isRedundant(role: ItemRole) -> Bool {
         switch role {
+        // App 菜单中对于网络体检应用无用的服务项
+        case .services:
+            return true
+
         // Edit 菜单中与网络体检无关的编辑项
         case .undo, .redo:
             return true
@@ -156,6 +160,14 @@ enum MenuLocalizer {
                 if role == .appHelp {
                     item.target = AppDelegate.shared
                     item.action = #selector(AppDelegate.showHelpWindow(_:))
+                }
+
+                // 劫持 Settings 菜单项，确保无论点击还是 Cmd+, 都能百分百稳定呼出设置窗口
+                if role == .settings {
+                    item.target = AppDelegate.shared
+                    item.action = #selector(AppDelegate.openSettingsWindow(_:))
+                    item.keyEquivalent = ","
+                    item.keyEquivalentModifierMask = .command
                 }
             }
 

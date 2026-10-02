@@ -33,8 +33,9 @@ struct NetDoctorApp: App {
             }
             CommandGroup(replacing: .appSettings) {
                 Button(model.text("menu.settings")) {
-                    NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
+                    AppDelegate.shared?.openSettingsWindow()
                 }
+                .keyboardShortcut(",", modifiers: .command)
             }
             CommandGroup(replacing: .undoRedo) {
                 // 剔除只读体检工具完全用不上的 Undo / Redo
