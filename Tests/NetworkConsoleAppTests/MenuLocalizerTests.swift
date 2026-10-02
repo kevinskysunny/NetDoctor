@@ -108,19 +108,16 @@ final class MenuLocalizerTests: XCTestCase {
         XCTAssertEqual(winItems[12].title, "Merge All Windows")
         XCTAssertTrue(winItems[12].isHidden)
 
-        // 验证 View 子菜单全部变为英文，且包含显示主窗口与设置项（解决点击显示无反应问题）
+        // 验证 View 子菜单全部变为英文，且包含显示主窗口项（解决点击显示无反应问题，且不重复设置项）
         let viewItems = viewSubmenu.items
         XCTAssertEqual(viewItems[0].title, "Show NetDoctor Window")
         XCTAssertEqual(viewItems[0].action, #selector(AppDelegate.showMainWindow(_:)))
         XCTAssertFalse(viewItems[0].isHidden)
-        XCTAssertEqual(viewItems[1].title, "Settings...")
-        XCTAssertEqual(viewItems[1].action, #selector(AppDelegate.openSettingsWindow(_:)))
-        XCTAssertFalse(viewItems[1].isHidden)
-        XCTAssertEqual(viewItems[2].title, "Show Tab Bar")
+        XCTAssertEqual(viewItems[1].title, "Show Tab Bar")
+        XCTAssertTrue(viewItems[1].isHidden)
+        XCTAssertEqual(viewItems[2].title, "Show All Tabs")
         XCTAssertTrue(viewItems[2].isHidden)
-        XCTAssertEqual(viewItems[3].title, "Show All Tabs")
-        XCTAssertTrue(viewItems[3].isHidden)
-        XCTAssertEqual(viewItems[4].title, "Enter Full Screen")
+        XCTAssertEqual(viewItems[3].title, "Enter Full Screen")
 
         // 验证 App 子菜单
         let appItems = appSubmenu.items
