@@ -14,25 +14,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         Self.shared = self
     }
 
-    private static let knownEditTitles: Set<String> = [
-        "Edit", "编辑", "編集", "편집", "Bearbeiten", "Édition", "Edición", "Edição"
-    ]
-
-    private static let knownViewTitles: Set<String> = [
-        "View", "显示", "表示", "보기", "Ansicht", "Affichage", "Ver", "Visualizar"
-    ]
-
-    private static let knownWindowTitles: Set<String> = [
-        "Window", "窗口", "ウィンドウ", "윈도우", "Fenster", "Fenêtre", "Ventana", "Janela"
-    ]
-
-    private static let knownHelpTitles: Set<String> = [
-        "Help", "帮助", "ヘルプ", "도움말", "Hilfe", "Aide", "Ayuda", "Ajuda"
-    ]
-
     func applicationDidFinishLaunching(_ notification: Notification) {
         showDetailWindow()
-        menuTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
+        menuTimer = Timer.scheduledTimer(withTimeInterval: 0.3, repeats: true) { [weak self] _ in
             self?.updateMenuTitles()
         }
     }
@@ -94,17 +78,26 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let helpText = L10n.string("menu.help", language: lang)
 
         for menuItem in mainMenu.items.dropFirst() {
-            if Self.knownEditTitles.contains(menuItem.title) {
+            guard let submenu = menuItem.submenu else { continue }
+            let actions = Set(submenu.items.compactMap { $0.action })
+
+            if actions.contains(#selector(UndoManager.undo)) || actions.contains(Selector(("copy:"))) {
                 menuItem.title = editText
             }
-            if Self.knownViewTitles.contains(menuItem.title) {
+            else if actions.contains(Selector(("toggleFullScreen:"))) {
                 menuItem.title = viewText
             }
-            if Self.knownWindowTitles.contains(menuItem.title) {
+            else if actions.contains(#selector(NSWindow.performMiniaturize(_:))) || actions.contains(#selector(NSWindow.performZoom(_:))) {
                 menuItem.title = windowText
             }
-            if Self.knownHelpTitles.contains(menuItem.title) {
+            else if actions.contains(Selector(("showHelp:"))) || actions.contains(Selector(("helpClicked:"))) {
                 menuItem.title = helpText
+            }
+            else {
+                let title = menuItem.title
+                if title.contains("Help") || title.contains("帮助") || title.contains("ヘルプ") || title.contains("도움말") || title.contains("Hilfe") || title.contains("Aide") || title.contains("Ayuda") || title.contains("Ajuda") {
+                    menuItem.title = helpText
+                }
             }
         }
     }
