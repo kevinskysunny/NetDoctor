@@ -212,6 +212,11 @@ final class AppModel: ObservableObject {
     func updateLanguage(_ value: AppLanguage) {
         language = value
         UserDefaults.standard.set(value.rawValue, forKey: "netdoctor.language")
+        if value == .system {
+            UserDefaults.standard.removeObject(forKey: "AppleLanguages")
+        } else {
+            UserDefaults.standard.set([value.rawValue], forKey: "AppleLanguages")
+        }
         if let lastRawReport {
             report = localizedReport(lastRawReport)
         }

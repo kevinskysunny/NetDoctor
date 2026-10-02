@@ -2,11 +2,12 @@ import AppKit
 import Combine
 import SwiftUI
 
-final class AppDelegate: NSObject, NSApplicationDelegate {
+final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     static private(set) var shared: AppDelegate?
     var model: AppModel?
     private var detailWindow: NSWindow?
     private var languageCancellable: AnyCancellable?
+    private var menuTrackingCancellable: AnyCancellable?
     private var menuTimer: Timer?
 
     override init() {
@@ -16,8 +17,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         showDetailWindow()
-        menuTimer = Timer.scheduledTimer(withTimeInterval: 0.3, repeats: true) { [weak self] _ in
-            self?.updateMenuTitles()
+        attachMenuDelegates()
+        updateAllMenus()
+
+        // 监听菜单打开跟踪事件：只要用户点击菜单栏，立刻确保菜单是最新选择的语言
+        menuTrackingCancellable = NotificationCenter.default
+            .publisher(for: NSMenu.didBeginTrackingNotification)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                self?.attachMenuDelegates()
+                self?.updateAllMenus()
+            }
+
+        // 定时轮询，保障系统动态插入项（如 Services、输入法等）也被本地化
+        menuTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
+            self?.updateAllMenus()
         }
     }
 
@@ -58,7 +72,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 .sink { [weak self] _ in
                     guard let self, let window = self.detailWindow, let model = self.model ?? Self.shared?.model else { return }
                     window.title = model.text("detail.window.title")
-                    self.updateMenuTitles()
+                    self.updateAllMenus()
                 }
             window.orderFrontRegardless()
             window.makeKeyAndOrderFront(nil)
@@ -66,39 +80,36 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
-    private func updateMenuTitles() {
+    // MARK: - NSMenuDelegate
+
+    func menuWillOpen(_ menu: NSMenu) {
+        updateAllMenus()
+    }
+
+    func menuNeedsUpdate(_ menu: NSMenu) {
+        updateAllMenus()
+    }
+
+    private func attachMenuDelegates() {
         guard let mainMenu = NSApp.mainMenu else { return }
+        mainMenu.delegate = self
+        for item in mainMenu.items {
+            item.submenu?.delegate = self
+            for subItem in item.submenu?.items ?? [] {
+                subItem.submenu?.delegate = self
+            }
+        }
+    }
 
-        let raw = UserDefaults.standard.string(forKey: "netdoctor.language") ?? "system"
-        let lang = (AppLanguage(rawValue: raw) ?? .system).resolvedLanguage
+    func updateAllMenus() {
+        MainActor.assumeIsolated {
+            guard let mainMenu = NSApp.mainMenu else { return }
+            let model = self.model ?? Self.shared?.model
+            let raw = UserDefaults.standard.string(forKey: "netdoctor.language") ?? "system"
+            let lang = model?.language ?? AppLanguage(rawValue: raw) ?? .system
+            let appName = model?.text("app.name") ?? "NetDoctor"
 
-        let editText = L10n.string("menu.edit", language: lang)
-        let viewText = L10n.string("menu.view", language: lang)
-        let windowText = L10n.string("menu.window", language: lang)
-        let helpText = L10n.string("menu.help", language: lang)
-
-        for menuItem in mainMenu.items.dropFirst() {
-            guard let submenu = menuItem.submenu else { continue }
-            let actions = Set(submenu.items.compactMap { $0.action })
-
-            if actions.contains(#selector(UndoManager.undo)) || actions.contains(Selector(("copy:"))) {
-                menuItem.title = editText
-            }
-            else if actions.contains(Selector(("toggleFullScreen:"))) {
-                menuItem.title = viewText
-            }
-            else if actions.contains(#selector(NSWindow.performMiniaturize(_:))) || actions.contains(#selector(NSWindow.performZoom(_:))) {
-                menuItem.title = windowText
-            }
-            else if actions.contains(Selector(("showHelp:"))) || actions.contains(Selector(("helpClicked:"))) {
-                menuItem.title = helpText
-            }
-            else {
-                let title = menuItem.title
-                if title.contains("Help") || title.contains("帮助") || title.contains("ヘルプ") || title.contains("도움말") || title.contains("Hilfe") || title.contains("Aide") || title.contains("Ayuda") || title.contains("Ajuda") {
-                    menuItem.title = helpText
-                }
-            }
+            MenuLocalizer.update(mainMenu: mainMenu, language: lang, appName: appName)
         }
     }
 }
