@@ -263,6 +263,8 @@ extension L10n {
         "menu.settings": "Configurações...",
         "menu.quit": "Sair do %@",
         "menu.edit": "Edição",
-        "menu.view": "Visualizar"
+        "menu.view": "Visualizar",
+        "menu.window": "Janela",
+        "menu.help": "Ajuda"
     ]
 }

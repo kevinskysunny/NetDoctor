@@ -263,6 +263,8 @@ extension L10n {
         "menu.settings": "设置...",
         "menu.quit": "退出 %@",
         "menu.edit": "编辑",
-        "menu.view": "显示"
+        "menu.view": "显示",
+        "menu.window": "窗口",
+        "menu.help": "帮助"
     ]
 }

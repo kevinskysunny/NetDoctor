@@ -264,6 +264,8 @@ extension L10n {
         "menu.settings": "設定...",
         "menu.quit": "%@ を終了",
         "menu.edit": "編集",
-        "menu.view": "表示"
+        "menu.view": "表示",
+        "menu.window": "ウィンドウ",
+        "menu.help": "ヘルプ"
     ]
 }

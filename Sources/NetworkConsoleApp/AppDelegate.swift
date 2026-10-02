@@ -3,9 +3,15 @@ import Combine
 import SwiftUI
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
+    static private(set) var shared: AppDelegate?
     var model: AppModel?
     private var detailWindow: NSWindow?
     private var languageCancellable: AnyCancellable?
+
+    override init() {
+        super.init()
+        Self.shared = self
+    }
 
     private static let knownSettingsTitles: Set<String> = [
         "设置...", "设置…", "Settings...", "Settings…",
@@ -24,9 +30,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         "View", "显示", "表示", "보기", "Ansicht", "Affichage", "Ver", "Visualizar"
     ]
 
+    private static let knownWindowTitles: Set<String> = [
+        "Window", "窗口", "ウィンドウ", "윈도우", "Fenster", "Fenêtre", "Ventana", "Janela"
+    ]
+
+    private static let knownHelpTitles: Set<String> = [
+        "Help", "帮助", "ヘルプ", "도움말", "Hilfe", "Aide", "Ayuda", "Ajuda"
+    ]
+
     func applicationDidFinishLaunching(_ notification: Notification) {
         showDetailWindow()
-        updateMainMenu()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+            self?.updateMainMenu()
+        }
     }
 
     func applicationShouldHandleReopen(
@@ -39,10 +55,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func showDetailWindow() {
         MainActor.assumeIsolated {
-            guard let model else { return }
+            guard let model = model ?? Self.shared?.model else { return }
 
-            if let detailWindow, detailWindow.isVisible {
-                detailWindow.makeKeyAndOrderFront(nil)
+            if let window = detailWindow {
+                if window.isMiniaturized {
+                    window.deminiaturize(nil)
+                }
+                window.orderFrontRegardless()
+                window.makeKeyAndOrderFront(nil)
                 NSApp.activate(ignoringOtherApps: true)
                 return
             }
@@ -60,10 +80,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             languageCancellable = model.$language
                 .receive(on: RunLoop.main)
                 .sink { [weak self] _ in
-                    guard let self, let window = self.detailWindow, let model = self.model else { return }
+                    guard let self, let window = self.detailWindow, let model = self.model ?? Self.shared?.model else { return }
                     window.title = model.text("detail.window.title")
                     self.updateMainMenu()
                 }
+            window.orderFrontRegardless()
             window.makeKeyAndOrderFront(nil)
             NSApp.activate(ignoringOtherApps: true)
         }
@@ -74,19 +95,22 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             guard let model, let mainMenu = NSApp.mainMenu else { return }
             let appName = model.text("app.name")
 
-            if let appMenuItem = mainMenu.item(at: 0) {
+            if let appMenuItem = mainMenu.item(at: 0), let submenu = appMenuItem.submenu {
                 appMenuItem.title = appName
-                if let submenu = appMenuItem.submenu {
-                    for item in submenu.items {
-                        if item.action == #selector(NSApplication.orderFrontStandardAboutPanel(_:)) {
-                            item.title = model.text("menu.about", appName)
-                        }
-                        if item.action == #selector(NSApplication.terminate(_:)) {
-                            item.title = model.text("menu.quit", appName)
-                        }
-                        if Self.knownSettingsTitles.contains(item.title) {
-                            item.title = model.text("menu.settings")
-                        }
+                submenu.title = appName
+
+                for item in submenu.items {
+                    if item.isSeparatorItem { continue }
+                    let title = item.title
+
+                    if title.contains("关于") || title.hasPrefix("About ") || title.contains("について") || title.contains("정보") || title.contains("Über") || title.contains("À propos") || title.contains("Acerca") || title.contains("Sobre") {
+                        item.title = model.text("menu.about", appName)
+                    }
+                    else if title.contains("设置") || title.contains("Setting") || title.contains("設定") || title.contains("설정") || title.contains("Einstellung") || title.contains("Réglage") || title.contains("Configur") {
+                        item.title = model.text("menu.settings")
+                    }
+                    else if title.contains("退出") || title.hasPrefix("Quit ") || title.contains("終了") || title.contains("종료") || title.contains("beenden") || title.contains("Quitter") || title.contains("Salir") || title.contains("Sair") {
+                        item.title = model.text("menu.quit", appName)
                     }
                 }
             }
@@ -97,6 +121,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 }
                 if Self.knownViewTitles.contains(menuItem.title) {
                     menuItem.title = model.text("menu.view")
+                }
+                if Self.knownWindowTitles.contains(menuItem.title) {
+                    menuItem.title = model.text("menu.window")
+                }
+                if Self.knownHelpTitles.contains(menuItem.title) {
+                    menuItem.title = model.text("menu.help")
                 }
             }
         }

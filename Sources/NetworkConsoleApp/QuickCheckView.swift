@@ -3,6 +3,7 @@ import SwiftUI
 
 struct QuickCheckView: View {
     @ObservedObject var model: AppModel
+    @Environment(\.dismiss) private var dismiss
     @State private var isVisible = false
 
     var body: some View {
@@ -170,7 +171,12 @@ struct QuickCheckView: View {
                 }
 
                 Button(model.text("quick.openDetail")) {
-                    (NSApp.delegate as? AppDelegate)?.showDetailWindow()
+                    dismiss()
+                    if let appDelegate = AppDelegate.shared {
+                        appDelegate.showDetailWindow()
+                    } else {
+                        (NSApp.delegate as? AppDelegate)?.showDetailWindow()
+                    }
                 }
 
                 Spacer()

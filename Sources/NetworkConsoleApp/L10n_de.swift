@@ -263,6 +263,8 @@ extension L10n {
         "menu.settings": "Einstellungen...",
         "menu.quit": "%@ beenden",
         "menu.edit": "Bearbeiten",
-        "menu.view": "Ansicht"
+        "menu.view": "Ansicht",
+        "menu.window": "Fenster",
+        "menu.help": "Hilfe"
     ]
 }

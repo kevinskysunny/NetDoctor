@@ -263,6 +263,8 @@ extension L10n {
         "menu.settings": "설정...",
         "menu.quit": "%@ 종료",
         "menu.edit": "편집",
-        "menu.view": "보기"
+        "menu.view": "보기",
+        "menu.window": "윈도우",
+        "menu.help": "도움말"
     ]
 }

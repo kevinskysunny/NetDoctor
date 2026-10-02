@@ -10,6 +10,7 @@ struct NetDoctorApp: App {
         let model = AppModel()
         _model = StateObject(wrappedValue: model)
         appDelegate.model = model
+        AppDelegate.shared?.model = model
     }
 
     var body: some Scene {
@@ -23,6 +24,23 @@ struct NetDoctorApp: App {
         Settings {
             SettingsView(model: model)
                 .frame(width: 500, height: 420)
+        }
+        .commands {
+            CommandGroup(replacing: .appInfo) {
+                Button(model.text("menu.about", model.text("app.name"))) {
+                    NSApp.orderFrontStandardAboutPanel(nil)
+                }
+            }
+            CommandGroup(replacing: .appSettings) {
+                Button(model.text("menu.settings")) {
+                    NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
+                }
+            }
+            CommandGroup(replacing: .appTermination) {
+                Button(model.text("menu.quit", model.text("app.name"))) {
+                    NSApp.terminate(nil)
+                }
+            }
         }
     }
 }
