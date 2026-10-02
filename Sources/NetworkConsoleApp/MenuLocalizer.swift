@@ -4,7 +4,7 @@ import Foundation
 /// macOS 系统菜单栏（NSApp.mainMenu 及全部子菜单）全量深度动态本地化工具
 @MainActor
 enum MenuLocalizer {
-    enum ItemRole {
+    enum ItemRole: String, CaseIterable {
         // App Menu
         case about
         case settings
@@ -332,11 +332,59 @@ enum MenuLocalizer {
         }
     }
 
+    private static func buildAllKnownTitles() -> [String: ItemRole] {
+        var map = [String: ItemRole]()
+        let languages: [AppLanguage] = [.chinese, .english, .japanese, .korean, .german, .french, .spanish, .portuguese]
+        for role in ItemRole.allCases {
+            for lang in languages {
+                let title = localizedRoleTitle(role: role, language: lang, appName: "NetDoctor")
+                map[title] = role
+                let generic = localizedRoleTitle(role: role, language: lang, appName: "%@")
+                map[generic] = role
+            }
+        }
+        return map
+    }
+
+    private static let allKnownTitles: [String: ItemRole] = buildAllKnownTitles()
+
     private static func identifyRole(for item: NSMenuItem) -> ItemRole? {
+        if let raw = item.representedObject as? String, let role = ItemRole(rawValue: raw) {
+            // 特殊处理全屏状态切换：若全屏状态发生改变，根据当前标题特征重新判定进入/退出
+            if role == .enterFullScreen || role == .exitFullScreen {
+                let actionStr = item.action?.description ?? ""
+                if actionStr == "toggleFullScreen:" {
+                    let title = item.title
+                    let isExit = title.contains("Exit") || title.contains("退出") || title.contains("解除") || title.contains("verlassen") || title.contains("Quitter") || title.contains("Salir")
+                    let updatedRole: ItemRole = isExit ? .exitFullScreen : .enterFullScreen
+                    item.representedObject = updatedRole.rawValue
+                    return updatedRole
+                }
+            }
+            return role
+        }
+
+        let role = resolveRole(for: item)
+        if let role {
+            item.representedObject = role.rawValue
+        }
+        return role
+    }
+
+    private static func resolveRole(for item: NSMenuItem) -> ItemRole? {
         let actionStr = item.action?.description ?? ""
         let title = item.title
 
-        // 1. 根据 Action Selector 识别
+        // 1. 如果此前被任何一种语言本地化过，直接从 8 语言全量字典中反查（覆盖中/英/日/韩/德/法/西/葡）
+        if let role = allKnownTitles[title] {
+            return role
+        }
+        let trimmed = title.trimmingCharacters(in: .whitespaces)
+        if let role = allKnownTitles[trimmed] {
+            return role
+        }
+
+        // 2. 根据 Action Selector 识别
         switch actionStr {
         case "orderFrontStandardAboutPanel:":
             return .about

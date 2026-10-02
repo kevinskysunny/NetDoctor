@@ -220,4 +220,35 @@ final class MenuLocalizerTests: XCTestCase {
         XCTAssertTrue(helpItems.contains(where: { $0.title == "製品公式サイト" }))
         XCTAssertTrue(helpItems.contains(where: { $0.title == "サポートに連絡" }))
     }
+
+    func testCrossLanguageSwitchingRoundTripRecoversProperChinese() {
+        let mainMenu = NSMenu()
+        let appItem = NSMenuItem(title: "NetDoctor", action: nil, keyEquivalent: "")
+        mainMenu.addItem(appItem)
+
+        // 构造用户截图中由于切换到日语、法语、德语遗留下来的混合菜单
+        let windowItem = NSMenuItem(title: "Window", action: nil, keyEquivalent: "")
+        let windowSubmenu = NSMenu(title: "Window")
+        windowSubmenu.addItem(NSMenuItem(title: "フルスクリーン", action: nil, keyEquivalent: "")) // 来自日语 .fill
+        windowSubmenu.addItem(NSMenuItem(title: "Déplacer et redimensionner", action: nil, keyEquivalent: "")) // 来自法语 .moveAndResize
+        windowSubmenu.addItem(NSMenuItem(title: "Mosaïque", action: nil, keyEquivalent: "")) // 来自法语 .tile
+        windowSubmenu.addItem(NSMenuItem(title: "Verschieben und Größe ändern", action: nil, keyEquivalent: "")) // 来自德语 .moveAndResize
+        windowItem.submenu = windowSubmenu
+        mainMenu.addItem(windowItem)
+
+        // 执行切换回中文
+        MenuLocalizer.update(mainMenu: mainMenu, language: .chinese, appName: "NetDoctor")
+
+        XCTAssertEqual(windowSubmenu.items[0].title, "填充")
+        XCTAssertEqual(windowSubmenu.items[1].title, "移动与调整大小")
+        XCTAssertEqual(windowSubmenu.items[2].title, "全屏幕平铺")
+        XCTAssertEqual(windowSubmenu.items[3].title, "移动与调整大小")
+
+        // 再次切换到英文
+        MenuLocalizer.update(mainMenu: mainMenu, language: .english, appName: "NetDoctor")
+        XCTAssertEqual(windowSubmenu.items[0].title, "Fill")
+        XCTAssertEqual(windowSubmenu.items[1].title, "Move & Resize")
+        XCTAssertEqual(windowSubmenu.items[2].title, "Tile")
+        XCTAssertEqual(windowSubmenu.items[3].title, "Move & Resize")
+    }
 }
