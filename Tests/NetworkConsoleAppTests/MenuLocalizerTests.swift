@@ -96,16 +96,23 @@ final class MenuLocalizerTests: XCTestCase {
         XCTAssertEqual(winItems[5].title, "Move & Resize")
         XCTAssertEqual(winItems[6].title, "Tile")
         XCTAssertEqual(winItems[7].title, "Bring All to Front")
-        XCTAssertEqual(winItems[8].title, "Remove Window from Group")
+        XCTAssertEqual(winItems[8].title, "Remove Window from Set")
+        XCTAssertTrue(winItems[8].isHidden) // 冗余项已被隐藏
         XCTAssertEqual(winItems[9].title, "Show Previous Tab")
+        XCTAssertTrue(winItems[9].isHidden)
         XCTAssertEqual(winItems[10].title, "Show Next Tab")
+        XCTAssertTrue(winItems[10].isHidden)
         XCTAssertEqual(winItems[11].title, "Move Tab to New Window")
+        XCTAssertTrue(winItems[11].isHidden)
         XCTAssertEqual(winItems[12].title, "Merge All Windows")
+        XCTAssertTrue(winItems[12].isHidden)
 
         // 验证 View 子菜单全部变为英文（用户截图关注点）
         let viewItems = viewSubmenu.items
         XCTAssertEqual(viewItems[0].title, "Show Tab Bar")
+        XCTAssertTrue(viewItems[0].isHidden)
         XCTAssertEqual(viewItems[1].title, "Show All Tabs")
+        XCTAssertTrue(viewItems[1].isHidden)
         XCTAssertEqual(viewItems[2].title, "Enter Full Screen")
 
         // 验证 App 子菜单
@@ -121,24 +128,29 @@ final class MenuLocalizerTests: XCTestCase {
         // 验证 Edit 子菜单（包含用户截图红框内的自动填充、听写、表情符号）
         let edItems = editSubmenu.items
         XCTAssertEqual(edItems[0].title, "Undo")
+        XCTAssertTrue(edItems[0].isHidden)
         XCTAssertEqual(edItems[1].title, "Redo")
+        XCTAssertTrue(edItems[1].isHidden)
         XCTAssertEqual(edItems[2].title, "Cut")
         XCTAssertEqual(edItems[3].title, "Copy")
         XCTAssertEqual(edItems[4].title, "Paste")
         XCTAssertEqual(edItems[5].title, "Select All")
         XCTAssertEqual(edItems[6].title, "AutoFill")
+        XCTAssertTrue(edItems[6].isHidden)
         XCTAssertEqual(edItems[6].submenu?.items[0].title, "Contact Info...")
         XCTAssertEqual(edItems[6].submenu?.items[1].title, "Passwords...")
         XCTAssertEqual(edItems[6].submenu?.items[2].title, "Credit Cards...")
         XCTAssertEqual(edItems[7].title, "Start Dictation...")
+        XCTAssertTrue(edItems[7].isHidden)
         XCTAssertEqual(edItems[8].title, "Emoji & Symbols")
 
-        // 验证 Help 菜单（解决点击报错未找到帮助的问题，且包含在线文档与隐私政策）
+        // 验证 Help 菜单（解决点击报错未找到帮助的问题，且包含在线文档与隐私政策与官网）
         let helpItems = helpSubmenu.items
         XCTAssertEqual(helpItems[0].title, "NetDoctor Help")
         XCTAssertEqual(helpItems[0].action, #selector(AppDelegate.showHelpWindow(_:)))
-        XCTAssertTrue(helpItems.contains(where: { $0.title == "Online Documentation" }))
+        XCTAssertTrue(helpItems.contains(where: { $0.title == "Online Support Guide" }))
         XCTAssertTrue(helpItems.contains(where: { $0.title == "Privacy Policy" }))
+        XCTAssertTrue(helpItems.contains(where: { $0.title == "Official Product Website" }))
         XCTAssertTrue(helpItems.contains(where: { $0.title == "Contact Support" }))
     }
 
@@ -161,5 +173,45 @@ final class MenuLocalizerTests: XCTestCase {
         XCTAssertEqual(windowSubmenu.items[0].title, "关闭")
         XCTAssertEqual(windowSubmenu.items[1].title, "最小化")
         XCTAssertEqual(windowSubmenu.items[2].title, "前置全部窗口")
+    }
+
+    func testLocalizeMenuToJapanese() {
+        let mainMenu = NSMenu()
+        let appItem = NSMenuItem(title: "NetDoctor", action: nil, keyEquivalent: "")
+        mainMenu.addItem(appItem)
+
+        // Window 菜单（复现用户截图：包含 Remove Window from Set）
+        let windowItem = NSMenuItem(title: "Window", action: nil, keyEquivalent: "")
+        let windowSubmenu = NSMenu(title: "Window")
+        windowSubmenu.addItem(NSMenuItem(title: "Minimize", action: Selector(("performMiniaturize:")), keyEquivalent: "m"))
+        windowSubmenu.addItem(NSMenuItem(title: "Zoom", action: Selector(("performZoom:")), keyEquivalent: ""))
+        windowSubmenu.addItem(NSMenuItem(title: "Bring All to Front", action: Selector(("arrangeInFront:")), keyEquivalent: ""))
+        windowSubmenu.addItem(NSMenuItem(title: "Remove Window from Set", action: Selector(("removeWindowFromSet:")), keyEquivalent: ""))
+        windowItem.submenu = windowSubmenu
+        mainMenu.addItem(windowItem)
+
+        // Help 菜单
+        let helpItem = NSMenuItem(title: "Help", action: nil, keyEquivalent: "")
+        let helpSubmenu = NSMenu(title: "Help")
+        helpSubmenu.addItem(NSMenuItem(title: "NetDoctor Help", action: Selector(("showHelp:")), keyEquivalent: "?"))
+        helpItem.submenu = helpSubmenu
+        mainMenu.addItem(helpItem)
+
+        MenuLocalizer.update(mainMenu: mainMenu, language: .japanese, appName: "NetDoctor")
+
+        XCTAssertEqual(mainMenu.items[1].title, "ウィンドウ")
+        XCTAssertEqual(windowSubmenu.items[0].title, "しまう")
+        XCTAssertEqual(windowSubmenu.items[1].title, "拡大/縮小")
+        XCTAssertEqual(windowSubmenu.items[2].title, "すべてを手前に表示")
+        XCTAssertEqual(windowSubmenu.items[3].title, "セットからウインドウを削除")
+        XCTAssertTrue(windowSubmenu.items[3].isHidden) // 冗余项已被隐藏
+
+        XCTAssertEqual(mainMenu.items[2].title, "ヘルプ")
+        let helpItems = helpSubmenu.items
+        XCTAssertEqual(helpItems[0].title, "NetDoctor ヘルプ")
+        XCTAssertTrue(helpItems.contains(where: { $0.title == "サポートガイド" }))
+        XCTAssertTrue(helpItems.contains(where: { $0.title == "プライバシーポリシー" }))
+        XCTAssertTrue(helpItems.contains(where: { $0.title == "製品公式サイト" }))
+        XCTAssertTrue(helpItems.contains(where: { $0.title == "サポートに連絡" }))
     }
 }

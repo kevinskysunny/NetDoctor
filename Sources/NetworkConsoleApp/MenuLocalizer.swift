@@ -56,7 +56,34 @@ enum MenuLocalizer {
         case appHelp
         case onlineDocumentation
         case privacyPolicy
+        case productWebsite
         case contactSupport
+    }
+
+    /// 判断是否属于当前 NetDoctor 实用工具应用不需要的冗余项
+    static func isRedundant(role: ItemRole) -> Bool {
+        switch role {
+        // Edit 菜单中与网络体检无关的编辑项
+        case .undo, .redo:
+            return true
+        case .autoFill, .autoFillContacts, .autoFillPasswords, .autoFillCreditCards:
+            return true
+        case .startDictation:
+            return true
+
+        // View 菜单中与多标签相关的项
+        case .showTabBar, .hideTabBar, .showAllTabs:
+            return true
+
+        // Window 菜单中与单窗口诊断应用无关的多标签/窗口集项（如 Remove Window from Set）
+        case .removeWindowFromGroup:
+            return true
+        case .showPreviousTab, .showNextTab, .moveTabToNewWindow, .mergeAllWindows:
+            return true
+
+        default:
+            return false
+        }
     }
 
     /// 本地化全部菜单与子菜单
@@ -66,7 +93,7 @@ enum MenuLocalizer {
         // 1. 本地化顶层菜单栏（Menu Bar Items）
         localizeTopBar(mainMenu: mainMenu, language: lang, appName: appName)
 
-        // 2. 递归本地化每一个子菜单项
+        // 2. 递归本地化每一个子菜单项并剔除冗余项
         for item in mainMenu.items {
             if let submenu = item.submenu {
                 localizeSubmenu(submenu, language: lang, appName: appName)
@@ -118,6 +145,11 @@ enum MenuLocalizer {
             if item.isSeparatorItem { continue }
 
             if let role = identifyRole(for: item) {
+                // 如果属于诊断工具完全用不上的冗余项，直接隐藏，保持菜单极致精简清爽
+                if isRedundant(role: role) {
+                    item.isHidden = true
+                }
+
                 item.title = localizedRoleTitle(role: role, language: language, appName: appName)
 
                 // 劫持 Help 菜单中默认失效报错的 action
@@ -134,14 +166,57 @@ enum MenuLocalizer {
     }
 
     private static func ensureHelpSubmenuItems(_ menu: NSMenu, language: AppLanguage, appName: String) {
-        let isZh = (language == .chinese)
-        let docsTitle = isZh ? "在线使用文档" : "Online Documentation"
-        let privacyTitle = isZh ? "隐私政策" : "Privacy Policy"
-        let contactTitle = isZh ? "联系技术支持" : "Contact Support"
+        let docsTitle: String
+        let privacyTitle: String
+        let websiteTitle: String
+        let contactTitle: String
 
-        // 检查是否已添加过文档与隐私项
+        switch language.resolvedLanguage {
+        case .chinese:
+            docsTitle = "在线使用帮助"
+            privacyTitle = "应用隐私政策"
+            websiteTitle = "官方产品主页"
+            contactTitle = "联系技术支持"
+        case .japanese:
+            docsTitle = "サポートガイド"
+            privacyTitle = "プライバシーポリシー"
+            websiteTitle = "製品公式サイト"
+            contactTitle = "サポートに連絡"
+        case .korean:
+            docsTitle = "온라인 지원 설명서"
+            privacyTitle = "개인정보 처리방침"
+            websiteTitle = "제품 공식 웹사이트"
+            contactTitle = "기술 지원 문의"
+        case .german:
+            docsTitle = "Online-Support-Handbuch"
+            privacyTitle = "Datenschutzerklärung"
+            websiteTitle = "Produkt-Website"
+            contactTitle = "Support kontaktieren"
+        case .french:
+            docsTitle = "Guide d'assistance en ligne"
+            privacyTitle = "Politique de confidentialité"
+            websiteTitle = "Site officiel du produit"
+            contactTitle = "Contacter l'assistance"
+        case .spanish:
+            docsTitle = "Guía de ayuda en línea"
+            privacyTitle = "Política de privacidad"
+            websiteTitle = "Sitio web del producto"
+            contactTitle = "Contactar con soporte"
+        case .portuguese:
+            docsTitle = "Guia de Suporte Online"
+            privacyTitle = "Política de Privacidade"
+            websiteTitle = "Site Oficial do Produto"
+            contactTitle = "Entrar em Contato com o Suporte"
+        default:
+            docsTitle = "Online Support Guide"
+            privacyTitle = "Privacy Policy"
+            websiteTitle = "Official Product Website"
+            contactTitle = "Contact Support"
+        }
+
         var hasDocs = false
         var hasPrivacy = false
+        var hasWebsite = false
         var hasContact = false
 
         for item in menu.items {
@@ -152,6 +227,10 @@ enum MenuLocalizer {
             if item.action == #selector(AppDelegate.openPrivacyPolicy(_:)) {
                 hasPrivacy = true
                 item.title = privacyTitle
+            }
+            if item.action == #selector(AppDelegate.openProductWebsite(_:)) {
+                hasWebsite = true
+                item.title = websiteTitle
             }
             if item.action == #selector(AppDelegate.openContactSupport(_:)) {
                 hasContact = true
@@ -172,6 +251,12 @@ enum MenuLocalizer {
             let privacyItem = NSMenuItem(title: privacyTitle, action: #selector(AppDelegate.openPrivacyPolicy(_:)), keyEquivalent: "")
             privacyItem.target = AppDelegate.shared
             menu.addItem(privacyItem)
+        }
+
+        if !hasWebsite {
+            let websiteItem = NSMenuItem(title: websiteTitle, action: #selector(AppDelegate.openProductWebsite(_:)), keyEquivalent: "")
+            websiteItem.target = AppDelegate.shared
+            menu.addItem(websiteItem)
         }
 
         if !hasContact {
@@ -233,7 +318,7 @@ enum MenuLocalizer {
             return .zoom
         case "arrangeInFront:":
             return .bringAllToFront
-        case "removeWindowFromGroup:":
+        case "removeWindowFromGroup:", "removeWindowFromSet:", "removeWindowFromSet", "removeFromSet:", "removeFromGroup:":
             return .removeWindowFromGroup
         case "selectPreviousTab:":
             return .showPreviousTab
@@ -249,6 +334,8 @@ enum MenuLocalizer {
             return .onlineDocumentation
         case "openPrivacyPolicy:":
             return .privacyPolicy
+        case "openProductWebsite:":
+            return .productWebsite
         case "openContactSupport:":
             return .contactSupport
         default:
@@ -382,7 +469,24 @@ enum MenuLocalizer {
         if title.contains("Bring All to Front") || title.contains("前置全部窗口") || title.contains("すべてを手前に表示") || title.contains("Alle nach vorne") {
             return .bringAllToFront
         }
-        if title.contains("Remove Window from Group") || title.contains("从组中移除窗口") || title.contains("グループからウインドウを削除") {
+        if title.contains("Remove Window from") ||
+            title.contains("Window from Set") ||
+            title.contains("Window from Group") ||
+            title.contains("从组中移") ||
+            title.contains("从组合中移") ||
+            title.contains("从集合中移") ||
+            title.contains("セットからウインドウ") ||
+            title.contains("ウインドウをセットから") ||
+            title.contains("グループからウインドウ") ||
+            title.contains("세트에서 윈도우") ||
+            title.contains("Fenster aus Set") ||
+            title.contains("Fenster aus Gruppe") ||
+            title.contains("la fenêtre de l’ensemble") ||
+            title.contains("la fenêtre du groupe") ||
+            title.contains("ventana del conjunto") ||
+            title.contains("ventana del grupo") ||
+            title.contains("Janela do Conjunto") ||
+            title.contains("Janela do Grupo") {
             return .removeWindowFromGroup
         }
         if title.contains("Show Previous Tab") || title.contains("显示上一个标签页") || title.contains("前のタブを表示") {
@@ -399,13 +503,16 @@ enum MenuLocalizer {
         }
 
         // Help 菜单
-        if title.contains("Online Documentation") || title.contains("在线使用文档") || title.contains("在线文档") {
+        if title.contains("Online Documentation") || title.contains("在线使用文档") || title.contains("在线使用帮助") || title.contains("サポートガイド") {
             return .onlineDocumentation
         }
-        if title.contains("Privacy Policy") || title.contains("隐私政策") {
+        if title.contains("Privacy Policy") || title.contains("隐私政策") || title.contains("プライバシーポリシー") {
             return .privacyPolicy
         }
-        if title.contains("Contact Support") || title.contains("联系技术支持") {
+        if title.contains("Website") || title.contains("官方产品主页") || title.contains("製品公式サイト") {
+            return .productWebsite
+        }
+        if title.contains("Contact Support") || title.contains("联系技术支持") || title.contains("サポートに連絡") {
             return .contactSupport
         }
         if title.contains("Help") || title.contains("帮助") || title.contains("ヘルプ") || title.contains("Hilfe") || title.contains("Aide") {
@@ -416,9 +523,7 @@ enum MenuLocalizer {
     }
 
     private static func localizedRoleTitle(role: ItemRole, language: AppLanguage, appName: String) -> String {
-        let isZh = (language == .chinese)
-        let isJa = (language == .japanese)
-
+        let lang = language.resolvedLanguage
         switch role {
         // App Menu
         case .about:
@@ -427,176 +532,467 @@ enum MenuLocalizer {
         case .settings:
             return L10n.string("menu.settings", language: language)
         case .services:
-            if isZh { return "服务" }
-            if isJa { return "サービス" }
-            return "Services"
+            switch lang {
+            case .chinese: return "服务"
+            case .japanese: return "サービス"
+            case .korean: return "서비스"
+            case .german: return "Dienste"
+            case .french: return "Services"
+            case .spanish: return "Servicios"
+            case .portuguese: return "Serviços"
+            default: return "Services"
+            }
         case .hideApp:
-            if isZh { return "隐藏 \(appName)" }
-            if isJa { return "\(appName) を非表示" }
-            return "Hide \(appName)"
+            switch lang {
+            case .chinese: return "隐藏 \(appName)"
+            case .japanese: return "\(appName)を非表示"
+            case .korean: return "\(appName) 가리기"
+            case .german: return "\(appName) ausblenden"
+            case .french: return "Masquer \(appName)"
+            case .spanish: return "Ocultar \(appName)"
+            case .portuguese: return "Ocultar \(appName)"
+            default: return "Hide \(appName)"
+            }
         case .hideOthers:
-            if isZh { return "隐藏其他" }
-            if isJa { return "ほかを非表示" }
-            return "Hide Others"
+            switch lang {
+            case .chinese: return "隐藏其他"
+            case .japanese: return "ほかを非表示"
+            case .korean: return "기타 가리기"
+            case .german: return "Andere ausblenden"
+            case .french: return "Masquer les autres"
+            case .spanish: return "Ocultar otros"
+            case .portuguese: return "Ocultar Outros"
+            default: return "Hide Others"
+            }
         case .showAll:
-            if isZh { return "全部显示" }
-            if isJa { return "すべてを表示" }
-            return "Show All"
+            switch lang {
+            case .chinese: return "全部显示"
+            case .japanese: return "すべてを表示"
+            case .korean: return "모두 보기"
+            case .german: return "Alle einblenden"
+            case .french: return "Tout afficher"
+            case .spanish: return "Mostrar todo"
+            case .portuguese: return "Mostrar Tudo"
+            default: return "Show All"
+            }
         case .quitApp:
             let format = L10n.string("menu.quit", language: language)
             return String(format: format, locale: language.locale, appName)
 
         // Edit Menu
         case .undo:
-            if isZh { return "撤销" }
-            if isJa { return "取り消す" }
-            return "Undo"
+            switch lang {
+            case .chinese: return "撤销"
+            case .japanese: return "取り消す"
+            case .korean: return "실행 취소"
+            case .german: return "Widerrufen"
+            case .french: return "Annuler"
+            case .spanish: return "Deshacer"
+            case .portuguese: return "Desfazer"
+            default: return "Undo"
+            }
         case .redo:
-            if isZh { return "重做" }
-            if isJa { return "やり直す" }
-            return "Redo"
+            switch lang {
+            case .chinese: return "重做"
+            case .japanese: return "やり直す"
+            case .korean: return "실행 복귀"
+            case .german: return "Wiederholen"
+            case .french: return "Rétablir"
+            case .spanish: return "Rehacer"
+            case .portuguese: return "Refazer"
+            default: return "Redo"
+            }
         case .cut:
-            if isZh { return "剪切" }
-            if isJa { return "カット" }
-            return "Cut"
+            switch lang {
+            case .chinese: return "剪切"
+            case .japanese: return "カット"
+            case .korean: return "오려두기"
+            case .german: return "Ausschneiden"
+            case .french: return "Couper"
+            case .spanish: return "Cortar"
+            case .portuguese: return "Cortar"
+            default: return "Cut"
+            }
         case .copy:
-            if isZh { return "拷贝" }
-            if isJa { return "コピー" }
-            return "Copy"
+            switch lang {
+            case .chinese: return "拷贝"
+            case .japanese: return "コピー"
+            case .korean: return "복사"
+            case .german: return "Kopieren"
+            case .french: return "Copier"
+            case .spanish: return "Copiar"
+            case .portuguese: return "Copiar"
+            default: return "Copy"
+            }
         case .paste:
-            if isZh { return "粘贴" }
-            if isJa { return "ペースト" }
-            return "Paste"
+            switch lang {
+            case .chinese: return "粘贴"
+            case .japanese: return "ペースト"
+            case .korean: return "붙여넣기"
+            case .german: return "Einsetzen"
+            case .french: return "Coller"
+            case .spanish: return "Pegar"
+            case .portuguese: return "Colar"
+            default: return "Paste"
+            }
         case .pasteAndMatchStyle:
-            if isZh { return "粘贴并匹配样式" }
-            if isJa { return "スタイルに合わせてペースト" }
-            return "Paste and Match Style"
+            switch lang {
+            case .chinese: return "粘贴并匹配样式"
+            case .japanese: return "スタイルに合わせてペースト"
+            case .korean: return "스타일 일치시켜 붙여넣기"
+            case .german: return "Einsetzen und Stil anpassen"
+            case .french: return "Coller et adapter le style"
+            case .spanish: return "Pegar con el mismo estilo"
+            case .portuguese: return "Colar com o Mesmo Estilo"
+            default: return "Paste and Match Style"
+            }
         case .delete:
-            if isZh { return "删除" }
-            if isJa { return "削除" }
-            return "Delete"
+            switch lang {
+            case .chinese: return "删除"
+            case .japanese: return "削除"
+            case .korean: return "삭제"
+            case .german: return "Löschen"
+            case .french: return "Supprimer"
+            case .spanish: return "Eliminar"
+            case .portuguese: return "Apagar"
+            default: return "Delete"
+            }
         case .selectAll:
-            if isZh { return "全选" }
-            if isJa { return "すべてを選択" }
-            return "Select All"
+            switch lang {
+            case .chinese: return "全选"
+            case .japanese: return "すべてを選択"
+            case .korean: return "전체 선택"
+            case .german: return "Alles auswählen"
+            case .french: return "Tout sélectionner"
+            case .spanish: return "Seleccionar todo"
+            case .portuguese: return "Selecionar Tudo"
+            default: return "Select All"
+            }
         case .autoFill:
-            if isZh { return "自动填充" }
-            if isJa { return "自動入力" }
-            return "AutoFill"
+            switch lang {
+            case .chinese: return "自动填充"
+            case .japanese: return "自動入力"
+            case .korean: return "자동 완성"
+            case .german: return "Automatisches Ausfüllen"
+            case .french: return "Remplissage automatique"
+            case .spanish: return "Rellenar automáticamente"
+            case .portuguese: return "Preenchimento Automático"
+            default: return "AutoFill"
+            }
         case .autoFillContacts:
-            if isZh { return "联系人..." }
-            if isJa { return "連絡先..." }
-            return "Contact Info..."
+            switch lang {
+            case .chinese: return "联系人..."
+            case .japanese: return "連絡先..."
+            case .korean: return "연락처..."
+            case .german: return "Kontakte..."
+            case .french: return "Contacts..."
+            case .spanish: return "Contactos..."
+            case .portuguese: return "Contatos..."
+            default: return "Contact Info..."
+            }
         case .autoFillPasswords:
-            if isZh { return "密码..." }
-            if isJa { return "パスワード..." }
-            return "Passwords..."
+            switch lang {
+            case .chinese: return "密码..."
+            case .japanese: return "パスワード..."
+            case .korean: return "암호..."
+            case .german: return "Passwörter..."
+            case .french: return "Mots de passe..."
+            case .spanish: return "Contraseñas..."
+            case .portuguese: return "Senhas..."
+            default: return "Passwords..."
+            }
         case .autoFillCreditCards:
-            if isZh { return "信用卡..." }
-            if isJa { return "クレジットカード..." }
-            return "Credit Cards..."
+            switch lang {
+            case .chinese: return "信用卡..."
+            case .japanese: return "クレジットカード..."
+            case .korean: return "신용 카드..."
+            case .german: return "Kreditkarten..."
+            case .french: return "Cartes de crédit..."
+            case .spanish: return "Tarjetas de crédito..."
+            case .portuguese: return "Cartões de Crédito..."
+            default: return "Credit Cards..."
+            }
         case .startDictation:
-            if isZh { return "开始听写..." }
-            if isJa { return "音声入力を開始..." }
-            return "Start Dictation..."
+            switch lang {
+            case .chinese: return "开始听写..."
+            case .japanese: return "音声入力を開始..."
+            case .korean: return "받아쓰기 시작..."
+            case .german: return "Diktat starten..."
+            case .french: return "Démarrer la dictée..."
+            case .spanish: return "Iniciar dictado..."
+            case .portuguese: return "Iniciar Ditado..."
+            default: return "Start Dictation..."
+            }
         case .emojiAndSymbols:
-            if isZh { return "表情与符号" }
-            if isJa { return "絵文字と記号" }
-            return "Emoji & Symbols"
+            switch lang {
+            case .chinese: return "表情与符号"
+            case .japanese: return "絵文字と記号"
+            case .korean: return "이모티콘 및 기호"
+            case .german: return "Emojis & Symbole"
+            case .french: return "Emoji et symboles"
+            case .spanish: return "Emojis y símbolos"
+            case .portuguese: return "Emoji e Símbolos"
+            default: return "Emoji & Symbols"
+            }
 
         // View Menu
         case .showTabBar:
-            if isZh { return "显示标签页栏" }
-            if isJa { return "タブバーを表示" }
-            return "Show Tab Bar"
+            switch lang {
+            case .chinese: return "显示标签页栏"
+            case .japanese: return "タブバーを表示"
+            case .korean: return "탭 막대 보기"
+            case .german: return "Tabelleiste einblenden"
+            case .french: return "Afficher la barre d'onglets"
+            case .spanish: return "Mostrar barra de pestañas"
+            case .portuguese: return "Mostrar Barra de Abas"
+            default: return "Show Tab Bar"
+            }
         case .hideTabBar:
-            if isZh { return "隐藏标签页栏" }
-            if isJa { return "タブバーを非表示" }
-            return "Hide Tab Bar"
+            switch lang {
+            case .chinese: return "隐藏标签页栏"
+            case .japanese: return "タブバーを非表示"
+            case .korean: return "탭 막대 가리기"
+            case .german: return "Tabelleiste ausblenden"
+            case .french: return "Masquer la barre d'onglets"
+            case .spanish: return "Ocultar barra de pestañas"
+            case .portuguese: return "Ocultar Barra de Abas"
+            default: return "Hide Tab Bar"
+            }
         case .showAllTabs:
-            if isZh { return "显示所有标签页" }
-            if isJa { return "すべてのタブを表示" }
-            return "Show All Tabs"
+            switch lang {
+            case .chinese: return "显示所有标签页"
+            case .japanese: return "すべてのタブを表示"
+            case .korean: return "모든 탭 보기"
+            case .german: return "Alle Tabs einblenden"
+            case .french: return "Afficher tous les onglets"
+            case .spanish: return "Mostrar todas las pestañas"
+            case .portuguese: return "Mostrar Todas as Abas"
+            default: return "Show All Tabs"
+            }
         case .enterFullScreen:
-            if isZh { return "进入全屏幕" }
-            if isJa { return "フルスクリーンにする" }
-            return "Enter Full Screen"
+            switch lang {
+            case .chinese: return "进入全屏幕"
+            case .japanese: return "フルスクリーンにする"
+            case .korean: return "전체 화면 시작"
+            case .german: return "Vollbildmodus aktivieren"
+            case .french: return "Activer le mode plein écran"
+            case .spanish: return "Activar pantalla completa"
+            case .portuguese: return "Entrar em Tela Cheia"
+            default: return "Enter Full Screen"
+            }
         case .exitFullScreen:
-            if isZh { return "退出全屏幕" }
-            if isJa { return "フルスクリーンを解除" }
-            return "Exit Full Screen"
+            switch lang {
+            case .chinese: return "退出全屏幕"
+            case .japanese: return "フルスクリーンを解除"
+            case .korean: return "전체 화면 종료"
+            case .german: return "Vollbildmodus verlassen"
+            case .french: return "Quitter le mode plein écran"
+            case .spanish: return "Salir de pantalla completa"
+            case .portuguese: return "Sair da Tela Cheia"
+            default: return "Exit Full Screen"
+            }
 
         // Window Menu
         case .close:
-            if isZh { return "关闭" }
-            if isJa { return "閉じる" }
-            return "Close"
+            switch lang {
+            case .chinese: return "关闭"
+            case .japanese: return "閉じる"
+            case .korean: return "닫기"
+            case .german: return "Schließen"
+            case .french: return "Fermer"
+            case .spanish: return "Cerrar"
+            case .portuguese: return "Fechar"
+            default: return "Close"
+            }
         case .minimize:
-            if isZh { return "最小化" }
-            if isJa { return "しまう" }
-            return "Minimize"
+            switch lang {
+            case .chinese: return "最小化"
+            case .japanese: return "しまう"
+            case .korean: return "최소화"
+            case .german: return "Minimieren"
+            case .french: return "Réduire"
+            case .spanish: return "Minimizar"
+            case .portuguese: return "Minimizar"
+            default: return "Minimize"
+            }
         case .zoom:
-            if isZh { return "缩放" }
-            if isJa { return "拡大/縮小" }
-            return "Zoom"
+            switch lang {
+            case .chinese: return "缩放"
+            case .japanese: return "拡大/縮小"
+            case .korean: return "확대/축소"
+            case .german: return "Zoomen"
+            case .french: return "Agrandir"
+            case .spanish: return "Zoom"
+            case .portuguese: return "Zoom"
+            default: return "Zoom"
+            }
         case .fill:
-            if isZh { return "填充" }
-            if isJa { return "フルスクリーン" }
-            return "Fill"
+            switch lang {
+            case .chinese: return "填充"
+            case .japanese: return "フルスクリーン"
+            case .korean: return "채우기"
+            case .german: return "Ausfüllen"
+            case .french: return "Remplir"
+            case .spanish: return "Llenar"
+            case .portuguese: return "Preencher"
+            default: return "Fill"
+            }
         case .center:
-            if isZh { return "居中" }
-            if isJa { return "中央に配置" }
-            return "Center"
+            switch lang {
+            case .chinese: return "居中"
+            case .japanese: return "中央に配置"
+            case .korean: return "가운데 정렬"
+            case .german: return "Zentrieren"
+            case .french: return "Centrer"
+            case .spanish: return "Centrar"
+            case .portuguese: return "Centralizar"
+            default: return "Center"
+            }
         case .moveAndResize:
-            if isZh { return "移动与调整大小" }
-            if isJa { return "移動とサイズ変更" }
-            return "Move & Resize"
+            switch lang {
+            case .chinese: return "移动与调整大小"
+            case .japanese: return "移動とサイズ変更"
+            case .korean: return "이동 및 크기 조절"
+            case .german: return "Verschieben und Größe ändern"
+            case .french: return "Déplacer et redimensionner"
+            case .spanish: return "Mover y cambiar tamaño"
+            case .portuguese: return "Mover e Redimensionar"
+            default: return "Move & Resize"
+            }
         case .tile:
-            if isZh { return "全屏幕平铺" }
-            if isJa { return "タイル" }
-            return "Tile"
+            switch lang {
+            case .chinese: return "全屏幕平铺"
+            case .japanese: return "タイル"
+            case .korean: return "타일"
+            case .german: return "Kacheln"
+            case .french: return "Mosaïque"
+            case .spanish: return "Mosaico"
+            case .portuguese: return "Lado a Lado"
+            default: return "Tile"
+            }
         case .bringAllToFront:
-            if isZh { return "前置全部窗口" }
-            if isJa { return "すべてを手前に表示" }
-            return "Bring All to Front"
+            switch lang {
+            case .chinese: return "前置全部窗口"
+            case .japanese: return "すべてを手前に表示"
+            case .korean: return "모두 앞으로 가져오기"
+            case .german: return "Alle nach vorne bringen"
+            case .french: return "Tout ramener au premier plan"
+            case .spanish: return "Traer todo al frente"
+            case .portuguese: return "Trazer Todas para a Frente"
+            default: return "Bring All to Front"
+            }
         case .removeWindowFromGroup:
-            if isZh { return "从组中移除窗口" }
-            if isJa { return "グループからウインドウを削除" }
-            return "Remove Window from Group"
+            switch lang {
+            case .chinese: return "从组中移出窗口"
+            case .japanese: return "セットからウインドウを削除"
+            case .korean: return "세트에서 윈도우 제거"
+            case .german: return "Fenster aus Set entfernen"
+            case .french: return "Supprimer la fenêtre de l’ensemble"
+            case .spanish: return "Eliminar ventana del conjunto"
+            case .portuguese: return "Remover Janela do Conjunto"
+            default: return "Remove Window from Set"
+            }
         case .showPreviousTab:
-            if isZh { return "显示上一个标签页" }
-            if isJa { return "前のタブを表示" }
-            return "Show Previous Tab"
+            switch lang {
+            case .chinese: return "显示上一个标签页"
+            case .japanese: return "前のタブを表示"
+            case .korean: return "이전 탭 보기"
+            case .german: return "Vorherigen Tab einblenden"
+            case .french: return "Afficher l'onglet précédent"
+            case .spanish: return "Mostrar pestaña anterior"
+            case .portuguese: return "Mostrar Aba Anterior"
+            default: return "Show Previous Tab"
+            }
         case .showNextTab:
-            if isZh { return "显示下一个标签页" }
-            if isJa { return "次のタブを表示" }
-            return "Show Next Tab"
+            switch lang {
+            case .chinese: return "显示下一个标签页"
+            case .japanese: return "次のタブを表示"
+            case .korean: return "다음 탭 보기"
+            case .german: return "Nächsten Tab einblenden"
+            case .french: return "Afficher l'onglet suivant"
+            case .spanish: return "Mostrar pestaña siguiente"
+            case .portuguese: return "Mostrar Próxima Aba"
+            default: return "Show Next Tab"
+            }
         case .moveTabToNewWindow:
-            if isZh { return "将标签页移到新窗口" }
-            if isJa { return "タブを新規ウインドウに移動" }
-            return "Move Tab to New Window"
+            switch lang {
+            case .chinese: return "将标签页移到新窗口"
+            case .japanese: return "タブを新規ウインドウに移動"
+            case .korean: return "탭을 새 윈도우로 이동"
+            case .german: return "Tab in ein neues Fenster bewegen"
+            case .french: return "Déplacer l'onglet vers une nouvelle fenêtre"
+            case .spanish: return "Mover pestaña a una ventana nueva"
+            case .portuguese: return "Mover Aba para Nova Janela"
+            default: return "Move Tab to New Window"
+            }
         case .mergeAllWindows:
-            if isZh { return "合并所有窗口" }
-            if isJa { return "すべてのウインドウを統合" }
-            return "Merge All Windows"
+            switch lang {
+            case .chinese: return "合并所有窗口"
+            case .japanese: return "すべてのウインドウを統合"
+            case .korean: return "모든 윈도우 통합"
+            case .german: return "Alle Fenster zusammenführen"
+            case .french: return "Fusionner toutes les fenêtres"
+            case .spanish: return "Combinar todas las ventanas"
+            case .portuguese: return "Agrupar Todas as Janelas"
+            default: return "Merge All Windows"
+            }
 
         // Help Menu
         case .appHelp:
-            if isZh { return "\(appName) 帮助" }
-            if isJa { return "\(appName) ヘルプ" }
-            return "\(appName) Help"
+            switch lang {
+            case .chinese: return "\(appName) 帮助"
+            case .japanese: return "\(appName) ヘルプ"
+            case .korean: return "\(appName) 도움말"
+            case .german: return "\(appName)-Hilfe"
+            case .french: return "Aide \(appName)"
+            case .spanish: return "Ayuda de \(appName)"
+            case .portuguese: return "Ajuda do \(appName)"
+            default: return "\(appName) Help"
+            }
         case .onlineDocumentation:
-            if isZh { return "在线使用文档" }
-            if isJa { return "オンラインドキュメント" }
-            return "Online Documentation"
+            switch lang {
+            case .chinese: return "在线使用帮助"
+            case .japanese: return "サポートガイド"
+            case .korean: return "온라인 지원 설명서"
+            case .german: return "Online-Support-Handbuch"
+            case .french: return "Guide d'assistance en ligne"
+            case .spanish: return "Guía de ayuda en línea"
+            case .portuguese: return "Guia de Suporte Online"
+            default: return "Online Support Guide"
+            }
         case .privacyPolicy:
-            if isZh { return "隐私政策" }
-            if isJa { return "プライバシーポリシー" }
-            return "Privacy Policy"
+            switch lang {
+            case .chinese: return "应用隐私政策"
+            case .japanese: return "プライバシーポリシー"
+            case .korean: return "개인정보 처리방침"
+            case .german: return "Datenschutzerklärung"
+            case .french: return "Politique de confidentialité"
+            case .spanish: return "Política de privacidad"
+            case .portuguese: return "Política de Privacidade"
+            default: return "Privacy Policy"
+            }
+        case .productWebsite:
+            switch lang {
+            case .chinese: return "官方产品主页"
+            case .japanese: return "製品公式サイト"
+            case .korean: return "제품 공식 웹사이트"
+            case .german: return "Produkt-Website"
+            case .french: return "Site officiel du produit"
+            case .spanish: return "Sitio web del producto"
+            case .portuguese: return "Site Oficial do Produto"
+            default: return "Official Product Website"
+            }
         case .contactSupport:
-            if isZh { return "联系技术支持" }
-            if isJa { return "サポートに連絡" }
-            return "Contact Support"
+            switch lang {
+            case .chinese: return "联系技术支持"
+            case .japanese: return "サポートに連絡"
+            case .korean: return "기술 지원 문의"
+            case .german: return "Support kontaktieren"
+            case .french: return "Contacter l'assistance"
+            case .spanish: return "Contactar con soporte"
+            case .portuguese: return "Entrar em Contato com o Suporte"
+            default: return "Contact Support"
+            }
         }
     }
 

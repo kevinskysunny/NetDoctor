@@ -36,6 +36,14 @@ struct NetDoctorApp: App {
                     NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
                 }
             }
+            CommandGroup(replacing: .undoRedo) {
+                // 剔除只读体检工具完全用不上的 Undo / Redo
+            }
+            CommandGroup(replacing: .help) {
+                Button(model.text("menu.about", model.text("app.name"))) {
+                    AppDelegate.shared?.openHelpWindow()
+                }
+            }
             CommandGroup(replacing: .appTermination) {
                 Button(model.text("menu.quit", model.text("app.name"))) {
                     NSApp.terminate(nil)

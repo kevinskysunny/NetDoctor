@@ -16,6 +16,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        // 关闭自动窗口标签化，避免系统为单窗口实用工具应用自动生成无意义的多标签与窗口集合菜单项
+        NSWindow.allowsAutomaticWindowTabbing = false
+
         showDetailWindow()
         attachMenuDelegates()
         updateAllMenus()
@@ -132,19 +135,25 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     @objc func openOnlineDocumentation(_ sender: Any?) {
-        if let url = URL(string: "https://github.com/kevinskysunny/networkconsole-lite#readme") {
+        if let url = URL(string: "https://support.kevinlabs.app/netdoctor/support.html") {
             NSWorkspace.shared.open(url)
         }
     }
 
     @objc func openPrivacyPolicy(_ sender: Any?) {
-        if let url = URL(string: "https://gist.github.com/kevinskysunny/845b67c757d7a81ae9db3cb4a7ee9213") {
+        if let url = URL(string: "https://support.kevinlabs.app/netdoctor/privacy.html") {
+            NSWorkspace.shared.open(url)
+        }
+    }
+
+    @objc func openProductWebsite(_ sender: Any?) {
+        if let url = URL(string: "https://support.kevinlabs.app/netdoctor/") {
             NSWorkspace.shared.open(url)
         }
     }
 
     @objc func openContactSupport(_ sender: Any?) {
-        if let url = URL(string: "mailto:kevinskysunny@gmail.com?subject=NetDoctor%20Support") {
+        if let url = URL(string: "mailto:support@kevinlabs.app?subject=NetDoctor%20Support") {
             NSWorkspace.shared.open(url)
         }
     }
