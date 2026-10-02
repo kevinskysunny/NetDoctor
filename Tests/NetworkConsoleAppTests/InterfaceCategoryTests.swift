@@ -107,10 +107,42 @@ final class InterfaceCategoryTests: XCTestCase {
         XCTAssertEqual(result.count, 3)
     }
 
+    func testAppleP2PFilterReturnsOnlyAppleP2PInterfaces() {
+        let interfaces = [
+            makeInterface(name: "en0", kind: .wifi),
+            makeInterface(name: "awdl0", kind: .other),
+            makeInterface(name: "llw0", kind: .other),
+            makeInterface(name: "nan0", kind: .other),
+            makeInterface(name: "utun0", kind: .other),
+            makeInterface(name: "bridge0", kind: .other)
+        ]
+        let result = InterfaceFilterApplier.apply(.appleP2P, to: interfaces)
+        XCTAssertEqual(result.count, 3)
+        XCTAssertEqual(result.map(\.name), ["awdl0", "llw0", "nan0"])
+    }
+
+    func testSystemFilterReturnsOnlySystemInterfaces() {
+        let interfaces = [
+            makeInterface(name: "en0", kind: .wifi),
+            makeInterface(name: "bridge0", kind: .other),
+            makeInterface(name: "anpi0", kind: .other),
+            makeInterface(name: "gif0", kind: .other),
+            makeInterface(name: "stf0", kind: .other),
+            makeInterface(name: "lo0", kind: .loopback),
+            makeInterface(name: "utun0", kind: .other),
+            makeInterface(name: "awdl0", kind: .other)
+        ]
+        let result = InterfaceFilterApplier.apply(.system, to: interfaces)
+        XCTAssertEqual(result.count, 5)
+        XCTAssertEqual(result.map(\.name), ["bridge0", "anpi0", "gif0", "stf0", "lo0"])
+    }
+
     func testEmptyInterfacesForAllFilters() {
         let interfaces: [InterfaceInfo] = []
         XCTAssertEqual(InterfaceFilterApplier.apply(.physical, to: interfaces).count, 0)
         XCTAssertEqual(InterfaceFilterApplier.apply(.tunnels, to: interfaces).count, 0)
+        XCTAssertEqual(InterfaceFilterApplier.apply(.appleP2P, to: interfaces).count, 0)
+        XCTAssertEqual(InterfaceFilterApplier.apply(.system, to: interfaces).count, 0)
         XCTAssertEqual(InterfaceFilterApplier.apply(.all, to: interfaces).count, 0)
     }
 
@@ -126,10 +158,28 @@ final class InterfaceCategoryTests: XCTestCase {
     }
 
     func testCategoryStyleReturnsCorrectL10nKey() {
+        XCTAssertEqual(InterfaceCategoryStyle.style(for: .wifi).l10nKey, "interface.wifi")
+        XCTAssertEqual(InterfaceCategoryStyle.style(for: .wired).l10nKey, "interface.wired")
+        XCTAssertEqual(InterfaceCategoryStyle.style(for: .cellular).l10nKey, "interface.cellular")
+        XCTAssertEqual(InterfaceCategoryStyle.style(for: .loopback).l10nKey, "interface.loopback")
+        XCTAssertEqual(InterfaceCategoryStyle.style(for: .systemTunnel).l10nKey, "interface.other")
+        XCTAssertEqual(InterfaceCategoryStyle.style(for: .other).l10nKey, "interface.other")
         XCTAssertEqual(InterfaceCategoryStyle.style(for: .tunnel).l10nKey, "interfaces.category.tunnel")
         XCTAssertEqual(InterfaceCategoryStyle.style(for: .appleP2P).l10nKey, "interfaces.category.appleP2P")
         XCTAssertEqual(InterfaceCategoryStyle.style(for: .bridge).l10nKey, "interfaces.category.bridge")
         XCTAssertEqual(InterfaceCategoryStyle.style(for: .hardwareBus).l10nKey, "interfaces.category.hardwareBus")
+    }
+
+    func testFilterL10nKeys() {
+        XCTAssertEqual(InterfaceFilter.physical.l10nKey, "interfaces.filter.physical")
+        XCTAssertEqual(InterfaceFilter.tunnels.l10nKey, "interfaces.filter.tunnels")
+        XCTAssertEqual(InterfaceFilter.appleP2P.l10nKey, "interfaces.filter.appleP2P")
+        XCTAssertEqual(InterfaceFilter.system.l10nKey, "interfaces.filter.system")
+        XCTAssertEqual(InterfaceFilter.all.l10nKey, "interfaces.filter.all")
+    }
+
+    func testFilterHasFiveCases() {
+        XCTAssertEqual(InterfaceFilter.allCases.count, 5)
     }
 
     // MARK: - 辅助

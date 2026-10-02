@@ -253,6 +253,8 @@ extension L10n {
         "interfaces.filter.physical": "Nur physische",
         "interfaces.filter.tunnels": "Tunnel & VPN",
         "interfaces.filter.all": "Alle Schnittstellen",
+        "interfaces.filter.appleP2P": "AirDrop / P2P",
+        "interfaces.filter.system": "System & Hardware",
         "interfaces.category.tunnel": "Virtueller Tunnel",
         "interfaces.category.appleP2P": "AirDrop / P2P",
         "interfaces.category.bridge": "Thunderbolt-Brücke",

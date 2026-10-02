@@ -254,6 +254,8 @@ extension L10n {
         "interfaces.filter.physical": "物理のみ",
         "interfaces.filter.tunnels": "仮想トンネル",
         "interfaces.filter.all": "すべてのインターフェース",
+        "interfaces.filter.appleP2P": "AirDrop / P2P",
+        "interfaces.filter.system": "システム・ハード",
         "interfaces.category.tunnel": "仮想トンネル",
         "interfaces.category.appleP2P": "AirDrop / P2P",
         "interfaces.category.bridge": "Thunderbolt ブリッジ",

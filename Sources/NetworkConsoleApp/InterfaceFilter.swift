@@ -2,12 +2,14 @@ import NetworkCore
 
 /// 接口筛选模式（internal）。
 enum InterfaceFilter: Int, Sendable, CaseIterable {
-    case physical, tunnels, all
+    case physical, tunnels, appleP2P, system, all
 
     var l10nKey: String {
         switch self {
         case .physical: return "interfaces.filter.physical"
         case .tunnels:  return "interfaces.filter.tunnels"
+        case .appleP2P: return "interfaces.filter.appleP2P"
+        case .system:   return "interfaces.filter.system"
         case .all:      return "interfaces.filter.all"
         }
     }
@@ -23,6 +25,17 @@ enum InterfaceFilterApplier {
             return interfaces.filter { iface in
                 let lower = iface.name.lowercased()
                 return lower.hasPrefix("utun") || lower.hasPrefix("ipsec") || lower.hasPrefix("ppp")
+            }
+        case .appleP2P:
+            return interfaces.filter { iface in
+                let lower = iface.name.lowercased()
+                return lower.hasPrefix("awdl") || lower.hasPrefix("llw") || lower.hasPrefix("nan")
+            }
+        case .system:
+            return interfaces.filter { iface in
+                if iface.kind == .loopback { return true }
+                let lower = iface.name.lowercased()
+                return lower.hasPrefix("bridge") || lower.hasPrefix("anpi") || lower.hasPrefix("gif") || lower.hasPrefix("stf")
             }
         case .all:
             return interfaces

@@ -253,6 +253,8 @@ extension L10n {
         "interfaces.filter.physical": "물리 인터페이스만",
         "interfaces.filter.tunnels": "가상 터널",
         "interfaces.filter.all": "모든 인터페이스",
+        "interfaces.filter.appleP2P": "AirDrop / P2P",
+        "interfaces.filter.system": "시스템 및 하드웨어",
         "interfaces.category.tunnel": "가상 터널",
         "interfaces.category.appleP2P": "AirDrop / P2P",
         "interfaces.category.bridge": "Thunderbolt 브리지",

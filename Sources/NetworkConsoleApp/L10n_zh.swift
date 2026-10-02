@@ -253,6 +253,8 @@ extension L10n {
         "interfaces.filter.physical": "仅物理网卡",
         "interfaces.filter.tunnels": "虚拟隧道",
         "interfaces.filter.all": "全部接口",
+        "interfaces.filter.appleP2P": "隔空投送/互联",
+        "interfaces.filter.system": "系统底层",
         "interfaces.category.tunnel": "虚拟隧道",
         "interfaces.category.appleP2P": "隔空投送/互联",
         "interfaces.category.bridge": "雷雳网桥",
