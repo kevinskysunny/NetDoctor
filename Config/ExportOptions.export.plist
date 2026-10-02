@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>method</key>
+	<string>app-store-connect</string>
+	<key>destination</key>
+	<string>export</string>
+	<key>teamID</key>
+	<string>J84LGFK7GY</string>
+	<key>uploadSymbols</key>
+	<true/>
+	<key>signingStyle</key>
+	<string>manual</string>
+	<key>signingCertificate</key>
+	<string>3rd Party Mac Developer Application: xukuo huang (J84LGFK7GY)</string>
+	<key>installerSigningCertificate</key>
+	<string>3rd Party Mac Developer Installer: xukuo huang (J84LGFK7GY)</string>
+	<key>provisioningProfiles</key>
+	<dict>
+		<key>com.networkconsole.lite</key>
+		<string>NetworkConsole Lite App Store</string>
+	</dict>
+</dict>
+</plist>
