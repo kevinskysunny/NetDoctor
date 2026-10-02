@@ -259,6 +259,11 @@ extension L10n {
         "interfaces.category.tunnel": "仮想トンネル",
         "interfaces.category.appleP2P": "AirDrop / P2P",
         "interfaces.category.bridge": "Thunderbolt ブリッジ",
-        "interfaces.category.hardwareBus": "ハードウェアバス"
+        "interfaces.category.hardwareBus": "ハードウェアバス",
+        "menu.about": "%@ について",
+        "menu.settings": "設定...",
+        "menu.quit": "%@ を終了",
+        "menu.edit": "編集",
+        "menu.view": "表示"
     ]
 }

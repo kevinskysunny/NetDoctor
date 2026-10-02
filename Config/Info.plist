@@ -3,7 +3,18 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
-	<string>zh_CN</string>
+	<string>en</string>
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>en</string>
+		<string>zh-Hans</string>
+		<string>ja</string>
+		<string>ko</string>
+		<string>de</string>
+		<string>fr</string>
+		<string>es</string>
+		<string>pt</string>
+	</array>
 	<key>CFBundleDisplayName</key>
 	<string>NetDoctor</string>
 	<key>CFBundleExecutable</key>

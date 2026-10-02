@@ -258,6 +258,11 @@ extension L10n {
         "interfaces.category.tunnel": "虚拟隧道",
         "interfaces.category.appleP2P": "隔空投送/互联",
         "interfaces.category.bridge": "雷雳网桥",
-        "interfaces.category.hardwareBus": "硬件总线"
+        "interfaces.category.hardwareBus": "硬件总线",
+        "menu.about": "关于 %@",
+        "menu.settings": "设置...",
+        "menu.quit": "退出 %@",
+        "menu.edit": "编辑",
+        "menu.view": "显示"
     ]
 }

@@ -258,6 +258,11 @@ extension L10n {
         "interfaces.category.tunnel": "Virtueller Tunnel",
         "interfaces.category.appleP2P": "AirDrop / P2P",
         "interfaces.category.bridge": "Thunderbolt-Brücke",
-        "interfaces.category.hardwareBus": "Hardware-Bus"
+        "interfaces.category.hardwareBus": "Hardware-Bus",
+        "menu.about": "Über %@",
+        "menu.settings": "Einstellungen...",
+        "menu.quit": "%@ beenden",
+        "menu.edit": "Bearbeiten",
+        "menu.view": "Ansicht"
     ]
 }

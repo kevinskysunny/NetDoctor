@@ -258,6 +258,11 @@ extension L10n {
         "interfaces.category.tunnel": "가상 터널",
         "interfaces.category.appleP2P": "AirDrop / P2P",
         "interfaces.category.bridge": "Thunderbolt 브리지",
-        "interfaces.category.hardwareBus": "하드웨어 버스"
+        "interfaces.category.hardwareBus": "하드웨어 버스",
+        "menu.about": "%@ 정보",
+        "menu.settings": "설정...",
+        "menu.quit": "%@ 종료",
+        "menu.edit": "편집",
+        "menu.view": "보기"
     ]
 }
