@@ -40,7 +40,7 @@ struct NetDoctorApp: App {
                 // 剔除只读体检工具完全用不上的 Undo / Redo
             }
             CommandGroup(replacing: .help) {
-                Button(model.text("menu.about", model.text("app.name"))) {
+                Button("\(model.text("app.name")) \(model.text("menu.help"))") {
                     AppDelegate.shared?.openHelpWindow()
                 }
             }

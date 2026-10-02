@@ -19,7 +19,7 @@ struct HelpView: View {
                 }
 
                 VStack(alignment: .leading, spacing: 3) {
-                    Text(model.text("menu.about", model.text("app.name")))
+                    Text("\(model.text("app.name")) \(model.text("menu.help"))")
                         .font(.title2.weight(.bold))
                     Text(headerSubtitle(for: model.language))
                         .font(.subheadline)
