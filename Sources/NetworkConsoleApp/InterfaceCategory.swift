@@ -44,16 +44,16 @@ struct InterfaceCategoryStyle: Sendable {
 
     static func style(for category: InterfaceCategory) -> InterfaceCategoryStyle {
         switch category {
-        case .wifi:        return InterfaceCategoryStyle(sfSymbol: "wifi", accentColor: .cyan, l10nKey: "kind.wifi")
-        case .wired:       return InterfaceCategoryStyle(sfSymbol: "cable.connector", accentColor: .blue, l10nKey: "kind.wired")
-        case .cellular:    return InterfaceCategoryStyle(sfSymbol: "antenna.radiowaves.left.and.right", accentColor: .orange, l10nKey: "kind.cellular")
-        case .loopback:    return InterfaceCategoryStyle(sfSymbol: "arrow.triangle.2.circlepath", accentColor: .secondary, l10nKey: "kind.loopback")
+        case .wifi:        return InterfaceCategoryStyle(sfSymbol: "wifi", accentColor: .cyan, l10nKey: "interface.wifi")
+        case .wired:       return InterfaceCategoryStyle(sfSymbol: "cable.connector", accentColor: .blue, l10nKey: "interface.wired")
+        case .cellular:    return InterfaceCategoryStyle(sfSymbol: "antenna.radiowaves.left.and.right", accentColor: .orange, l10nKey: "interface.cellular")
+        case .loopback:    return InterfaceCategoryStyle(sfSymbol: "arrow.triangle.2.circlepath", accentColor: .secondary, l10nKey: "interface.loopback")
         case .tunnel:      return InterfaceCategoryStyle(sfSymbol: "lock.shield", accentColor: .indigo, l10nKey: "interfaces.category.tunnel")
         case .appleP2P:    return InterfaceCategoryStyle(sfSymbol: "airplayaudio", accentColor: .pink, l10nKey: "interfaces.category.appleP2P")
         case .bridge:      return InterfaceCategoryStyle(sfSymbol: "point.3.connected.trianglepath.dotted", accentColor: .teal, l10nKey: "interfaces.category.bridge")
         case .hardwareBus: return InterfaceCategoryStyle(sfSymbol: "cpu", accentColor: .gray, l10nKey: "interfaces.category.hardwareBus")
-        case .systemTunnel: return InterfaceCategoryStyle(sfSymbol: "arrow.left.arrow.right", accentColor: .secondary, l10nKey: "kind.other")
-        case .other:       return InterfaceCategoryStyle(sfSymbol: "network", accentColor: .indigo, l10nKey: "kind.other")
+        case .systemTunnel: return InterfaceCategoryStyle(sfSymbol: "arrow.left.arrow.right", accentColor: .secondary, l10nKey: "interface.other")
+        case .other:       return InterfaceCategoryStyle(sfSymbol: "network", accentColor: .indigo, l10nKey: "interface.other")
         }
     }
 }
