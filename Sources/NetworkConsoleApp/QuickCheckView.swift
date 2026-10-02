@@ -94,7 +94,7 @@ struct QuickCheckView: View {
                     MetricCard(
                         title: model.text("quick.bento.interface"),
                         value: activeInterfaceName(report),
-                        detail: model.text("quick.bento.interfaces.count", report.interfaces.filter { $0.isActive }.count),
+                        detail: model.text("quick.bento.interfaces.count", OverviewActivity.compute(report.interfaces).count),
                         systemImage: "network",
                         accentColor: .blue
                     )

@@ -249,6 +249,13 @@ extension L10n {
         "reachability.lossFormat": "Verlust %.0f%%",
         "common.copyTarget": "%@ kopieren",
         "detail.copyCard": "Diagnosekarte kopieren",
-        "gauge.scoreSuffix": "Pkt"
+        "gauge.scoreSuffix": "Pkt",
+        "interfaces.filter.physical": "Nur physische",
+        "interfaces.filter.tunnels": "Tunnel & VPN",
+        "interfaces.filter.all": "Alle Schnittstellen",
+        "interfaces.category.tunnel": "Virtueller Tunnel",
+        "interfaces.category.appleP2P": "AirDrop / P2P",
+        "interfaces.category.bridge": "Thunderbolt-Brücke",
+        "interfaces.category.hardwareBus": "Hardware-Bus"
     ]
 }

@@ -249,6 +249,13 @@ extension L10n {
         "time.justNow": "刚刚",
         "time.minutesAgo": "%d 分钟前",
         "time.hoursAgo": "%d 小时前",
-        "time.yesterday": "昨天 "
+        "time.yesterday": "昨天 ",
+        "interfaces.filter.physical": "仅物理网卡",
+        "interfaces.filter.tunnels": "虚拟隧道",
+        "interfaces.filter.all": "全部接口",
+        "interfaces.category.tunnel": "虚拟隧道",
+        "interfaces.category.appleP2P": "隔空投送/互联",
+        "interfaces.category.bridge": "雷雳网桥",
+        "interfaces.category.hardwareBus": "硬件总线"
     ]
 }

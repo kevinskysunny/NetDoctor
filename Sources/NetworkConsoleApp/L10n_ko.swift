@@ -249,6 +249,13 @@ extension L10n {
         "reachability.lossFormat": "손실 %.0f%%",
         "common.copyTarget": "%@ 복사",
         "detail.copyCard": "진단 카드 복사",
-        "gauge.scoreSuffix": "점"
+        "gauge.scoreSuffix": "점",
+        "interfaces.filter.physical": "물리 인터페이스만",
+        "interfaces.filter.tunnels": "가상 터널",
+        "interfaces.filter.all": "모든 인터페이스",
+        "interfaces.category.tunnel": "가상 터널",
+        "interfaces.category.appleP2P": "AirDrop / P2P",
+        "interfaces.category.bridge": "Thunderbolt 브리지",
+        "interfaces.category.hardwareBus": "하드웨어 버스"
     ]
 }

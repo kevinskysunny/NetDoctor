@@ -3,6 +3,7 @@
 .swiftpm/
 DerivedData/
 dist/
+build/
 *.xcuserstate
 xcuserdata/
 Config/*.local.plist

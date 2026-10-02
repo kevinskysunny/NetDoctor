@@ -249,6 +249,13 @@ extension L10n {
         "time.justNow": "Just now",
         "time.minutesAgo": "%dm ago",
         "time.hoursAgo": "%dh ago",
-        "time.yesterday": "Yesterday "
+        "time.yesterday": "Yesterday ",
+        "interfaces.filter.physical": "Physical Only",
+        "interfaces.filter.tunnels": "Tunnels & VPN",
+        "interfaces.filter.all": "All Interfaces",
+        "interfaces.category.tunnel": "Virtual Tunnel",
+        "interfaces.category.appleP2P": "AirDrop / P2P",
+        "interfaces.category.bridge": "Thunderbolt Bridge",
+        "interfaces.category.hardwareBus": "Hardware Bus"
     ]
 }

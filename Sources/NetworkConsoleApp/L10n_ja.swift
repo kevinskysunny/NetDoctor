@@ -250,6 +250,13 @@ extension L10n {
         "settings.endpoints.title": "パブリックプローブエンドポイント",
         "settings.ecosystem.title": "推奨ツールとエコシステム",
         "settings.presenterdeck.title": "PresenterDeck",
-        "settings.presenterdeck.desc": "Mac 向けプレゼン流程台とリハーサルタイマー · スポットライト、拡大鏡、ノッチバー搭載"
+        "settings.presenterdeck.desc": "Mac 向けプレゼン流程台とリハーサルタイマー · スポットライト、拡大鏡、ノッチバー搭載",
+        "interfaces.filter.physical": "物理のみ",
+        "interfaces.filter.tunnels": "仮想トンネル",
+        "interfaces.filter.all": "すべてのインターフェース",
+        "interfaces.category.tunnel": "仮想トンネル",
+        "interfaces.category.appleP2P": "AirDrop / P2P",
+        "interfaces.category.bridge": "Thunderbolt ブリッジ",
+        "interfaces.category.hardwareBus": "ハードウェアバス"
     ]
 }

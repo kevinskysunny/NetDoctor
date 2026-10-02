@@ -89,8 +89,8 @@ struct CyberDiagnosisCardView: View {
                 )
                 vitalItem(
                     title: text("card.grid.interfaces"),
-                    value: text("card.grid.interfaces.count", report.interfaces.filter { $0.isActive }.count),
-                    sub: report.interfaces.first(where: { $0.isActive })?.name ?? text("card.grid.interfaces.none")
+                    value: text("card.grid.interfaces.count", OverviewActivity.compute(report.interfaces).count),
+                    sub: OverviewActivity.compute(report.interfaces).names.first ?? text("card.grid.interfaces.none")
                 )
                 vitalItem(
                     title: text("card.grid.dns"),

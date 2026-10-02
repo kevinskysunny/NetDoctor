@@ -3,6 +3,7 @@ import SwiftUI
 
 struct InterfacesView: View {
     @ObservedObject var model: AppModel
+    @State private var selectedFilter: InterfaceFilter = .physical
 
     var body: some View {
         Group {
@@ -12,12 +13,20 @@ struct InterfacesView: View {
                         // 1. 顶部遥测指示舱 (Interface Telemetry Pod)
                         InterfaceTelemetryPod(report: report, model: model)
 
+                        // 1.5 多维分类筛选器
+                        Picker("", selection: $selectedFilter) {
+                            ForEach(InterfaceFilter.allCases, id: \.self) { filter in
+                                Text(model.text(filter.l10nKey)).tag(filter)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+
                         // 2. 刀片机架卡片网格 (Blade Rack Cards)
                         LazyVGrid(
                             columns: [GridItem(.adaptive(minimum: 380), spacing: 16)],
                             spacing: 16
                         ) {
-                            ForEach(report.interfaces) { iface in
+                            ForEach(InterfaceFilterApplier.apply(selectedFilter, to: report.interfaces)) { iface in
                                 InterfaceBladeCard(interface: iface, model: model)
                             }
                         }
@@ -158,7 +167,7 @@ struct InterfaceBladeCard: View {
                             .font(.system(size: 16, weight: .bold, design: .monospaced))
 
                         // 接口类型胶囊
-                        Text(model.text(for: interface.kind))
+                        Text(model.text(InterfaceCategoryStyle.style(for: InterfaceCategoryResolver.resolve(kind: interface.kind, name: interface.name)).l10nKey))
                             .font(.caption2.weight(.medium))
                             .padding(.horizontal, 6)
                             .padding(.vertical, 2)
@@ -318,25 +327,13 @@ struct InterfaceBladeCard: View {
     }
 
     private var hardwareIconName: String {
-        switch interface.kind {
-        case .wifi: return "wifi"
-        case .wired: return "cable.connector"
-        case .cellular: return "antenna.radiowaves.left.and.right"
-        case .loopback: return "arrow.triangle.2.circlepath"
-        case .other: return "network"
-        }
+        InterfaceCategoryStyle.style(for: InterfaceCategoryResolver.resolve(kind: interface.kind, name: interface.name)).sfSymbol
     }
 
     private var hardwareAccentColor: Color {
         if interface.isDefaultRouteInterface {
             return .cyan
         }
-        switch interface.kind {
-        case .wifi: return .cyan
-        case .wired: return .blue
-        case .cellular: return .orange
-        case .loopback: return .secondary
-        case .other: return .indigo
-        }
+        return InterfaceCategoryStyle.style(for: InterfaceCategoryResolver.resolve(kind: interface.kind, name: interface.name)).accentColor
     }
 }
