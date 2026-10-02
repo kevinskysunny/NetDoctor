@@ -10,6 +10,7 @@
 		088C59DB9CDFBEE6C9EC833E /* DetailTimelineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D86B41456BEBA4A6A083F58E /* DetailTimelineView.swift */; };
 		09788454B182C57153CBC1F5 /* DiagnosticEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91D8F07CE625CD365136A0F3 /* DiagnosticEngine.swift */; };
 		0AB43839446A8C0C7B9E47AE /* DetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D022C5650EABC3C9B534BC33 /* DetailView.swift */; };
+		0DDA5B0A3B40560809472FD0 /* MenuLocalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD93FE29C24DE759B7F84321 /* MenuLocalizer.swift */; };
 		12ADA2EED89FFDB9A9E738C8 /* ReachabilityProber.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24B8DCF032009F7C046A424C /* ReachabilityProber.swift */; };
 		16E936688686B88D3C587178 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 3410927C1887B857AE763505 /* PrivacyInfo.xcprivacy */; };
 		1B273950775F2D89536AA547 /* L10n_ja.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8012D67B7D86ABBD7F6F5EFD /* L10n_ja.swift */; };
@@ -123,6 +124,7 @@
 		C539DA734657B143EF4D97FF /* L10n_fr.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = L10n_fr.swift; sourceTree = "<group>"; };
 		C7138CC6CA2A09C80CF89D45 /* L10n_es.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = L10n_es.swift; sourceTree = "<group>"; };
 		CD4021DC6A77C6D695734088 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		CD93FE29C24DE759B7F84321 /* MenuLocalizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuLocalizer.swift; sourceTree = "<group>"; };
 		D022C5650EABC3C9B534BC33 /* DetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailView.swift; sourceTree = "<group>"; };
 		D62A4295A0D3AD3B4E8313AB /* ECGWaveformView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ECGWaveformView.swift; sourceTree = "<group>"; };
 		D86B41456BEBA4A6A083F58E /* DetailTimelineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailTimelineView.swift; sourceTree = "<group>"; };
@@ -250,6 +252,7 @@
 				8AA98F74DAA925EBF0207F4A /* L10n_zh.swift */,
 				F9373D6F3FA75676DF9A8ECF /* Localization.swift */,
 				9DFE8FF6FC1078F0B1B8FC87 /* LocalMacSelector.swift */,
+				CD93FE29C24DE759B7F84321 /* MenuLocalizer.swift */,
 				65360E06E233D41D3252C22C /* NetworkConsoleApp.swift */,
 				C503961740761ACB9DADF46A /* NetworkPipelineView.swift */,
 				1573ADB4DC5A3D9A12952659 /* QuickCheckView.swift */,
@@ -377,6 +380,7 @@
 				824D4F4B5186997D3C86DB8D /* L10n_zh.swift in Sources */,
 				5B841D7649FD7FEFD15254CF /* LocalMacSelector.swift in Sources */,
 				D4922F42605FD637A4EB127B /* Localization.swift in Sources */,
+				0DDA5B0A3B40560809472FD0 /* MenuLocalizer.swift in Sources */,
 				1CCAF28762B657B136C49C62 /* NetworkConsoleApp.swift in Sources */,
 				F2F21AD9C87D8348F2E4EAB3 /* NetworkPipelineView.swift in Sources */,
 				303DA2D98FEC6856E5E6AAC1 /* QuickCheckView.swift in Sources */,
