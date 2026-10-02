@@ -112,4 +112,60 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             MenuLocalizer.update(mainMenu: mainMenu, language: lang, appName: appName)
         }
     }
+
+    // MARK: - Help Handlers
+
+    private var helpWindow: NSWindow?
+
+    @objc func showHelpWindow(_ sender: Any?) {
+        openHelpWindow()
+    }
+
+    @objc func openOnlineDocumentation(_ sender: Any?) {
+        if let url = URL(string: "https://github.com/kevinskysunny/networkconsole-lite#readme") {
+            NSWorkspace.shared.open(url)
+        }
+    }
+
+    @objc func openPrivacyPolicy(_ sender: Any?) {
+        if let url = URL(string: "https://gist.github.com/kevinskysunny/845b67c757d7a81ae9db3cb4a7ee9213") {
+            NSWorkspace.shared.open(url)
+        }
+    }
+
+    @objc func openContactSupport(_ sender: Any?) {
+        if let url = URL(string: "mailto:kevinskysunny@gmail.com?subject=NetDoctor%20Support") {
+            NSWorkspace.shared.open(url)
+        }
+    }
+
+    func openHelpWindow() {
+        MainActor.assumeIsolated {
+            guard let model = model ?? Self.shared?.model else { return }
+
+            if let window = helpWindow {
+                if window.isMiniaturized {
+                    window.deminiaturize(nil)
+                }
+                window.orderFrontRegardless()
+                window.makeKeyAndOrderFront(nil)
+                NSApp.activate(ignoringOtherApps: true)
+                return
+            }
+
+            let hostingController = NSHostingController(
+                rootView: HelpView(model: model)
+            )
+            let window = NSWindow(contentViewController: hostingController)
+            window.title = model.language == .chinese ? "\(model.text("app.name")) 帮助" : "\(model.text("app.name")) Help"
+            window.setContentSize(NSSize(width: 580, height: 500))
+            window.minSize = NSSize(width: 520, height: 440)
+            window.center()
+            window.isReleasedWhenClosed = false
+            helpWindow = window
+            window.orderFrontRegardless()
+            window.makeKeyAndOrderFront(nil)
+            NSApp.activate(ignoringOtherApps: true)
+        }
+    }
 }
