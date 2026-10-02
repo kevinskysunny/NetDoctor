@@ -209,6 +209,55 @@ final class AppModel: ObservableObject {
         saveSettings()
     }
 
+    @discardableResult
+    func addEndpoint(
+        name: String,
+        host: String,
+        port: UInt16 = 443,
+        path: String = "/",
+        kind: ProbeKind = .https
+    ) -> Bool {
+        let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        var trimmedHost = host.trimmingCharacters(in: .whitespacesAndNewlines)
+        if let url = URL(string: trimmedHost), let hostOnly = url.host {
+            trimmedHost = hostOnly
+        } else if trimmedHost.hasPrefix("https://") {
+            trimmedHost = String(trimmedHost.dropFirst(8))
+        } else if trimmedHost.hasPrefix("http://") {
+            trimmedHost = String(trimmedHost.dropFirst(7))
+        }
+        if let slashIndex = trimmedHost.firstIndex(of: "/") {
+            trimmedHost = String(trimmedHost[..<slashIndex])
+        }
+
+        guard !trimmedName.isEmpty, !trimmedHost.isEmpty else { return false }
+
+        var trimmedPath = path.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmedPath.isEmpty {
+            trimmedPath = "/"
+        } else if !trimmedPath.hasPrefix("/") {
+            trimmedPath = "/" + trimmedPath
+        }
+
+        let newEndpoint = ReachabilityEndpoint(
+            id: UUID().uuidString,
+            displayName: trimmedName,
+            host: trimmedHost,
+            path: trimmedPath,
+            port: port,
+            kind: kind
+        )
+        settings.endpoints.append(newEndpoint)
+        saveSettings()
+        return true
+    }
+
+    func deleteEndpoint(id: String) {
+        guard settings.endpoints.count > 1 else { return }
+        settings.endpoints.removeAll { $0.id == id }
+        saveSettings()
+    }
+
     func updateLanguage(_ value: AppLanguage) {
         language = value
         UserDefaults.standard.set(value.rawValue, forKey: "netdoctor.language")

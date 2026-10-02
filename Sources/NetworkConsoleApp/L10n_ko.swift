@@ -265,6 +265,16 @@ extension L10n {
         "menu.edit": "편집",
         "menu.view": "보기",
         "menu.window": "윈도우",
-        "menu.help": "도움말"
+        "menu.help": "도움말",
+        "settings.addEndpoint": "엔드포인트 추가",
+        "settings.deleteEndpoint": "엔드포인트 삭제",
+        "settings.endpoint.addTitle": "사용자 지정 프로브 엔드포인트 추가",
+        "settings.endpoint.name": "엔드포인트 이름",
+        "settings.endpoint.host": "호스트 또는 도메인",
+        "settings.endpoint.protocol": "프로토콜",
+        "settings.endpoint.port": "포트",
+        "settings.endpoint.path": "요청 경로",
+        "common.cancel": "취소",
+        "common.add": "추가"
     ]
 }

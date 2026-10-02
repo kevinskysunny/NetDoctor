@@ -265,6 +265,16 @@ extension L10n {
         "menu.edit": "Édition",
         "menu.view": "Affichage",
         "menu.window": "Fenêtre",
-        "menu.help": "Aide"
+        "menu.help": "Aide",
+        "settings.addEndpoint": "Ajouter un point",
+        "settings.deleteEndpoint": "Supprimer le point",
+        "settings.endpoint.addTitle": "Ajouter un point de test personnalisé",
+        "settings.endpoint.name": "Nom du point",
+        "settings.endpoint.host": "Hôte ou domaine",
+        "settings.endpoint.protocol": "Protocole",
+        "settings.endpoint.port": "Port",
+        "settings.endpoint.path": "Chemin de la requête",
+        "common.cancel": "Annuler",
+        "common.add": "Ajouter"
     ]
 }

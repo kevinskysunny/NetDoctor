@@ -265,6 +265,16 @@ extension L10n {
         "menu.edit": "Edição",
         "menu.view": "Visualizar",
         "menu.window": "Janela",
-        "menu.help": "Ajuda"
+        "menu.help": "Ajuda",
+        "settings.addEndpoint": "Adicionar endpoint",
+        "settings.deleteEndpoint": "Excluir endpoint",
+        "settings.endpoint.addTitle": "Adicionar endpoint de teste personalizado",
+        "settings.endpoint.name": "Nome do endpoint",
+        "settings.endpoint.host": "Host ou domínio",
+        "settings.endpoint.protocol": "Protocolo",
+        "settings.endpoint.port": "Porta",
+        "settings.endpoint.path": "Caminho da requisição",
+        "common.cancel": "Cancelar",
+        "common.add": "Adicionar"
     ]
 }

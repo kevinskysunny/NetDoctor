@@ -49,6 +49,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         return true
     }
 
+    @objc func showMainWindow(_ sender: Any?) {
+        showDetailWindow()
+    }
+
     func showDetailWindow() {
         MainActor.assumeIsolated {
             guard let model = model ?? Self.shared?.model else { return }

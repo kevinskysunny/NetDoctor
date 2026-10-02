@@ -266,6 +266,16 @@ extension L10n {
         "menu.edit": "編集",
         "menu.view": "表示",
         "menu.window": "ウィンドウ",
-        "menu.help": "ヘルプ"
+        "menu.help": "ヘルプ",
+        "settings.addEndpoint": "エンドポイント追加",
+        "settings.deleteEndpoint": "エンドポイント削除",
+        "settings.endpoint.addTitle": "カスタムプローブエンドポイント追加",
+        "settings.endpoint.name": "エンドポイント名",
+        "settings.endpoint.host": "ホストまたはドメイン",
+        "settings.endpoint.protocol": "プロトコル",
+        "settings.endpoint.port": "ポート",
+        "settings.endpoint.path": "リクエストパス",
+        "common.cancel": "キャンセル",
+        "common.add": "追加"
     ]
 }

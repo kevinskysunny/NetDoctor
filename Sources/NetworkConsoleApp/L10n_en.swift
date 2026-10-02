@@ -265,6 +265,16 @@ extension L10n {
         "menu.edit": "Edit",
         "menu.view": "View",
         "menu.window": "Window",
-        "menu.help": "Help"
+        "menu.help": "Help",
+        "settings.addEndpoint": "Add Endpoint",
+        "settings.deleteEndpoint": "Delete Endpoint",
+        "settings.endpoint.addTitle": "Add Custom Probe Endpoint",
+        "settings.endpoint.name": "Endpoint Name",
+        "settings.endpoint.host": "Host or Domain",
+        "settings.endpoint.protocol": "Protocol",
+        "settings.endpoint.port": "Port",
+        "settings.endpoint.path": "Request Path",
+        "common.cancel": "Cancel",
+        "common.add": "Add"
     ]
 }

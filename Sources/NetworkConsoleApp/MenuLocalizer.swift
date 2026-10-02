@@ -131,6 +131,9 @@ enum MenuLocalizer {
             else if isViewMenu(title: title, index: index, count: count) {
                 item.title = viewText
                 item.submenu?.title = viewText
+                let submenu = item.submenu ?? NSMenu(title: viewText)
+                item.submenu = submenu
+                ensureViewSubmenuItems(submenu, language: language, appName: appName)
             }
             else if isWindowMenu(title: title, index: index, count: count) {
                 item.title = windowText
@@ -175,6 +178,86 @@ enum MenuLocalizer {
 
             if let sub = item.submenu {
                 localizeSubmenu(sub, language: language, appName: appName)
+            }
+        }
+    }
+
+    private static func ensureViewSubmenuItems(_ menu: NSMenu, language: AppLanguage, appName: String) {
+        let showWindowText: String
+        let settingsText: String
+
+        switch language.resolvedLanguage {
+        case .chinese:
+            showWindowText = "显示 \(appName) 窗口"
+            settingsText = "设置..."
+        case .japanese:
+            showWindowText = "\(appName) ウィンドウを表示"
+            settingsText = "設定..."
+        case .korean:
+            showWindowText = "\(appName) 윈도우 표시"
+            settingsText = "설정..."
+        case .german:
+            showWindowText = "\(appName)-Fenster anzeigen"
+            settingsText = "Einstellungen..."
+        case .french:
+            showWindowText = "Afficher la fenêtre \(appName)"
+            settingsText = "Réglages..."
+        case .spanish:
+            showWindowText = "Mostrar ventana de \(appName)"
+            settingsText = "Ajustes..."
+        case .portuguese:
+            showWindowText = "Mostrar Janela do \(appName)"
+            settingsText = "Ajustes..."
+        default:
+            showWindowText = "Show \(appName) Window"
+            settingsText = "Settings..."
+        }
+
+        var hasShowWindow = false
+        var hasSettings = false
+
+        for item in menu.items {
+            if item.action == #selector(AppDelegate.showMainWindow(_:)) {
+                hasShowWindow = true
+                item.title = showWindowText
+                item.keyEquivalent = "0"
+                item.keyEquivalentModifierMask = .command
+                item.target = AppDelegate.shared
+                item.isHidden = false
+            }
+            if item.action == #selector(AppDelegate.openSettingsWindow(_:)) {
+                hasSettings = true
+                item.title = settingsText
+                item.keyEquivalent = ","
+                item.keyEquivalentModifierMask = .command
+                item.target = AppDelegate.shared
+                item.isHidden = false
+            }
+        }
+
+        if !hasShowWindow {
+            let showItem = NSMenuItem(
+                title: showWindowText,
+                action: #selector(AppDelegate.showMainWindow(_:)),
+                keyEquivalent: "0"
+            )
+            showItem.keyEquivalentModifierMask = .command
+            showItem.target = AppDelegate.shared
+            menu.insertItem(showItem, at: 0)
+        }
+
+        if !hasSettings {
+            let settingsItem = NSMenuItem(
+                title: settingsText,
+                action: #selector(AppDelegate.openSettingsWindow(_:)),
+                keyEquivalent: ","
+            )
+            settingsItem.keyEquivalentModifierMask = .command
+            settingsItem.target = AppDelegate.shared
+            if menu.items.count > 1 {
+                menu.insertItem(settingsItem, at: 1)
+            } else {
+                menu.addItem(settingsItem)
             }
         }
     }

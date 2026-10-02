@@ -265,6 +265,16 @@ extension L10n {
         "menu.edit": "Edición",
         "menu.view": "Ver",
         "menu.window": "Ventana",
-        "menu.help": "Ayuda"
+        "menu.help": "Ayuda",
+        "settings.addEndpoint": "Agregar extremo",
+        "settings.deleteEndpoint": "Eliminar extremo",
+        "settings.endpoint.addTitle": "Agregar extremo de prueba personalizado",
+        "settings.endpoint.name": "Nombre del extremo",
+        "settings.endpoint.host": "Host o dominio",
+        "settings.endpoint.protocol": "Protocolo",
+        "settings.endpoint.port": "Puerto",
+        "settings.endpoint.path": "Ruta de la solicitud",
+        "common.cancel": "Cancelar",
+        "common.add": "Agregar"
     ]
 }

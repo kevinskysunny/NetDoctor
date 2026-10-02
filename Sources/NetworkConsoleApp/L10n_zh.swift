@@ -265,6 +265,16 @@ extension L10n {
         "menu.edit": "编辑",
         "menu.view": "显示",
         "menu.window": "窗口",
-        "menu.help": "帮助"
+        "menu.help": "帮助",
+        "settings.addEndpoint": "添加端点",
+        "settings.deleteEndpoint": "删除端点",
+        "settings.endpoint.addTitle": "添加自定义探测端点",
+        "settings.endpoint.name": "端点名称",
+        "settings.endpoint.host": "主机或域名",
+        "settings.endpoint.protocol": "协议类型",
+        "settings.endpoint.port": "端口",
+        "settings.endpoint.path": "请求路径",
+        "common.cancel": "取消",
+        "common.add": "添加"
     ]
 }

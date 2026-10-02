@@ -265,6 +265,16 @@ extension L10n {
         "menu.edit": "Bearbeiten",
         "menu.view": "Ansicht",
         "menu.window": "Fenster",
-        "menu.help": "Hilfe"
+        "menu.help": "Hilfe",
+        "settings.addEndpoint": "Endpunkt hinzufügen",
+        "settings.deleteEndpoint": "Endpunkt löschen",
+        "settings.endpoint.addTitle": "Benutzerdefinierten Testendpunkt hinzufügen",
+        "settings.endpoint.name": "Endpunktname",
+        "settings.endpoint.host": "Host oder Domain",
+        "settings.endpoint.protocol": "Protokoll",
+        "settings.endpoint.port": "Port",
+        "settings.endpoint.path": "Anforderungspfad",
+        "common.cancel": "Abbrechen",
+        "common.add": "Hinzufügen"
     ]
 }

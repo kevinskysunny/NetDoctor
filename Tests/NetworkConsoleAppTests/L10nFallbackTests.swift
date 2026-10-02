@@ -34,8 +34,8 @@ final class L10nFallbackTests: XCTestCase {
         XCTAssertEqual(result, probeKey, "de 缺失 key 且 en 缺失时返回 key 本身")
     }
 
-    func testAll8LanguagesHave264Keys() {
-        let expectedCount = 264
+    func testAll8LanguagesHave274Keys() {
+        let expectedCount = 274
         let languages: [AppLanguage] = [.chinese, .english, .japanese, .korean, .german, .french, .spanish, .portuguese]
         for lang in languages {
             let dict = L10n.dictionary(for: lang)
@@ -51,8 +51,11 @@ final class L10nFallbackTests: XCTestCase {
         }
     }
 
-    func testJaHas264KeysMatchingEn() {
+    func testJaHas274KeysMatchingEn() {
         let probeKeys = [
+            "settings.addEndpoint", "settings.deleteEndpoint", "settings.endpoint.addTitle",
+            "settings.endpoint.name", "settings.endpoint.host", "settings.endpoint.protocol",
+            "settings.endpoint.port", "settings.endpoint.path", "common.cancel", "common.add",
             "verdict.checking", "verdict.optimal", "verdict.good", "verdict.dnsSlow",
             "verdict.constrained", "verdict.jitterLoss", "verdict.highLatency", "verdict.warningDefault",
             "verdict.offline", "verdict.noInterface", "verdict.allProbesFailed", "verdict.criticalDefault",

@@ -4,6 +4,7 @@ import SwiftUI
 /// 极客控制台与隐私透明堡垒风格设置页面
 struct SettingsView: View {
     @ObservedObject var model: AppModel
+    @State private var isShowingAddEndpoint: Bool = false
 
     var body: some View {
         ScrollView {
@@ -24,6 +25,9 @@ struct SettingsView: View {
                 ecosystemPod
             }
             .padding(20)
+        }
+        .sheet(isPresented: $isShowingAddEndpoint) {
+            AddEndpointSheet(model: model, isPresented: $isShowingAddEndpoint)
         }
         .navigationTitle(model.text("detail.tab.settings"))
     }
@@ -181,6 +185,18 @@ struct SettingsView: View {
                         Text(model.text("settings.endpoints.title"))
                             .font(.callout.weight(.medium))
                         Spacer()
+                        Button {
+                            isShowingAddEndpoint = true
+                        } label: {
+                            HStack(spacing: 3) {
+                                Image(systemName: "plus")
+                                Text(model.text("settings.addEndpoint"))
+                            }
+                        }
+                        .font(.caption2)
+                        .buttonStyle(.borderedProminent)
+                        .controlSize(.mini)
+
                         Button(model.text("settings.resetEndpoints")) {
                             model.resetEndpoints()
                         }
@@ -192,24 +208,36 @@ struct SettingsView: View {
                     LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
                         ForEach(model.settings.endpoints) { ep in
                             HStack(spacing: 8) {
-                                Image(systemName: "globe.asia.australia.fill")
+                                Image(systemName: ep.kind == .https ? "globe.asia.australia.fill" : "network")
                                     .font(.caption)
-                                    .foregroundStyle(.cyan)
+                                    .foregroundStyle(ep.kind == .https ? Color.cyan : Color.orange)
                                 VStack(alignment: .leading, spacing: 1) {
                                     Text(ep.displayName)
                                         .font(.system(size: 12, weight: .semibold))
-                                    Text(ep.host)
+                                    Text(ep.port == 443 || ep.port == 80 ? ep.host : "\(ep.host):\(ep.port)")
                                         .font(.system(size: 10, design: .monospaced))
                                         .foregroundStyle(.secondary)
                                         .lineLimit(1)
                                 }
                                 Spacer()
-                                Text("HTTPS")
+                                Text(ep.kind == .https ? "HTTPS" : "TCP")
                                     .font(.system(size: 9, weight: .bold))
-                                    .foregroundStyle(.green)
+                                    .foregroundStyle(ep.kind == .https ? Color.green : Color.orange)
                                     .padding(.horizontal, 4)
                                     .padding(.vertical, 1)
-                                    .background(Color.green.opacity(0.12), in: RoundedRectangle(cornerRadius: 3))
+                                    .background((ep.kind == .https ? Color.green : Color.orange).opacity(0.12), in: RoundedRectangle(cornerRadius: 3))
+
+                                if model.settings.endpoints.count > 1 {
+                                    Button {
+                                        model.deleteEndpoint(id: ep.id)
+                                    } label: {
+                                        Image(systemName: "trash")
+                                            .font(.system(size: 10))
+                                            .foregroundStyle(.secondary)
+                                    }
+                                    .buttonStyle(.plain)
+                                    .help(model.text("settings.deleteEndpoint"))
+                                }
                             }
                             .padding(8)
                             .background(Color.white.opacity(0.04), in: RoundedRectangle(cornerRadius: 8))
@@ -491,5 +519,109 @@ struct SettingsView: View {
         }
         .padding(12)
         .background(Color.black.opacity(0.12), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+    }
+}
+
+// MARK: - 自定义探测端点添加弹窗
+struct AddEndpointSheet: View {
+    @ObservedObject var model: AppModel
+    @Binding var isPresented: Bool
+
+    @State private var name: String = ""
+    @State private var host: String = ""
+    @State private var kind: ProbeKind = .https
+    @State private var portString: String = "443"
+    @State private var path: String = "/"
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack {
+                Image(systemName: "plus.circle.fill")
+                    .font(.title2)
+                    .foregroundStyle(Color.accentColor)
+                Text(model.text("settings.endpoint.addTitle"))
+                    .font(.headline)
+            }
+
+            VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(model.text("settings.endpoint.name"))
+                        .font(.caption.weight(.medium))
+                    TextField("e.g. Cloudflare DNS, Gateway", text: $name)
+                        .textFieldStyle(.roundedBorder)
+                }
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(model.text("settings.endpoint.host"))
+                        .font(.caption.weight(.medium))
+                    TextField("e.g. 1.1.1.1, www.github.com", text: $host)
+                        .textFieldStyle(.roundedBorder)
+                }
+
+                HStack(spacing: 16) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(model.text("settings.endpoint.protocol"))
+                            .font(.caption.weight(.medium))
+                        Picker("", selection: $kind) {
+                            Text("HTTPS").tag(ProbeKind.https)
+                            Text("TCP").tag(ProbeKind.tcp)
+                        }
+                        .pickerStyle(.segmented)
+                        .onChange(of: kind) { newKind in
+                            if newKind == .tcp && portString == "443" {
+                                portString = "80"
+                            } else if newKind == .https && portString == "80" {
+                                portString = "443"
+                            }
+                        }
+                    }
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(model.text("settings.endpoint.port"))
+                            .font(.caption.weight(.medium))
+                        TextField("Port", text: $portString)
+                            .textFieldStyle(.roundedBorder)
+                            .frame(width: 80)
+                    }
+                }
+
+                if kind == .https {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(model.text("settings.endpoint.path"))
+                            .font(.caption.weight(.medium))
+                        TextField("/", text: $path)
+                            .textFieldStyle(.roundedBorder)
+                    }
+                }
+            }
+
+            Divider()
+
+            HStack {
+                Spacer()
+                Button(model.text("common.cancel")) {
+                    isPresented = false
+                }
+                .keyboardShortcut(.cancelAction)
+
+                Button(model.text("common.add")) {
+                    let port = UInt16(portString) ?? (kind == .https ? 443 : 80)
+                    if model.addEndpoint(
+                        name: name,
+                        host: host,
+                        port: port,
+                        path: path,
+                        kind: kind
+                    ) {
+                        isPresented = false
+                    }
+                }
+                .buttonStyle(.borderedProminent)
+                .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || host.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                .keyboardShortcut(.defaultAction)
+            }
+        }
+        .padding(20)
+        .frame(width: 400)
     }
 }
