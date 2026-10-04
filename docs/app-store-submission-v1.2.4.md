@@ -5,30 +5,30 @@
 ## 1. 版本更新说明 (What's New in This Version)
 
 ### 简体中文 (zh-Hans)
-- 【极致性能与零功耗优化】重构了菜单栏本地化调度机制，彻底移除高频轮询定时器，全面转向纯事件驱动模型。应用在后台静默待机时 CPU 占用率直降至 0.0%，闲置唤醒完全归零，大幅延长 Mac 电池续航。
-- 【菜单动态响应提速】基于原生系统菜单生命周期回调（`menuWillOpen` 与跟踪通知）实现微秒级本地化即时注入，多语言切换更丝滑无感。
-- 【端点管理稳定性】优化了自定义探测端点输入控件的生命周期与内存管理。
+- 【功耗与性能大幅优化】重构后台调度机制，待机 CPU 占用降至 0%，更加省电护航。
+- 【菜单响应更流畅】优化多语言菜单动态加载，点击即刻丝滑呈现。
+- 【体验细节提升】优化自定义探测端点的输入与稳定性。
 
 ---
 
 ### English (en-US)
-- **Ultra-Low Power & Zero Idle Wakeups**: Overhauled the menu bar localization architecture by replacing continuous polling with a 100% event-driven model. Background idle CPU consumption drops to 0.0% with zero unnecessary wakeups, maximizing Mac battery life.
-- **Instant Menu Responsiveness**: Switched to native system menu lifecycle callbacks (`menuWillOpen` and tracking notifications) for microsecond-level localized title injection across all 8 languages.
-- **Custom Probe Endpoint Stability**: Improved memory management and lifecycle cleanup around custom network probe inputs.
+- **Ultra-Low Power Usage**: Overhauled background scheduling to achieve 0% idle CPU usage, maximizing battery life.
+- **Smoother Menu Experience**: Optimized menu localization for instant and fluid responsiveness.
+- **Stability Improvements**: Enhanced custom network probe settings and overall reliability.
 
 ---
 
 ### 繁體中文 (zh-Hant)
-- 【極致效能與零功耗最佳化】重構了選單列多語言更新機制，徹底移除高頻輪詢定時器，全面改採事件驅動模式。背景待機時 CPU 佔用率降至 0.0%，完全杜絕多餘閒置喚醒，大幅節省電力。
-- 【選單動態反應加速】運用原生選單生命週期回呼機制，在點擊瞬間微秒級載入本地化文字，多語言切換更流暢。
-- 【自訂端點穩定性提升】最佳化了自訂網路探測端點輸入介面的記憶體管理與穩定度。
+- 【功耗與效能大幅最佳化】重構背景調度機制，待機 CPU 佔用降至 0%，更加省電耐用。
+- 【選單回應更流暢】最佳化多語言選單載入速度，點擊即刻順暢呈現。
+- 【穩定性與細節提升】改善自訂網路探測端點設定與體驗。
 
 ---
 
 ### 日本語 (ja)
-- **極めて低いCPU負荷と省電力化**: メニューバーのローカライズ同期をイベント駆動型に再構築し、定期ポーリングタイマーを完全に撤廃しました。バックグラウンド待機時のCPU使用率は0.0%に低減され、アイドリング復帰もゼロになり、バッテリー持続時間を最大化します。
-- **メニュー応答の高速化**: システムネイティブのメニュー表示コールバック（`menuWillOpen`）と連動し、クリック瞬間に8言語の翻訳を即座に適用します。
-- **カスタム診断エンドポイントの安定性向上**: エンドポイント入力画面のライフサイクルとメモリ管理を最適化しました。
+- **省電力とパフォーマンスの大幅改善**: バックグラウンド待機時のCPU使用率を0%に削減し、バッテリー消費を最小限に抑えました。
+- **メニュー応答の向上**: 多言語メニューの切り替えと表示レスポンスをさらに滑らかに最適化しました。
+- **安定性の向上**: カスタム診断エンドポイント設定の安定性を改善しました。
 
 ---
 
