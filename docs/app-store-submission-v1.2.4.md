@@ -5,30 +5,26 @@
 ## 1. 版本更新说明 (What's New in This Version)
 
 ### 简体中文 (zh-Hans)
-- 【功耗与性能大幅优化】重构后台调度机制，待机 CPU 占用降至 0%，更加省电护航。
-- 【菜单响应更流畅】优化多语言菜单动态加载，点击即刻丝滑呈现。
-- 【体验细节提升】优化自定义探测端点的输入与稳定性。
+- 性能与功耗优化：优化后台调度与待机机制，CPU 占用直降至 0%，更加省电护航。
+- 提升菜单栏响应速度与交互流畅度。
 
 ---
 
 ### English (en-US)
-- **Ultra-Low Power Usage**: Overhauled background scheduling to achieve 0% idle CPU usage, maximizing battery life.
-- **Smoother Menu Experience**: Optimized menu localization for instant and fluid responsiveness.
-- **Stability Improvements**: Enhanced custom network probe settings and overall reliability.
+- Performance & battery optimization: streamlined background scheduling to achieve 0% idle CPU usage.
+- Improved menu responsiveness and overall smoothness.
 
 ---
 
 ### 繁體中文 (zh-Hant)
-- 【功耗與效能大幅最佳化】重構背景調度機制，待機 CPU 佔用降至 0%，更加省電耐用。
-- 【選單回應更流暢】最佳化多語言選單載入速度，點擊即刻順暢呈現。
-- 【穩定性與細節提升】改善自訂網路探測端點設定與體驗。
+- 效能與功耗最佳化：重構背景調度機制，待機 CPU 佔用降至 0%，大幅節省電力。
+- 提升選單列回應速度與互動流暢度。
 
 ---
 
 ### 日本語 (ja)
-- **省電力とパフォーマンスの大幅改善**: バックグラウンド待機時のCPU使用率を0%に削減し、バッテリー消費を最小限に抑えました。
-- **メニュー応答の向上**: 多言語メニューの切り替えと表示レスポンスをさらに滑らかに最適化しました。
-- **安定性の向上**: カスタム診断エンドポイント設定の安定性を改善しました。
+- パフォーマンスと省電力の最適化: バックグラウンドの処理を最適化し、待機時のCPU使用率を0%に削減しました。
+- メニューの応答性と操作性を向上しました。
 
 ---
 
