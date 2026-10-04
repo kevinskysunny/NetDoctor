@@ -4,11 +4,14 @@ import SwiftUI
 
 final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     static private(set) var shared: AppDelegate?
-    var model: AppModel?
+    var model: AppModel? {
+        didSet {
+            setupLanguageBinding()
+        }
+    }
     private var detailWindow: NSWindow?
     private var languageCancellable: AnyCancellable?
     private var menuTrackingCancellable: AnyCancellable?
-    private var menuTimer: Timer?
 
     override init() {
         super.init()
@@ -32,13 +35,30 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 self?.updateAllMenus()
             }
 
-        // 高频定时器并加入 common/eventTracking 模式，杜绝在菜单展开时定时器挂起导致的闪烁
-        let timer = Timer(timeInterval: 0.2, repeats: true) { [weak self] _ in
-            self?.updateAllMenus()
+        setupLanguageBinding()
+    }
+
+    func applicationDidBecomeActive(_ notification: Notification) {
+        attachMenuDelegates()
+        updateAllMenus()
+    }
+
+    private func setupLanguageBinding() {
+        MainActor.assumeIsolated {
+            guard let model = model ?? Self.shared?.model else { return }
+            languageCancellable = model.$language
+                .receive(on: RunLoop.main)
+                .sink { [weak self] _ in
+                    MainActor.assumeIsolated {
+                        guard let self else { return }
+                        if let window = self.detailWindow, let model = self.model ?? Self.shared?.model {
+                            window.title = model.text("detail.window.title")
+                        }
+                        self.attachMenuDelegates()
+                        self.updateAllMenus()
+                    }
+                }
         }
-        RunLoop.main.add(timer, forMode: .common)
-        RunLoop.main.add(timer, forMode: .eventTracking)
-        menuTimer = timer
     }
 
     func applicationShouldHandleReopen(
@@ -77,13 +97,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             window.center()
             window.isReleasedWhenClosed = false
             detailWindow = window
-            languageCancellable = model.$language
-                .receive(on: RunLoop.main)
-                .sink { [weak self] _ in
-                    guard let self, let window = self.detailWindow, let model = self.model ?? Self.shared?.model else { return }
-                    window.title = model.text("detail.window.title")
-                    self.updateAllMenus()
-                }
+            setupLanguageBinding()
             window.orderFrontRegardless()
             window.makeKeyAndOrderFront(nil)
             NSApp.activate(ignoringOtherApps: true)
@@ -93,10 +107,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     // MARK: - NSMenuDelegate
 
     func menuWillOpen(_ menu: NSMenu) {
+        attachMenuDelegates()
         updateAllMenus()
-        DispatchQueue.main.async { [weak self] in
-            self?.updateAllMenus()
-        }
     }
 
     func menuNeedsUpdate(_ menu: NSMenu) {
