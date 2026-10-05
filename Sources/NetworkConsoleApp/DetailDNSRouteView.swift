@@ -76,6 +76,27 @@ struct DNSRouteView: View {
                 .padding(.vertical, 3)
                 .background(Color.purple.opacity(0.12), in: Capsule())
                 .overlay(Capsule().stroke(Color.purple.opacity(0.25), lineWidth: 1))
+
+                // 系统设置 DNS 直达按钮
+                Button {
+                    SystemSettingsNavigator.open(.dns)
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: "gearshape")
+                            .font(.system(size: 10, weight: .medium))
+                        Text(model.text("action.openSettings.dns"))
+                            .font(.system(size: 11, weight: .medium))
+                        Image(systemName: "arrow.up.forward.app")
+                            .font(.system(size: 9))
+                    }
+                    .foregroundStyle(.purple)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 3)
+                    .background(Color.purple.opacity(0.12), in: Capsule())
+                    .overlay(Capsule().stroke(Color.purple.opacity(0.25), lineWidth: 1))
+                }
+                .buttonStyle(.plain)
+                .help(model.text("action.openSettings.dns"))
             }
 
             // 搜索域信息标签

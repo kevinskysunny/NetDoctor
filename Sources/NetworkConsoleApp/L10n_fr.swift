@@ -275,6 +275,10 @@ extension L10n {
         "settings.endpoint.port": "Port",
         "settings.endpoint.path": "Chemin de la requête",
         "common.cancel": "Annuler",
-        "common.add": "Ajouter"
+        "common.add": "Ajouter",
+        "action.openSettings.network": "Réglages réseau...",
+        "action.openSettings.wifi": "Réglages Wi-Fi...",
+        "action.openSettings.ethernet": "Réglages Ethernet...",
+        "action.openSettings.dns": "Configurer le DNS dans les Réglages Système..."
     ]
 }

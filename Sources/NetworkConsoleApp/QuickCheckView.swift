@@ -181,6 +181,25 @@ struct QuickCheckView: View {
 
                 Spacer()
 
+                Menu {
+                    Button(model.text("action.openSettings.network")) {
+                        SystemSettingsNavigator.open(.network)
+                    }
+                    Button(model.text("action.openSettings.wifi")) {
+                        SystemSettingsNavigator.open(.wifi)
+                    }
+                    Button(model.text("action.openSettings.ethernet")) {
+                        SystemSettingsNavigator.open(.ethernet)
+                    }
+                    Button(model.text("action.openSettings.dns")) {
+                        SystemSettingsNavigator.open(.dns)
+                    }
+                } label: {
+                    Image(systemName: "gearshape")
+                }
+                .menuStyle(.borderlessButton)
+                .help(model.text("action.openSettings.network"))
+
                 Button {
                     model.exportSupportPackage()
                 } label: {

@@ -13,7 +13,7 @@ import re
 import sys
 from pathlib import Path
 
-EXPECTED_KEY_COUNT = 274
+EXPECTED_KEY_COUNT = 278
 LANGUAGES = ["zh", "en", "ja", "ko", "de", "fr", "es", "pt"]
 
 L10N_DIR = Path("Sources/NetworkConsoleApp")

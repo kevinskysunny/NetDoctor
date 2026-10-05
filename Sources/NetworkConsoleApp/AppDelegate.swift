@@ -218,6 +218,22 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
     }
 
+    @objc func openSystemNetworkSettings(_ sender: Any?) {
+        SystemSettingsNavigator.open(.network)
+    }
+
+    @objc func openSystemWifiSettings(_ sender: Any?) {
+        SystemSettingsNavigator.open(.wifi)
+    }
+
+    @objc func openSystemEthernetSettings(_ sender: Any?) {
+        SystemSettingsNavigator.open(.ethernet)
+    }
+
+    @objc func openSystemDNSSettings(_ sender: Any?) {
+        SystemSettingsNavigator.open(.dns)
+    }
+
     func openHelpWindow() {
         MainActor.assumeIsolated {
             guard let model = model ?? Self.shared?.model else { return }

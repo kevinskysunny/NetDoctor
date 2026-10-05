@@ -214,6 +214,28 @@ struct InterfaceBladeCard: View {
                     (interface.linkState == .up ? Color.green : Color.secondary).opacity(0.1),
                     in: Capsule()
                 )
+
+                // 系统设置快捷跳转
+                Button {
+                    let pane: SystemSettingsPane
+                    switch interface.kind {
+                    case .wifi:
+                        pane = .wifi
+                    case .wired:
+                        pane = .ethernet
+                    default:
+                        pane = .network
+                    }
+                    SystemSettingsNavigator.open(pane)
+                } label: {
+                    Image(systemName: "arrow.up.forward.app")
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(.secondary)
+                        .padding(5)
+                        .background(Color.white.opacity(0.06), in: Circle())
+                }
+                .buttonStyle(.plain)
+                .help(settingsHelpText)
             }
 
             Divider()
@@ -232,9 +254,18 @@ struct InterfaceBladeCard: View {
                         .font(.callout.weight(.semibold))
                         .textSelection(.enabled)
                     Spacer()
-                    Text("802.11 Wi-Fi")
-                        .font(.caption2.monospaced())
-                        .foregroundStyle(.tertiary)
+                    Button {
+                        SystemSettingsNavigator.open(.wifi)
+                    } label: {
+                        HStack(spacing: 3) {
+                            Text(model.text("action.openSettings.wifi"))
+                                .font(.caption2.weight(.medium))
+                            Image(systemName: "arrow.up.forward.app")
+                                .font(.system(size: 9))
+                        }
+                        .foregroundStyle(Color.cyan)
+                    }
+                    .buttonStyle(.plain)
                 }
                 .padding(.horizontal, 10)
                 .padding(.vertical, 6)
@@ -335,5 +366,16 @@ struct InterfaceBladeCard: View {
             return .cyan
         }
         return InterfaceCategoryStyle.style(for: InterfaceCategoryResolver.resolve(kind: interface.kind, name: interface.name)).accentColor
+    }
+
+    private var settingsHelpText: String {
+        switch interface.kind {
+        case .wifi:
+            return model.text("action.openSettings.wifi")
+        case .wired:
+            return model.text("action.openSettings.ethernet")
+        default:
+            return model.text("action.openSettings.network")
+        }
     }
 }

@@ -275,6 +275,10 @@ extension L10n {
         "settings.endpoint.port": "端口",
         "settings.endpoint.path": "请求路径",
         "common.cancel": "取消",
-        "common.add": "添加"
+        "common.add": "添加",
+        "action.openSettings.network": "系统网络设置...",
+        "action.openSettings.wifi": "Wi-Fi 设置...",
+        "action.openSettings.ethernet": "以太网设置...",
+        "action.openSettings.dns": "在系统设置中配置 DNS..."
     ]
 }

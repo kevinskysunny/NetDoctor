@@ -275,6 +275,10 @@ extension L10n {
         "settings.endpoint.port": "포트",
         "settings.endpoint.path": "요청 경로",
         "common.cancel": "취소",
-        "common.add": "추가"
+        "common.add": "추가",
+        "action.openSettings.network": "네트워크 설정...",
+        "action.openSettings.wifi": "Wi-Fi 설정...",
+        "action.openSettings.ethernet": "이더넷 설정...",
+        "action.openSettings.dns": "시스템 설정에서 DNS 구성..."
     ]
 }

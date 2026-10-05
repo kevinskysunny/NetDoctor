@@ -56,6 +56,7 @@
 		D523AA492F05F3D072394FDD /* DetailDNSRouteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0B4CB9921F0E27207317A1D /* DetailDNSRouteView.swift */; };
 		D8A1CE53C5D2B9BDA24CD423 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06498046A6A442401587542F /* SettingsView.swift */; };
 		DA2130EB25A6A41B99EA3190 /* InterfaceFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C32291CBBE1280FE69B56F3 /* InterfaceFilter.swift */; };
+		DC5278C78F782C1A91B47BA7 /* SystemSettingsNavigator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7845BFB6F9355C436A37EF /* SystemSettingsNavigator.swift */; };
 		DF59A0D2D580CA6525BFF09D /* DetailInterfacesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 406F27C4A527FE90B632B423 /* DetailInterfacesView.swift */; };
 		F1B24F7F62DE043F1D5E97FF /* SystemCollectors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A01F30C6EB3103CD205F0C6 /* SystemCollectors.swift */; };
 		F2F21AD9C87D8348F2E4EAB3 /* NetworkPipelineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C503961740761ACB9DADF46A /* NetworkPipelineView.swift */; };
@@ -107,6 +108,7 @@
 		54B5EC7695167EA62D38C878 /* LinkStateResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinkStateResolver.swift; sourceTree = "<group>"; };
 		58607FA4252757A216574B0D /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
 		597B92710142DE745D082A67 /* LinkCarrierDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinkCarrierDataSource.swift; sourceTree = "<group>"; };
+		5E7845BFB6F9355C436A37EF /* SystemSettingsNavigator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemSettingsNavigator.swift; sourceTree = "<group>"; };
 		615B03199005852A52DCFE99 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		65360E06E233D41D3252C22C /* NetworkConsoleApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkConsoleApp.swift; sourceTree = "<group>"; };
 		677907D62661AAE32E8E4920 /* TimelineStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineStore.swift; sourceTree = "<group>"; };
@@ -270,6 +272,7 @@
 				C503961740761ACB9DADF46A /* NetworkPipelineView.swift */,
 				1573ADB4DC5A3D9A12952659 /* QuickCheckView.swift */,
 				06498046A6A442401587542F /* SettingsView.swift */,
+				5E7845BFB6F9355C436A37EF /* SystemSettingsNavigator.swift */,
 				7544D26188E23FD5CAC1F149 /* Resources */,
 			);
 			path = NetworkConsoleApp;
@@ -407,6 +410,7 @@
 				F2F21AD9C87D8348F2E4EAB3 /* NetworkPipelineView.swift in Sources */,
 				303DA2D98FEC6856E5E6AAC1 /* QuickCheckView.swift in Sources */,
 				D8A1CE53C5D2B9BDA24CD423 /* SettingsView.swift in Sources */,
+				DC5278C78F782C1A91B47BA7 /* SystemSettingsNavigator.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -516,7 +520,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 11;
+				CURRENT_PROJECT_VERSION = 12;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_NS_ASSERTIONS = NO;
@@ -531,7 +535,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				INFOPLIST_FILE = Config/Info.plist;
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 1.2.4;
+				MARKETING_VERSION = 1.2.5;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -616,7 +620,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 11;
+				CURRENT_PROJECT_VERSION = 12;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -637,7 +641,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				INFOPLIST_FILE = Config/Info.plist;
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 1.2.4;
+				MARKETING_VERSION = 1.2.5;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;

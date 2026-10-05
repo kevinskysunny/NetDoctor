@@ -37,6 +37,12 @@ struct NetDoctorApp: App {
                 }
                 .keyboardShortcut(",", modifiers: .command)
             }
+            CommandGroup(after: .appSettings) {
+                Divider()
+                Button(model.text("action.openSettings.network")) {
+                    SystemSettingsNavigator.open(.network)
+                }
+            }
             CommandGroup(replacing: .undoRedo) {
                 // 剔除只读体检工具完全用不上的 Undo / Redo
             }
