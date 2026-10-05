@@ -170,7 +170,7 @@ python3 Scripts/check_l10n_completeness.py
 swift test
 # 结果:
 #   Test Suite 'All tests' passed.
-#   Executed 84 tests, with 0 failures (0 unexpected) in 0.176 seconds.
+#   Executed 135 tests (84 App + 51 Core), with 0 failures (0 unexpected) in 0.208 seconds.
 
 # 3. 本地 Release 打包与签名
 xcodebuild -project NetworkConsoleLite.xcodeproj -scheme NetworkConsoleApp -configuration Release build
@@ -180,3 +180,22 @@ xcodebuild -project NetworkConsoleLite.xcodeproj -scheme NetworkConsoleApp -conf
 # 4. 本机部署验证
 # 已覆盖安装至 /Applications/NetDoctor.app，并在本地成功启动实测。
 ```
+
+---
+
+## 6. 华为 AI 外部技术审计反馈与闭环结论
+
+外部专家（华为 AI）对本次迭代完成代码审查，总体评级为 **【通过】**，无阻断性风险，针对 4 项技术细节给出了专业反馈并已完成闭环：
+
+1. **`NSWorkspace.shared.open` 返回值语义局限（低风险，认同采纳）**：
+   - *专家意见*：`open(_:)` 返回 true 仅表示 LaunchServices 启动了系统设置，不保证子 anchor 定位成功。若未定位到深层子项，用户停留在网络主面板，属于轻微 UX 降级。
+   - *结论*：完全认同。行为安全受控且符合规范，已在 UI 层提供清晰 Tooltip 辅助引导。
+2. **DNS 深链跨版本兼容（已消除）**：
+   - *专家意见*：`com.apple.Network-Settings.extension?DNS` 在 macOS 12 及更早版本可能失效，建议确认部署目标 ≥ 13.0。
+   - *核验结果*：NetDoctor 在 `project.yml` 与 `xcconfig` 中明确声明 `MACOSX_DEPLOYMENT_TARGET = 14.0`，最低运行环境为 macOS Sonoma，全系基于 Extension 架构，此兼容性隐患在当前工程中完全不存在。
+3. **审计报告测试计数偏差（已修正）**：
+   - *专家意见*：报告第 173 行原为 84 例，缺少底层 `NetworkCoreTests`（51 例）。
+   - *修正落实*：已修正为全量 135 例（84 App + 51 Core），0 失败。
+4. **`applicationDidBecomeActive` 回调机制（确认无误）**：
+   - *专家意见*：`AppDelegate` 实现 `NSApplicationDelegate`，系统自动分发，代码设计正确。
+
