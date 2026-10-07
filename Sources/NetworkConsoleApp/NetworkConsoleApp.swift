@@ -55,6 +55,7 @@ struct NetDoctorApp: App {
                 Button(model.text("menu.quit", model.text("app.name"))) {
                     NSApp.terminate(nil)
                 }
+                .keyboardShortcut("q", modifiers: .command)
             }
         }
     }

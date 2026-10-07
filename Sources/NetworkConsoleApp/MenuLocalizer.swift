@@ -174,6 +174,12 @@ enum MenuLocalizer {
                     item.keyEquivalent = ","
                     item.keyEquivalentModifierMask = .command
                 }
+
+                // 确保 Quit 菜单项无论语言切换或系统重建，始终稳定绑定 Cmd+Q 快捷键退出应用
+                if role == .quitApp {
+                    item.keyEquivalent = "q"
+                    item.keyEquivalentModifierMask = .command
+                }
             }
 
             if let sub = item.submenu {

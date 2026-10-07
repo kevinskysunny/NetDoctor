@@ -111,18 +111,32 @@ struct OverviewView: View {
                             Text(model.text("overview.advice"))
                                 .font(.headline)
                             ForEach(report.advice) { advice in
-                                HStack(alignment: .top, spacing: 12) {
-                                    Image(systemName: advice.severity.symbolName)
-                                        .foregroundStyle(adviceColor(advice.severity))
-                                        .font(.title3)
-                                        .frame(width: 24)
-                                    VStack(alignment: .leading, spacing: 4) {
-                                        Text(advice.title)
-                                            .font(.subheadline.weight(.semibold))
-                                        Text(advice.message)
-                                            .font(.callout)
-                                            .foregroundStyle(.secondary)
-                                            .fixedSize(horizontal: false, vertical: true)
+                                let actions = AdviceActions.items(for: advice.code)
+                                ViewThatFits(in: .horizontal) {
+                                    // 优先单行展示：左侧信息 + 右侧直达按钮（符合用户手绘标注）
+                                    HStack(alignment: .center, spacing: 12) {
+                                        adviceContent(advice)
+                                        if !actions.isEmpty {
+                                            Spacer(minLength: 16)
+                                            HStack(spacing: 8) {
+                                                ForEach(actions) { action in
+                                                    adviceActionButton(action)
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    // 窄屏自适应：下方折行展示直达按钮，保证文案与按钮不截断
+                                    VStack(alignment: .leading, spacing: 10) {
+                                        adviceContent(advice)
+                                        if !actions.isEmpty {
+                                            HStack(spacing: 8) {
+                                                Spacer()
+                                                ForEach(actions) { action in
+                                                    adviceActionButton(action)
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                                 .padding(12)
@@ -143,12 +157,92 @@ struct OverviewView: View {
         }
     }
 
+    @ViewBuilder
+    private func adviceContent(_ advice: DiagnosticAdvice) -> some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: advice.severity.symbolName)
+                .foregroundStyle(adviceColor(advice.severity))
+                .font(.title3)
+                .frame(width: 24)
+            VStack(alignment: .leading, spacing: 4) {
+                Text(advice.title)
+                    .font(.subheadline.weight(.semibold))
+                Text(advice.message)
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func adviceActionButton(_ action: AdviceActionItem) -> some View {
+        Button {
+            SystemSettingsNavigator.open(action.pane)
+        } label: {
+            HStack(spacing: 4) {
+                Image(systemName: action.systemImage)
+                    .font(.system(size: 11, weight: .medium))
+                Text(model.text(action.titleKey))
+                    .font(.system(size: 11, weight: .medium))
+                Image(systemName: "arrow.up.forward.app")
+                    .font(.system(size: 9))
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .buttonStyle(.bordered)
+        .controlSize(.small)
+        .help(model.text(action.titleKey))
+    }
+
     private func adviceColor(_ grade: HealthGrade) -> Color {
         switch grade {
         case .healthy: return Color(red: 0.2, green: 0.88, blue: 0.5)
         case .warning: return .orange
         case .critical: return .red
         case .checking: return .secondary
+        }
+    }
+}
+
+/// 排查建议直达系统设置操作项
+public struct AdviceActionItem: Identifiable, Equatable, Sendable {
+    public let id: String
+    public let titleKey: String
+    public let systemImage: String
+    public let pane: SystemSettingsPane
+
+    public init(id: String, titleKey: String, systemImage: String, pane: SystemSettingsPane) {
+        self.id = id
+        self.titleKey = titleKey
+        self.systemImage = systemImage
+        self.pane = pane
+    }
+}
+
+public enum AdviceActions {
+    public static func items(for code: AdviceCode) -> [AdviceActionItem] {
+        switch code {
+        case .enableInterface:
+            return [
+                AdviceActionItem(id: "ethernet", titleKey: "action.openSettings.ethernet", systemImage: "cable.connector", pane: .ethernet),
+                AdviceActionItem(id: "wifi", titleKey: "action.openSettings.wifi", systemImage: "wifi", pane: .wifi)
+            ]
+        case .checkDNS:
+            return [
+                AdviceActionItem(id: "dns", titleKey: "action.openSettings.dns", systemImage: "server.rack", pane: .dns)
+            ]
+        case .confirmConnection:
+            return [
+                AdviceActionItem(id: "wifi", titleKey: "action.openSettings.wifi", systemImage: "wifi", pane: .wifi),
+                AdviceActionItem(id: "network", titleKey: "action.openSettings.network", systemImage: "gearshape", pane: .network)
+            ]
+        case .checkRoute, .unreachable, .partialUnreachable, .constrained, .highLatency:
+            return [
+                AdviceActionItem(id: "network", titleKey: "action.openSettings.network", systemImage: "gearshape", pane: .network)
+            ]
+        case .healthy, .unknown:
+            return []
         }
     }
 }
